@@ -642,7 +642,7 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
       if (pValueNumeric < 0.001) {
         pValue <- paste0("\\pminor{0.001}")
       } else {
-        pValue <- paste0("\\p{", sprintf("%.2f", round(pValueNumeric, digits = 2)), "}")
+        pValue <- paste0("\\p{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
       }
 
 
@@ -718,7 +718,7 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
       if (pValueNumeric < 0.001) {
         pValue <- paste0("\\pminor{0.001}")
       } else {
-        pValue <- paste0("\\p{", sprintf("%.2f", round(pValueNumeric, digits = 2)), "}")
+        pValue <- paste0("\\p{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
       }
       
       
@@ -796,7 +796,7 @@ reportNparLD <- function(model, dv = "Testdependentvariable") {
       if (pValueNumeric < 0.001) {
         pValue <- paste0("\\pminor{0.001}")
       } else {
-        pValue <- paste0("\\p{", sprintf("%.2f", round(pValueNumeric, digits = 2)), "}")
+        pValue <- paste0("\\p{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
       }
 
 
