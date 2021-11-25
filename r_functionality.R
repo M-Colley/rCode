@@ -32,6 +32,9 @@ options(digits = 10)
 # wes_palette("FantasticFox1", n=5)
 # wes_palette("Darjeeling1", n=5)
 
+# not in 
+'%!in%' <- function(x,y)!('%in%'(x,y))
+
 
 
 #' Check whether Internet connection is present.
