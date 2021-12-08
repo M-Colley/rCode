@@ -664,7 +664,7 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
       
       # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
       # nice format of X in Latex via \times
-      stringtowrite <- gsub("X", "\\\\times \\\\", stringtowrite)
+      stringtowrite <- gsub("X", "$\\\\times$ \\\\", stringtowrite)
       
       if(write_to_clipboard){
         write_clip(stringtowrite)
@@ -747,7 +747,7 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
       
       # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
       # nice format of X in Latex via \times
-      stringtowrite <- gsub("X", "\\\\times \\\\", stringtowrite)
+      stringtowrite <- gsub("X", "$\\\\times$ \\\\", stringtowrite)
       
       if(write_to_clipboard){
         write_clip(stringtowrite)
@@ -827,7 +827,7 @@ reportNparLD <- function(model, dv = "Testdependentvariable", write_to_clipboard
       
       # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
       # nice format of X in Latex via \times
-      stringtowrite <- gsub("X", "\\\\times \\\\", stringtowrite)
+      stringtowrite <- gsub("X", "$\\\\times$ \\\\", stringtowrite)
       
       if(write_to_clipboard){
         write_clip(stringtowrite)
