@@ -860,7 +860,7 @@ reportMeanAndSD <- function(main_df, iv = "testiv", dv = "testdv") {
   assertthat::not_empty(dv)
   
 
-  test <- main_df %>% na.omit() %>% group_by(!! sym(iv)) %>% summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
+  test <- main_df  %>% drop_na(!! sym(iv)) %>% drop_na(!! sym(dv)) %>% group_by(!! sym(iv)) %>% summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
   
   for(i in 1:nrow(test)) {
     row <- test[i,]
