@@ -35,6 +35,12 @@ options(digits = 10)
 # not in 
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
+# replace NA with zero
+# e.g. df$test <- na.zero(df$test)
+na.zero <- function (x) {
+  x[is.na(x)] <- 0
+  return(x)
+}
 
 
 #' Check whether Internet connection is present.
