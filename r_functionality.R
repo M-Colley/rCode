@@ -629,7 +629,8 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
   # make the names accessible in a novel column
   model$descriptions <- rownames(model)
 
-  model$descriptions <- gsub(":", " X ", model$descriptions)
+  # no empty space to allow backslash later
+  model$descriptions <- gsub(":", " X", model$descriptions)
 
 
   for (i in 1:length(model$`Pr(>F)`)) {
@@ -660,6 +661,10 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
         } else {
         stringtowrite <- paste0("The NPAV found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
         }
+      
+      # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
+      # nice format of X in Latex via \times
+      stringtowrite <- gsub("X", "\\\\times \\\\", stringtowrite)
       
       if(write_to_clipboard){
         write_clip(stringtowrite)
@@ -713,7 +718,8 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
   # make the names accessible in a novel column
   model$descriptions <- rownames(model)
   
-  model$descriptions <- gsub(":", " X ", model$descriptions)
+  # no empty space to allow backslash later
+  model$descriptions <- gsub(":", " X", model$descriptions)
   
   
   for (i in 1:length(model$` Pr(>Chi)`)) {
@@ -738,6 +744,10 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
         } else {
         stringtowrite <- paste0("The NPAV found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\chisq~(1)=", Chivalue, ", ",  pValue, "). ")
       }
+      
+      # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
+      # nice format of X in Latex via \times
+      stringtowrite <- gsub("X", "\\\\times \\\\", stringtowrite)
       
       if(write_to_clipboard){
         write_clip(stringtowrite)
@@ -777,7 +787,7 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
 #' @export
 #'
 #' @examples
-reportNparLD <- function(model, dv = "Testdependentvariable") {
+reportNparLD <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE) {
   assertthat::not_empty(model)
   assertthat::not_empty(dv)
 
@@ -792,7 +802,7 @@ reportNparLD <- function(model, dv = "Testdependentvariable") {
   # make the names accessible in a novel column
   model$descriptions <- rownames(model)
 
-  model$descriptions <- gsub(":", " X ", model$descriptions)
+  model$descriptions <- gsub(":", " X", model$descriptions)
 
 
   for (i in 1:length(model$`p-value`)) {
@@ -810,9 +820,19 @@ reportNparLD <- function(model, dv = "Testdependentvariable") {
 
 
       if (str_detect(model$descriptions[i], "X")) {
-        cat(paste0("The NPVA found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", Fvalue, "}, \\df{", numeratordf, "}, ", pValue, "). "))
+        stringtowrite <- paste0("The NPVA found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", Fvalue, "}, \\df{", numeratordf, "}, ", pValue, "). ")
       } else {
-        cat(paste0("The NPVA found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", Fvalue, "}, \\df{", numeratordf, "}, ", pValue, "). "))
+        stringtowrite <- paste0("The NPVA found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", Fvalue, "}, \\df{", numeratordf, "}, ", pValue, "). ")
+      }
+      
+      # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
+      # nice format of X in Latex via \times
+      stringtowrite <- gsub("X", "\\\\times \\\\", stringtowrite)
+      
+      if(write_to_clipboard){
+        write_clip(stringtowrite)
+      }else{
+        cat(stringtowrite)
       }
     }
   }
