@@ -872,3 +872,51 @@ reportMeanAndSD <- function(main_df, iv = "testiv", dv = "testdv") {
 }
 
 
+
+
+#' Function to define a plot either showing the main or interaction effect in bold.
+#'
+#' @param df 
+#' @param x factor shown on the x-axis
+#' @param y dependent variable
+#' @param fillColourGroup 
+#' @param ytext label for y-axis
+#' @param xtext label for x-axis
+#' @param legendPos position for legend 
+#' @param shownEffect either "main" or "interaction"
+#' @param numberColors  
+#'
+#' @return a plot
+#' @export
+#'
+#' @examples generateEffectPlot(df = main_df, x = "strategy", y = "trust_mean", fillColourGroup = "Emotion", ytext = "Trust", xtext = "Strategy", legendPos = c(0.1,0.23), shownEffect = "interaction")
+generateEffectPlot <- function(df, x, y, fillColourGroup, ytext ="testylab", xtext="testxlab", legendPos = c(0.1,0.23), shownEffect ="main", numberColors = 6) {
+  assertthat::not_empty(df)
+  assertthat::not_empty(x)
+  assertthat::not_empty(y)
+  assertthat::not_empty(fillColourGroup)
+  assertthat::not_empty(shownEffect)
+  
+  p <- df %>% ggplot() +
+    theme_bw(base_size = myfontsize + 1) +
+    aes(x = !!sym(x), y = !!sym(y), fill = !!sym(fillColourGroup), colour = !!sym(fillColourGroup), group = !!sym(fillColourGroup)) +
+    scale_colour_manual(values=wes_palette("Cavalcanti1", n=numberColors, type = "continuous")) + 
+    ylab(ytext) +
+    theme(legend.background = element_blank(), legend.position = legendPos, legend.text = element_text(size = myfontsize - 10)) +
+    xlab(xtext) +
+    stat_summary(fun = mean, geom = "point", size = 6.0) +
+    stat_summary(fun = mean, geom = "point", size = 6.0,  aes(group = 1))
+  
+  if(shownEffect=="main"){
+    p <- p + stat_summary(fun = mean, geom = "line",  size = 2, aes(group = 1)) + stat_summary(fun = mean, geom = "line", linetype = "dashed", size = 1)
+  }else if(shownEffect=="interaction"){
+    p <- p + stat_summary(fun = mean, geom = "line", linetype = "dashed",  size = 1, aes(group = 1)) + stat_summary(fun = mean, geom = "line", size = 2)
+  }else{
+    stop("ERROR: wrong effect defined for visualization.")
+  }
+  
+  return(p)
+  
+}
+
+
