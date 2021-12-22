@@ -615,63 +615,65 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
   assertthat::not_empty(model)
   assertthat::not_empty(dv)
 
-  
-  if (!any(model$`Pr(>F)` < 0.05, na.rm = TRUE)) {
-    if(write_to_clipboard){
-      write_clip(paste0("The NPAV found no significant effects on ", dv, ". "))
-    }else{
-      cat(paste0("The NPAV found no significant effects on ", dv, ". "))
-    }
-
-  }else{
-
-  # there is a significant effect if any value is under 0.05
-  # make the names accessible in a novel column
-  model$descriptions <- rownames(model)
-
-  # no empty space to allow backslash later
-  model$descriptions <- gsub(":", " X", model$descriptions)
-
-
-  for (i in 1:length(model$`Pr(>F)`)) {
-    # Residuals have NA therefore we need this double check
-    if (!is.na(model$`Pr(>F)`[i]) && model$`Pr(>F)`[i] < 0.05) {
-      Fvalue <- round(model$`F value`[i], digits = 2) # round(model$`F value`[i], digits = 2)
-      numeratordf <- model$Df[i]
-
-      # denominator is next with an NA
-      # potential for out of bounds
-      for (k in i:length(model$`Pr(>F)`)) {
-        if (is.na(model$`Pr(>F)`[k])) {
-          denominatordf <- model$Df[k]
-          break
-        }
-      }
-
-      pValueNumeric <- model$`Pr(>F)`[i]
-      if (pValueNumeric < 0.001) {
-        pValue <- paste0("\\pminor{0.001}")
+  if ("Pr(>F)" %!in% colnames(model)) {
+    cat(paste0("No column ``Pr(>F)'' was found. Most likely, you want to use the command reportNPAVChi."))
+  } else {
+    if (!any(model$`Pr(>F)` < 0.05, na.rm = TRUE)) {
+      if (write_to_clipboard) {
+        write_clip(paste0("The NPAV found no significant effects on ", dv, ". "))
       } else {
-        pValue <- paste0("\\p{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
+        cat(paste0("The NPAV found no significant effects on ", dv, ". "))
       }
+    } else {
+
+      # there is a significant effect if any value is under 0.05
+      # make the names accessible in a novel column
+      model$descriptions <- rownames(model)
+
+      # no empty space to allow backslash later
+      model$descriptions <- gsub(":", " X", model$descriptions)
 
 
-      if (str_detect(model$descriptions[i], "X")) {
-        stringtowrite <- paste0("The NPAV found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
-        } else {
-        stringtowrite <- paste0("The NPAV found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
+      for (i in 1:length(model$`Pr(>F)`)) {
+        # Residuals have NA therefore we need this double check
+        if (!is.na(model$`Pr(>F)`[i]) && model$`Pr(>F)`[i] < 0.05) {
+          Fvalue <- round(model$`F value`[i], digits = 2) # round(model$`F value`[i], digits = 2)
+          numeratordf <- model$Df[i]
+
+          # denominator is next with an NA
+          # potential for out of bounds
+          for (k in i:length(model$`Pr(>F)`)) {
+            if (is.na(model$`Pr(>F)`[k])) {
+              denominatordf <- model$Df[k]
+              break
+            }
+          }
+
+          pValueNumeric <- model$`Pr(>F)`[i]
+          if (pValueNumeric < 0.001) {
+            pValue <- paste0("\\pminor{0.001}")
+          } else {
+            pValue <- paste0("\\p{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
+          }
+
+
+          if (str_detect(model$descriptions[i], "X")) {
+            stringtowrite <- paste0("The NPAV found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
+          } else {
+            stringtowrite <- paste0("The NPAV found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
+          }
+
+          # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
+          # nice format of X in Latex via \times
+          stringtowrite <- gsub("X", "$\\\\times$ \\\\", stringtowrite)
+
+          if (write_to_clipboard) {
+            write_clip(stringtowrite)
+          } else {
+            cat(stringtowrite)
+          }
         }
-      
-      # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
-      # nice format of X in Latex via \times
-      stringtowrite <- gsub("X", "$\\\\times$ \\\\", stringtowrite)
-      
-      if(write_to_clipboard){
-        write_clip(stringtowrite)
-      }else{
-        cat(stringtowrite)
       }
-    }
     }
   }
 }
