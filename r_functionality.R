@@ -795,7 +795,7 @@ reportNparLD <- function(model, dv = "Testdependentvariable", write_to_clipboard
   assertthat::not_empty(dv)
 
   # first retrieve relevant subset
-  #model <- as.data.frame(example$ANOVA.test)
+  model <- as.data.frame(example$ANOVA.test)
 
   if (!any(model$`p-value` < 0.05, na.rm = TRUE)) {
     cat(paste0("The NPAV found no significant effects on ", dv, ". "))
