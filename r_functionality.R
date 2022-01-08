@@ -73,7 +73,7 @@ if (havingIP()) {
   
   if(!is.null(numberOldPackages) && numberOldPackages > 0){
     warning("YOU HAVE TO UPDATE PACKAGES as ", numberOldPackages, " are outdated!")
-    warning(old.packages()[, c("Package")])
+    warning(paste(old.packages()[, c("Package")], collapse=", "))
   }else{
     message("All packages are up-to-date.")
   }
