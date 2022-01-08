@@ -17,9 +17,11 @@ library(pacman)
 #read_xslx delivers a tibble
 #read.xslx a data.frame, therefore, this is needed: main_df <- as.data.frame(main_df) after using read_xslx
 
-pacman::p_load(clipr, readxl, tidyverse, Cairo, rstatix, nparLD, FSA, PMCMRplus, report, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler)
+pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, rstatix, nparLD, FSA, PMCMRplus, report, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler)
 
 # library(showtext)
+
+source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
 
 # don't use scientific notation
 options(scipen = 999)
