@@ -160,7 +160,7 @@ checkPackageVersions <- function() {
     print("updateR()!")
   }
 
-  if (packageVersion("effectsize") >= "0.5.0") {
+  if (packageVersion("effectsize") >= "0.6.0") {
     print("effectsize OK!")
   } else {
     print("update effectsize!")
