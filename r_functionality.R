@@ -309,7 +309,7 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   
   #y_positions_asterisks <- recode(df$asterisk_label, "NA=0.0; else=7.50") # 
   # adjust to maximum value in the dataset
-  lowestNumberText <- paste0("NA=0.0; else=", toString(round(max(data[[y]]), digits = 2)))
+  lowestNumberText <- paste0("NA=0.0; else=", toString(round((max(data[[y]]) + 0.5), digits = 2)))
   y_positions_asterisks <- recode(df$asterisk_label, recodes = lowestNumberText)
   
   
