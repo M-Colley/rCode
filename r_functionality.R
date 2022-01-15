@@ -17,7 +17,7 @@ library(pacman)
 #read_xslx delivers a tibble
 #read.xslx a data.frame, therefore, this is needed: main_df <- as.data.frame(main_df) after using read_xslx
 
-pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, rstatix, nparLD, FSA, PMCMRplus, report, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler, pastecs)
+pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, rstatix, nparLD, FSA, PMCMRplus, report, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler, pastecs, car)
 
 # library(showtext)
 
@@ -183,12 +183,13 @@ checkPackageVersions <- function() {
 #' @param ylab label to be shown for the dependent variable
 #' @param xlabels labels to be used for the x-axis
 #' @showPairwiseComp whether to show pairwise comparisons, TRUE as default
+#' @plotType either "box", "violin", or "boxviolin" (default)
 #'
 #' @return
 #' @export
 #'
-#' @examples ggwithinstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE)
-ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, showPairwiseComp = TRUE) {
+#' @examples ggwithinstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE, plotType = "boxviolin")
+ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, showPairwiseComp = TRUE, plotType = "boxviolin") {
   assertthat::not_empty(data)
   assertthat::not_empty(x)
   assertthat::not_empty(y)
@@ -227,12 +228,13 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
 #' @param ylab label to be shown for the dependent variable
 #' @param xlabels labels to be used for the x-axis
 #' @showPairwiseComp whether to show pairwise comparisons, TRUE as default
+#' @plotType either "box", "violin", or "boxviolin" (default)
 #'
 #' @return
 #' @export
 #'
-#' @examples ggbetweenstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE)
-ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, showPairwiseComp = TRUE) {
+#' @examples ggbetweenstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE, plotType = "boxviolin")
+ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, showPairwiseComp = TRUE, plotType = "boxviolin") {
   assertthat::not_empty(data)
   assertthat::not_empty(x)
   assertthat::not_empty(y)
@@ -255,13 +257,87 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
 
   ggstatsplot::ggbetweenstats(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp,
-    centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey",
+    centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
     p.adjust.method = "bonferroni", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
 }
 
 
+#' Check the data's distribution. If non-normal, take the non-parametric variant of *ggbetweenstats*.
+#' x and y have to be in parantheses, e.g., "ConditionID".
+#'
+#' @param data
+#' @param x the independent variable, most likely "ConditionID"
+#' @param y the dependent variable under investigation
+#' @param ylab label to be shown for the dependent variable
+#' @param xlabels labels to be used for the x-axis
+#' @showPairwiseComp whether to show pairwise comparisons, TRUE as default
+#' @plotType either "box", "violin", or "boxviolin" (default)
+#'
+#' @return
+#' @export
+#'
+#' @examples ggbetweenstatsWithPriorNormalityCheckAsterisk(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE, plotType = "boxviolin")
 
+ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabels, plotType = "boxviolin") {
+  assertthat::not_empty(data)
+  assertthat::not_empty(x)
+  assertthat::not_empty(y)
+  assertthat::not_empty(ylab)
+  assertthat::not_empty(xlabels)
+  
+  normality_test <- with(data, tapply(data[[y]], data[[x]], shapiro.test))
+  normallyDistributed <- TRUE
+  for (i in normality_test) {
+    if (!is.null(i)) {
+      if (i$p.value < 0.05) {
+        # print("You have to take the non-parametric test.")
+        normallyDistributed <- FALSE
+        break
+      }
+    }
+  }
+  
+  type <- ifelse(normallyDistributed, "p", "np")
+  
+  
+  (df <-
+      pairwise_comparisons(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "bonferroni") %>%
+      dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) %>%
+      dplyr::arrange(group1) %>%
+      dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
+  
+  y_positions_asterisks <- recode(df$asterisk_label, "NA=0.0; else=7.50")
+  
+  count <- 0
+  for (i in 1:length(y_positions_asterisks)) {
+    if(y_positions_asterisks[i] != 0.0){
+      y_positions_asterisks[i] <- y_positions_asterisks[i] + count * 0.25
+      #print(y_positions_asterisks[i])
+      count = count+1
+    }
+  }
+  
+  
+  p <- ggstatsplot::ggbetweenstats(
+    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = FALSE,
+    centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
+    p.adjust.method = "bonferroni", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
+  ) + scale_x_discrete(labels = xlabels)
+  
+  p + ggsignif::geom_signif(
+      comparisons = df$groups,
+      map_signif_level = TRUE,
+      annotations = df$asterisk_label,
+      y_position = y_positions_asterisks,
+      size = 0.45, # 0.5 is default
+      textsize = 3.90, # 3.88 is default
+      fontface = "bold",
+      test = NULL,
+      na.rm = TRUE
+    )
+  
+}
 
 
 #' Calculation based on Rosenthals formula (1994). N stands for the *number of measurements*.
