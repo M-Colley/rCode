@@ -182,12 +182,12 @@ checkPackageVersions <- function() {
 #' @param y the dependent variable under investigation
 #' @param ylab label to be shown for the dependent variable
 #' @param xlabels labels to be used for the x-axis
-#' @showPairwirseComp whether to show pairwise comparisons, TRUE as default
+#' @showPairwiseComp whether to show pairwise comparisons, TRUE as default
 #'
 #' @return
 #' @export
 #'
-#' @examples ggwithinstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwirseComp = TRUE)
+#' @examples ggwithinstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE)
 ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels) {
   assertthat::not_empty(data)
   assertthat::not_empty(x)
@@ -211,7 +211,7 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels) {
   type <- ifelse(normallyDistributed, "p", "np")
 
   ggstatsplot::ggwithinstats(
-    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwirseComp,
+    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey",
     p.adjust.method = "bonferroni", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
@@ -226,12 +226,12 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels) {
 #' @param y the dependent variable under investigation
 #' @param ylab label to be shown for the dependent variable
 #' @param xlabels labels to be used for the x-axis
-#' @showPairwirseComp whether to show pairwise comparisons, TRUE as default
+#' @showPairwiseComp whether to show pairwise comparisons, TRUE as default
 #'
 #' @return
 #' @export
 #'
-#' @examples ggbetweenstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwirseComp = TRUE)
+#' @examples ggbetweenstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE)
 ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels) {
   assertthat::not_empty(data)
   assertthat::not_empty(x)
@@ -254,7 +254,7 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels) {
   type <- ifelse(normallyDistributed, "p", "np")
 
   ggstatsplot::ggbetweenstats(
-    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwirseComp,
+    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey",
     p.adjust.method = "bonferroni", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
