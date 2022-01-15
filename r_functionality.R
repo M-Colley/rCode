@@ -307,7 +307,11 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
       dplyr::arrange(group1) %>%
       dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
   
-  y_positions_asterisks <- recode(df$asterisk_label, "NA=0.0; else=7.50")
+  #y_positions_asterisks <- recode(df$asterisk_label, "NA=0.0; else=7.50") # 
+  # adjust to maximum value in the dataset
+  lowestNumberText <- paste0("NA=0.0; else=", toString(round(max(data[[y]]), digits = 2)))
+  y_positions_asterisks <- recode(df$asterisk_label, recodes = lowestNumberText)
+  
   
   count <- 0
   for (i in 1:length(y_positions_asterisks)) {
