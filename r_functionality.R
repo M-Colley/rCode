@@ -20,6 +20,7 @@ library(pacman)
 pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, rstatix, nparLD, FSA, PMCMRplus, report, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler, pastecs, car)
 
 # library(showtext)
+theme_set(theme_bw())
 
 source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
 
