@@ -1074,3 +1074,70 @@ generateEffectPlot <- function(df, x, y, fillColourGroup, ytext ="testylab", xte
 }
 
 
+
+
+#' Report dunnTest as text. Required commands in Latex:
+# \newcommand{\padjminor}{\textit{p$_{adj}<$}}
+# \newcommand{\padj}{\textit{p$_{adj}$=}}
+#'
+#' @param main_df 
+#' @param d 
+#' @param iv 
+#' @param dv 
+#'
+#' @return
+#' @export
+#'
+#' @examples reportDunnTest(main_df, d, iv = "scene", dv = "NASATLX")
+#' # d <- dunnTest(NASATLX ~ scene, data = main_df, method = "bonferroni")
+reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
+  assertthat::not_empty(main_df)
+  assertthat::not_empty(iv)
+  assertthat::not_empty(dv)
+
+  if (!any(d$res$P.adj < 0.05, na.rm = TRUE)) {
+    cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
+  }
+
+
+  for (i in 1:length(d$res$P.adj)) {
+    # Residuals have NA therefore we need this double check
+    if (!is.na(d$res$P.adj[i]) && d$res$P.adj[i] < 0.05) {
+
+      # first get p-value
+      pValueNumeric <- d$res$P.adj[i]
+
+      if (pValueNumeric < 0.001) {
+        pValue <- paste0("\\padjminor{0.001}")
+      } else {
+        pValue <- paste0("\\padj{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
+      }
+
+      # next, get comparison
+
+      firstCondition <- strsplit(d$res$Comparison[i], " - ", fixed = T)[[1]][1]
+      secondCondition <- strsplit(d$res$Comparison[i], " - ", fixed = T)[[1]][2]
+
+      valueOne <- main_df %>%
+        filter(scene == firstCondition) %>%
+        summarise(across(dv, list(mean = mean, sd = sd)))
+      firstCondtionValues <- paste0("(\\m{", sprintf("%.2f", round(valueOne[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueOne[[2]], digits = 2)), "})")
+
+      valueTwo <- main_df %>%
+        filter(scene == secondCondition) %>%
+        summarise(across(dv, list(mean = mean, sd = sd)))
+      secondCondtionValues <- paste0("(\\m{", sprintf("%.2f", round(valueTwo[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueTwo[[2]], digits = 2)), "})")
+
+      # firstCondition bigger than second
+      if (valueOne[[1]][1] > valueTwo[[1]][1]) {
+        stringtowrite <- paste0("A post-hoc test using Dunn's test found that ", trimws(firstCondition), " was significantly higher ", firstCondtionValues, " in terms of \\", dv, " compared to ", secondCondition, secondCondtionValues, "(", pValue, "). ")
+      } else {
+        stringtowrite <- paste0("A post-hoc test using Dunn's test found that ", trimws(secondCondition), " was significantly higher ", secondCondtionValues, " in terms of \\", dv, " compared to ", firstCondition, firstCondtionValues, "(", pValue, "). ")
+      }
+      cat(stringtowrite)
+    }
+  }
+}
+
+
+
