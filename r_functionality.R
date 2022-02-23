@@ -1092,6 +1092,7 @@ generateEffectPlot <- function(df, x, y, fillColourGroup, ytext ="testylab", xte
 #' # d <- dunnTest(NASATLX ~ scene, data = main_df, method = "bonferroni")
 reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
   assertthat::not_empty(main_df)
+  assertthat::not_empty(d)
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
 
