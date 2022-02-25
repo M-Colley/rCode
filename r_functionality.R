@@ -451,7 +451,8 @@ rFromWilcoxAdjusted <- function(wilcoxModel, N, adjustFactor) {
 
 
 #' Calculation based on Rosenthals formula (1994). N stands for the *number of measurements*.
-#'
+#' Necessary command:
+# \newcommand{\effectsize}{\textit{r=}}
 #' @param pvalue
 #' @param N
 #'
@@ -465,7 +466,13 @@ rFromNPAV <- function(pvalue, N) {
 
   z <- qnorm(pvalue / 2)
   r <- z / sqrt(N)
-  cat("Effect Size, r= ", round(x = r, digits = 3), " z= ", z)
+  
+  stringtowrite <- paste0("\\effectsize{", +round(x = r, digits = 3),"}, Z=", z)
+  stringtowrite <- trimws(stringtowrite)
+  cat(stringtowrite)
+  #cat("Effect Size, r= ", round(x = r, digits = 3), " z= ", z)
+  
+  #cat("Effect Size, r= ", round(x = r, digits = 3), " z= ", z)
 }
 
 
