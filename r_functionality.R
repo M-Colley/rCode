@@ -467,7 +467,7 @@ rFromNPAV <- function(pvalue, N) {
   z <- qnorm(pvalue / 2)
   r <- z / sqrt(N)
   
-  stringtowrite <- paste0("\\effectsize{", +round(x = r, digits = 3),"}, Z=", z)
+  stringtowrite <- paste0("\\effectsize{", +round(x = r, digits = 3),"}, Z=",  round(x = z, digits = 2))
   stringtowrite <- trimws(stringtowrite)
   cat(stringtowrite)
   #cat("Effect Size, r= ", round(x = r, digits = 3), " z= ", z)
