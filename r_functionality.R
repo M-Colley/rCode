@@ -17,7 +17,7 @@ library(pacman)
 #read_xslx delivers a tibble
 #read.xslx a data.frame, therefore, this is needed: main_df <- as.data.frame(main_df) after using read_xslx
 
-pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, rstatix, nparLD, FSA, PMCMRplus, report, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler, pastecs, car)
+pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, rstatix, nparLD, FSA, PMCMRplus, report, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler, pastecs, car, dunn.test, xtable)
 
 # library(showtext)
 theme_set(theme_bw())
@@ -1144,6 +1144,51 @@ reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
       }
       cat(stringtowrite)
     }
+  }
+}
+
+
+
+#' report Dunn test as a table.
+#'
+#' @param main_df 
+#' @param iv 
+#' @param dv 
+#' @param order 
+#' @param numberDigitsForPValue 
+#' @param latexSize 
+#'
+#' @return
+#' @export
+#'
+#' @examples
+reportDunnTestTable <- function(main_df, iv = "testiv", dv = "testdv", order = FALSE, numberDigitsForPValue = 4, latexSize = "small"){
+  assertthat::not_empty(main_df)
+  assertthat::not_empty(iv)
+  assertthat::not_empty(dv)
+  
+  table <- dunn.test(main_df[[dv]], main_df[[iv]], method = "bonferroni", list=TRUE)
+  table <- cbind.data.frame(table$comparisons,table$Z,table$P.adjusted)
+  
+  # only show significant ones
+  table <- subset(table, `table$P.adjusted` < 0.05)
+  
+  if(order){
+    table <- table[order(table$`table$P.adjusted`),]
+  }
+  
+  #rename
+  names(table)[names(table) == 'table$P.adjusted'] <- 'p-adjusted'
+  names(table)[names(table) == 'table$Z'] <- 'Z'
+  names(table)[names(table) == 'table$comparisons'] <- 'Comparison'
+  
+
+  if (!any(table$`p-adjusted` < 0.05, na.rm = TRUE)) {
+    cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
+  }else{
+    
+    print(xtable(table, digits = c(4,4,4,numberDigitsForPValue), caption = paste0("Post-hoc comparisons for \\", iv), label = paste0("tab:posthoc-", iv), ), type = "latex", size = latexSize, include.rownames=FALSE)
+    
   }
 }
 
