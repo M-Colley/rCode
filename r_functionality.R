@@ -1149,7 +1149,7 @@ reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
 
 
 
-#' report Dunn test as a table.
+#' report Dunn test as a table. Customizable with sensible defaults.
 #'
 #' @param main_df 
 #' @param iv 
@@ -1161,7 +1161,7 @@ reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
 #' @return
 #' @export
 #'
-#' @examples
+#' @examples reportDunnTestTable(main_df, iv = "scene" , dv = "NASATLX")
 reportDunnTestTable <- function(main_df, iv = "testiv", dv = "testdv", order = FALSE, numberDigitsForPValue = 4, latexSize = "small"){
   assertthat::not_empty(main_df)
   assertthat::not_empty(iv)
