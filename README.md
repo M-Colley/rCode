@@ -71,13 +71,13 @@ Necessary commands in LaTeX are:
 \newcommand{\sd}{\textit{SD=}}  
 
 ### `reportDunnTest`
-This function reports a FSA::dunnTest object as text.   
+This function reports a {FSA::dunnTest} object as text.   
 Required commands in Latex:  
 \newcommand{\padjminor}{\textit{p$_{adj}<$}}  
 \newcommand{\padj}{\textit{p$_{adj}$=}}  
 
 ### `reportDunnTestTable`
-This function reports post-hoc Dunn tests as a LaTex table. Is used the dunn.test::dunn.test function with Bonferroni-correction.
+This function reports post-hoc Dunn tests as a LaTex table. It uses the {dunn.test::dunn.test} function with Bonferroni-correction.
 
 
 
