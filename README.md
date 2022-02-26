@@ -7,14 +7,13 @@ Heavily builds on great other packages such as:
 - [nparLD](https://cran.r-project.org/web/packages/nparLD/nparLD.pdf)
 - work by Dr. Haiko Luepsen on [non-parametric variance analyses](http://www.uni-koeln.de/~luepsen/R/)
 
-In case of questions or remarks, please contact me via [e-mail](mailto:mark.colley@uni-ulm.de?subject=[GitHub]%20Source%20rCode)
 
 
 ## Installation
 
 | Type        | Command                                                 |
 |-------------|---------------------------------------------------------|                  
-| Development | `source_url("https://raw.githubusercontent.com/M-Colley/rCode/main/r_functionality.R")` |
+| Development | `devtools::source_url("https://raw.githubusercontent.com/M-Colley/rCode/main/r_functionality.R")` |
 
 ## Summary of benefits 
 
@@ -79,3 +78,11 @@ This function reports a FSA::dunnTest object as text. Required commands in Latex
 ### `reportDunnTestTable`
 This function reports post-hoc Dunn tests as a LaTex table. Is used the dunn.test::dunn.test function with Bonferroni-correction.
 
+
+
+
+
+
+
+
+In case of questions or remarks, please contact me via [e-mail](mailto:mark.colley@uni-ulm.de?subject=[GitHub]%20Source%20rCode)
