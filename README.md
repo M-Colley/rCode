@@ -71,7 +71,8 @@ Necessary commands in LaTeX are:
 \newcommand{\sd}{\textit{SD=}}  
 
 ### `reportDunnTest`
-This function reports a FSA::dunnTest object as text. Required commands in Latex:
+This function reports a FSA::dunnTest object as text.   
+Required commands in Latex:  
 \newcommand{\padjminor}{\textit{p$_{adj}<$}}  
 \newcommand{\padj}{\textit{p$_{adj}$=}}  
 
