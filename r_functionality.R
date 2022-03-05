@@ -45,6 +45,11 @@ na.zero <- function (x) {
   return(x)
 }
 
+# for label of number of data points
+n_fun <- function(x){
+  return(data.frame(y = median(x), label = paste0("n = ",length(x))))
+}
+
 
 #' Check whether Internet connection is present.
 #'
