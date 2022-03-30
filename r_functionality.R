@@ -17,7 +17,7 @@ library(pacman)
 #read_xslx delivers a tibble
 #read.xslx a data.frame, therefore, this is needed: main_df <- as.data.frame(main_df) after using read_xslx
 
-pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, rstatix, nparLD, FSA, PMCMRplus, report, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler, pastecs, car, dunn.test, xtable)
+pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, rstatix, nparLD, FSA, PMCMRplus, report, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler, pastecs, car, dunn.test, xtable, rstantools)
 
 # library(showtext)
 theme_set(theme_bw())
