@@ -1132,12 +1132,12 @@ reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
       secondCondition <- strsplit(d$res$Comparison[i], " - ", fixed = T)[[1]][2]
 
       valueOne <- main_df %>%
-        filter(scene == firstCondition) %>%
+        filter(iv == firstCondition) %>%
         summarise(across(dv, list(mean = mean, sd = sd)))
       firstCondtionValues <- paste0("(\\m{", sprintf("%.2f", round(valueOne[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueOne[[2]], digits = 2)), "})")
 
       valueTwo <- main_df %>%
-        filter(scene == secondCondition) %>%
+        filter(iv == secondCondition) %>%
         summarise(across(dv, list(mean = mean, sd = sd)))
       secondCondtionValues <- paste0("(\\m{", sprintf("%.2f", round(valueTwo[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueTwo[[2]], digits = 2)), "})")
 
