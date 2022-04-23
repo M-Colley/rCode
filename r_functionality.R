@@ -156,17 +156,18 @@ stat_sum_df <- function(fun, geom = "crossbar", ...) {
 
 
 
-#' Checking the version of R (>= 4.1.3) and effectsize as well as ggstatsplot. If not appropriate, a message for the user is generated.
+#' Checking the version of R (>= 4.2.0) and effectsize as well as ggstatsplot. If not appropriate, a message for the user is generated.
 #'
 #' @return
 #' @export
 #'
 #' @examples
 checkPackageVersions <- function() {
-  if (R.version.string >= "4.1.3") {
+  if (R.version.string >= "4.2.0") {
     print("R Version OK!")
   } else {
     print("updateR()!")
+    print("Attention: novel version of RTools is required!")
   }
 
   if (packageVersion("effectsize") >= "0.6.0") {
