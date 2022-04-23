@@ -1035,7 +1035,7 @@ reportMeanAndSD <- function(main_df, iv = "testiv", dv = "testdv") {
   for(i in 1:nrow(test)) {
     row <- test[i,]
     # do stuff with row
-    cat(paste0(row[[1]], ": \\m{",  sprintf("%.2f", round(row[[2]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(row[[3]], digits = 2)), "}\n")) 
+    cat(paste0("%", row[[1]], ": \\m{",  sprintf("%.2f", round(row[[2]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(row[[3]], digits = 2)), "}\n")) 
   }
   
   
