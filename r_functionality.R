@@ -1131,18 +1131,17 @@ reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
       }
 
       # next, get comparison
-
       firstCondition <- strsplit(d$res$Comparison[i], " - ", fixed = T)[[1]][1]
       secondCondition <- strsplit(d$res$Comparison[i], " - ", fixed = T)[[1]][2]
 
       valueOne <- main_df %>%
-        filter(iv == firstCondition) %>%
-        summarise(across(dv, list(mean = mean, sd = sd)))
+        filter(!!sym(iv) == firstCondition) %>%
+        summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       firstCondtionValues <- paste0("(\\m{", sprintf("%.2f", round(valueOne[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueOne[[2]], digits = 2)), "})")
 
       valueTwo <- main_df %>%
-        filter(iv == secondCondition) %>%
-        summarise(across(dv, list(mean = mean, sd = sd)))
+        filter(!!sym(iv) == secondCondition) %>%
+        summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       secondCondtionValues <- paste0("(\\m{", sprintf("%.2f", round(valueTwo[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueTwo[[2]], digits = 2)), "})")
 
       # firstCondition bigger than second
