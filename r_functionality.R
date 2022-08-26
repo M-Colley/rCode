@@ -1146,9 +1146,9 @@ reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
 
       # firstCondition bigger than second
       if (valueOne[[1]][1] > valueTwo[[1]][1]) {
-        stringtowrite <- paste0("A post-hoc test using Dunn's test found that ", trimws(firstCondition), " was significantly higher ", firstCondtionValues, " in terms of \\", dv, " compared to ", secondCondition, secondCondtionValues, "(", pValue, "). ")
+        stringtowrite <- paste0("A post-hoc test found that ", trimws(firstCondition), " was significantly higher ", firstCondtionValues, " in terms of \\", dv, " compared to ", secondCondition, secondCondtionValues, " (", pValue, "). ")
       } else {
-        stringtowrite <- paste0("A post-hoc test using Dunn's test found that ", trimws(secondCondition), " was significantly higher ", secondCondtionValues, " in terms of \\", dv, " compared to ", firstCondition, firstCondtionValues, "(", pValue, "). ")
+        stringtowrite <- paste0("A post-hoc test found that ", trimws(secondCondition), " was significantly higher ", secondCondtionValues, " in terms of \\", dv, " compared to ", firstCondition, firstCondtionValues, " (", pValue, "). ")
       }
       cat(stringtowrite)
     }
