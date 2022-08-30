@@ -1,6 +1,8 @@
 # enhance reproducibility
 usethis::use_blank_slate()
 
+# enforce everybody to use latest R versions of easystats packages
+easystats::install_latest()
 
 # For documentation: To insert a documentation skeleton in RStudio use Ctrl + Alt + Shift + R
 
@@ -20,7 +22,9 @@ library(pacman)
 # afex: necessary for ggstatsplot
 # Hmisc: necessary for mean_cl_normal --> 95% confidence intervals
 
-pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, rstatix, nparLD, afex, Hmisc, FSA, PMCMRplus, report, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler, pastecs, car, dunn.test, xtable, rstantools)
+pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, rstatix, nparLD, afex, Hmisc, FSA, PMCMRplus, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler, pastecs, car, dunn.test, xtable, rstantools)
+# use wrapper for easystats
+library(easystats)
 
 # library(showtext)
 theme_set(theme_bw())
