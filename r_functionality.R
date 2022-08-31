@@ -1141,18 +1141,18 @@ reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
       valueOne <- main_df %>%
         filter(!!sym(iv) == firstCondition) %>%
         summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
-      firstCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueOne[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueOne[[2]], digits = 2)), "})")
+      firstCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueOne[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueOne[[2]], digits = 2)), "}")
 
       valueTwo <- main_df %>%
         filter(!!sym(iv) == secondCondition) %>%
         summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
-      secondCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueTwo[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueTwo[[2]], digits = 2)), "})")
+      secondCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueTwo[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueTwo[[2]], digits = 2)), "}")
 
       # firstCondition bigger than second
       if (valueOne[[1]][1] > valueTwo[[1]][1]) {
-        stringtowrite <- paste0("A post-hoc test found that ", trimws(firstCondition), " was significantly higher ", firstCondtionValues, " in terms of \\", dv, " compared to ", secondCondition, secondCondtionValues, " (", pValue, "). ")
+        stringtowrite <- paste0("A post-hoc test found that ", trimws(firstCondition), " was significantly higher ", firstCondtionValues, ") in terms of \\", dv, " compared to ", secondCondition, secondCondtionValues, " ;", pValue, "). ")
       } else {
-        stringtowrite <- paste0("A post-hoc test found that ", trimws(secondCondition), " was significantly higher ", secondCondtionValues, " in terms of \\", dv, " compared to ", firstCondition, firstCondtionValues, " (", pValue, "). ")
+        stringtowrite <- paste0("A post-hoc test found that ", trimws(secondCondition), " was significantly higher ", secondCondtionValues, ") in terms of \\", dv, " compared to ", firstCondition, firstCondtionValues, " ;", pValue, "). ")
       }
       cat(stringtowrite)
     }
