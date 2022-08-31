@@ -1200,7 +1200,7 @@ reportDunnTestTable <- function(main_df, iv = "testiv", dv = "testdv", order = F
   }else{
     
     print(xtable(table, digits = c(4,4,4,numberDigitsForPValue), caption = paste0("Post-hoc comparisons for independent variable \\", iv, " and dependent variable \\", dv, ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true."), label = paste0("tab:posthoc-", iv), ), type = "latex", size = latexSize, caption.placement = "top", include.rownames=FALSE)
-    message("Reminder: adjust all 0.000 to command padjminor{0.001}.")
+    message("Reminder: adjust all 0.000 to command \\padjminor{0.001}.")
   }
 }
 
