@@ -1174,7 +1174,7 @@ reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
 #' @export
 #'
 #' @examples reportDunnTestTable(main_df, iv = "scene" , dv = "NASATLX")
-reportDunnTestTable <- function(main_df, iv = "testiv", dv = "testdv", order = FALSE, numberDigitsForPValue = 4, latexSize = "small", orderText = FALSE){
+reportDunnTestTable <- function(main_df, iv = "testiv", dv = "testdv", order = FALSE, numberDigitsForPValue = 4, latexSize = "small", orderText = TRUE){
   assertthat::not_empty(main_df)
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
