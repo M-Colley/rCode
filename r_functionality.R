@@ -22,7 +22,7 @@ library(pacman)
 # afex: necessary for ggstatsplot
 # Hmisc: necessary for mean_cl_normal --> 95% confidence intervals
 
-pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, plyr, rstatix, nparLD, afex, Hmisc, FSA, PMCMRplus, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler, pastecs, car, dunn.test, xtable, rstantools)
+pacman::p_load(devtools, clipr, readxl, tidyverse, Cairo, rstatix, nparLD, afex, Hmisc, FSA, PMCMRplus, psych, RColorBrewer, pals, wesanderson, ggstatsplot, styler, pastecs, car, dunn.test, xtable, rstantools)
 # use wrapper for easystats
 library(easystats)
 
