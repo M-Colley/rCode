@@ -1190,7 +1190,7 @@ reportDunnTestTable <- function(main_df, iv = "testiv", dv = "testdv", order = F
   }
   
   if(orderText){
-    table <- arrange(table, Comparison)
+    table <- arrange(table, comparisons)
   }
   
   #rename
