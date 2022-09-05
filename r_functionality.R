@@ -1190,8 +1190,9 @@ reportDunnTestTable <- function(main_df, iv = "testiv", dv = "testdv", order = F
   }
   
   if(orderText){
-    table <- arrange(table, comparisons)
+    table <- table[order(table$`table$comparisons`),]
   }
+  
   
   #rename
   names(table)[names(table) == 'table$P.adjusted'] <- 'p-adjusted'
