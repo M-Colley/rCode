@@ -174,12 +174,12 @@ checkPackageVersions <- function() {
     print("Attention: novel version of RTools is required!")
   }
 
-  if (packageVersion("effectsize") >= "0.7.0") {
+  if (packageVersion("effectsize") >= "0.8.0") {
     print("effectsize OK!")
   } else {
     print("update effectsize!")
   }
-  if (packageVersion("ggstatsplot") >= "0.9.4") {
+  if (packageVersion("ggstatsplot") >= "0.9.5") {
     print("ggstatsplot OK!")
   } else {
     print("update ggstatsplot!")
