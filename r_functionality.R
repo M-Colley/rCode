@@ -952,7 +952,84 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
 }
 
 
-
+#' Generate the Latex-text based on the ARTool (see \url{https://github.com/mjskay/ARTool}). The ART result must be piped into an anova().
+#' Only significant main and interaction effects are reported.
+#' P-values are rounded for the third digit.
+#' Attention: Effect sizes are not calculated!
+#' Attention: the independent variables of the formula and the term specifying the participant must be factors (i.e., use as.factor()).
+#'
+#' To easily copy and paste the results to your manuscript, the following commands must be defined in Latex:
+#' \newcommand{\F}[3]{$F({#1},{#2})={#3}$}
+#' \newcommand{\p}{\textit{p=}}
+#' \newcommand{\pminor}{\textit{p$<$}}
+#'
+#' @param model the model of the art
+#' @param dv the name of the dependent variable that should be reported
+#'
+#' @return
+#' @export
+#'
+#' @examples model <- art(formula = tlx_mental ~ Video * DriverPosition * gesture * eHMI + Error(UserID / (gesture * eHMI)), data = main_df) |> anova()
+#' reportART(model, "mental workload")
+reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE) {
+  assertthat::not_empty(model)
+  assertthat::not_empty(dv)
+  
+  if ("Pr(>F)" %!in% colnames(model)) {
+    cat(paste0("No column ``Pr(>F)'' was found."))
+  } else {
+    if (!any(model$`Pr(>F)` < 0.05, na.rm = TRUE)) {
+      if (write_to_clipboard) {
+        write_clip(paste0("The ART found no significant effects on ", dv, ". "))
+      } else {
+        cat(paste0("The ART found no significant effects on ", dv, ". "))
+      }
+    } else {
+      
+      # there is a significant effect if any value is under 0.05
+      # make the names accessible in a novel column
+      model$descriptions <- model[,1]
+      
+      # no empty space to allow backslash later
+      model$descriptions <- gsub(":", " X", model$descriptions)
+      
+      
+      for (i in 1:length(model$`Pr(>F)`)) {
+        # Residuals have NA therefore we need this double check
+        if (!is.na(model$`Pr(>F)`[i]) && model$`Pr(>F)`[i] < 0.05) {
+          Fvalue <- round(model$`F value`[i], digits = 2) # round(model$`F value`[i], digits = 2)
+          numeratordf <- model$Df[i]
+          denominatordf <- model$Df.res[i]
+          
+          
+          pValueNumeric <- model$`Pr(>F)`[i]
+          if (pValueNumeric < 0.001) {
+            pValue <- paste0("\\pminor{0.001}")
+          } else {
+            pValue <- paste0("\\p{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
+          }
+          
+          
+          if (str_detect(model$descriptions[i], "X")) {
+            stringtowrite <- paste0("The ART found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
+          } else {
+            stringtowrite <- paste0("The ART found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
+          }
+          
+          # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
+          # nice format of X in Latex via \times
+          stringtowrite <- gsub("X", "$\\\\times$ \\\\", stringtowrite)
+          
+          if (write_to_clipboard) {
+            write_clip(stringtowrite)
+          } else {
+            cat(stringtowrite)
+          }
+        }
+      }
+    }
+  }
+}
 
 
 
