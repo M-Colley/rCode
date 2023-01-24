@@ -246,7 +246,7 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
   ggstatsplot::ggwithinstats(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey",
-    p.adjust.method = "bonferroni", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
+    p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
 }
 
@@ -290,7 +290,7 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
   ggstatsplot::ggbetweenstats(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
-    p.adjust.method = "bonferroni", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
+    p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
 }
 
@@ -334,7 +334,7 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   
   
   (df <-
-      pairwise_comparisons(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "bonferroni") %>%
+      pairwise_comparisons(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") %>%
       dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) %>%
       dplyr::arrange(group1) %>%
       dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
@@ -358,7 +358,7 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   p <- ggstatsplot::ggbetweenstats(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = FALSE,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
-    p.adjust.method = "bonferroni", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
+    p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
   
   p + ggsignif::geom_signif(
@@ -399,7 +399,7 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
   
   
   (df <-
-      pairwise_comparisons(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "bonferroni") %>%
+      pairwise_comparisons(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") %>%
       dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) %>%
       dplyr::arrange(group1) %>%
       dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
@@ -423,7 +423,7 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
   p <- ggstatsplot::ggwithinstats(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = FALSE,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
-    p.adjust.method = "bonferroni", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
+    p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
   
   p + ggsignif::geom_signif(
@@ -1204,7 +1204,7 @@ generateEffectPlot <- function(df, x, y, fillColourGroup, ytext ="testylab", xte
 #' @export
 #'
 #' @examples reportDunnTest(main_df, d, iv = "scene", dv = "NASATLX")
-#' # d <- dunnTest(NASATLX ~ scene, data = main_df, method = "bonferroni")
+#' # d <- dunnTest(NASATLX ~ scene, data = main_df, method = "holm")
 reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
   assertthat::not_empty(main_df)
   assertthat::not_empty(d)
@@ -1274,7 +1274,7 @@ reportDunnTestTable <- function(main_df, iv = "testiv", dv = "testdv", order = F
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
   
-  table <- dunn.test(main_df[[dv]], main_df[[iv]], method = "bonferroni", list=TRUE)
+  table <- dunn.test(main_df[[dv]], main_df[[iv]], method = "holm", list=TRUE)
   table <- cbind.data.frame(table$comparisons,table$Z,table$P.adjusted)
   
   # only show significant ones
