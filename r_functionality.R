@@ -6,13 +6,6 @@ easystats::install_latest()
 
 # For documentation: To insert a documentation skeleton in RStudio use Ctrl + Alt + Shift + R
 
-
-
-# install.packages("extrafont")
-# library(extrafont)
-# font_import()
-# loadfonts()
-
 #read_xslx delivers a tibble
 #read.xslx a data.frame, therefore, this is needed: main_df <- as.data.frame(main_df) after using read_xslx
 
@@ -192,7 +185,7 @@ checkPackageVersions <- function() {
     print("Attention: novel version of RTools is required!")
   }
 
-  if (packageVersion("effectsize") >= "0.8.2") {
+  if (packageVersion("effectsize") >= "0.8.3") {
     print("effectsize OK!")
   } else {
     print("update effectsize!")
@@ -1304,5 +1297,50 @@ reportDunnTestTable <- function(main_df, iv = "testiv", dv = "testdv", order = F
   }
 }
 
-
+#' Report statistical details for ggstatsplot.
+#'
+#' @param p: the object returned by ggwithinstats or ggbetweenstats
+#' @param iv 
+#' @param dv 
+#' @param write_to_clipboard 
+#'
+#' @return
+#' @export
+#'
+#' @examples p <- ggwithinstats(...) --> reportggstatsplot(p, iv = "Condition", dv="mental workload")
+reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable", write_to_clipboard = FALSE) {
+  assertthat::not_empty(p)
+  assertthat::not_empty(dv)
+  assertthat::not_empty(iv)
+  
+  stats <- extract_stats(p)$subtitle_data
+  resultString <- ""
+  
+  effectSize <- round(stats$estimate, digits = 2)
+  pValue <- round(stats$p.value, digits = 2)
+  statistic <- round(stats$statistic, digits = 2)
+  
+  # Create String
+  if (stats$method %in% c("Kruskal-Wallis rank sum test", "Friedman rank sum test")) {
+    resultString <- paste0("(\\chisq(", stats$df.error, ")=", statistic, ", \\p{", pValue, "}, r=", effectSize)
+  } else {
+    # example: \F{7}{24.62}{1.01}, \p{0.45}
+    resultString <- paste0("(\\F{", stats$df, "}{", stats$df.error, "}{", statistic, "}, \\p{", pValue, "}, r=", effectSize)
+  }
+  
+  
+  if (!stats$p.value < 0.05) {
+    if (write_to_clipboard) {
+      write_clip(paste0("A ", stats$method, " found no significant effects on ", dv, " ", resultString, ". "))
+    } else {
+      cat(paste0("A ", stats$method, " found no significant effects on ", dv, " ", resultString, ". "))
+    }
+  } else {
+    if (write_to_clipboard) {
+      write_clip(paste0("A ", stats$method, " found a significant effect of ", iv, "on", dv, " ", resultString, ". "))
+    } else {
+      cat(paste0("A ", stats$method, " found a significant effect of ", iv, "on", dv, " ", resultString, ". "))
+    }
+  }
+}
 
