@@ -6,6 +6,7 @@ Heavily builds on great other packages such as:
 - [ggstatsplot](https://github.com/IndrajeetPatil/ggstatsplot)
 - [nparLD](https://cran.r-project.org/web/packages/nparLD/nparLD.pdf)
 - work by Dr. Haiko Luepsen on [non-parametric variance analyses](http://www.uni-koeln.de/~luepsen/R/)
+- [ARTool](https://github.com/mjskay/ARTool)
 
 
 
@@ -79,8 +80,12 @@ Required commands in Latex:
 ### `reportDunnTestTable`
 This function reports post-hoc Dunn tests as a LaTex table. It uses the `dunn.test::dunn.test` function with Bonferroni-correction.
 
-
-
+### `reportART`
+This function will report the results of the art in the APA-correct way for factorial designs.   
+Necessary commands in LaTeX are:  
+\newcommand{\F}[3]{$F({#1},{#2})={#3}$}  
+\newcommand{\p}{\textit{p=}}  
+\newcommand{\pminor}{\textit{p$<$}}  
 
 
 
