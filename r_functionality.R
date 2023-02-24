@@ -1312,25 +1312,25 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
   assertthat::not_empty(p)
   assertthat::not_empty(dv)
   assertthat::not_empty(iv)
-  
+
   stats <- extract_stats(p)$subtitle_data
   resultString <- ""
-  
+
   effectSize <- round(stats$estimate, digits = 2)
   pValue <- round(stats$p.value, digits = 2)
   statistic <- round(stats$statistic, digits = 2)
-  
+
   # Create String
   if (stats$method %in% c("Kruskal-Wallis rank sum test", "Friedman rank sum test")) {
     resultString <- paste0("(\\chisq(", stats$df.error, ")=", statistic, ", \\p{", pValue, "}, r=", effectSize)
-  } else if(stats$method %in% c("Paired t-test")) {
+  } else if (stats$method %in% c("Paired t-test")) {
     resultString <- paste0("(t(", stats$df.error, ")=", statistic, ", \\p{", pValue, "}, r=", effectSize)
-    else {
+  } else {
     # example: \F{7}{24.62}{1.01}, \p{0.45}
     resultString <- paste0("(\\F{", stats$df, "}{", stats$df.error, "}{", statistic, "}, \\p{", pValue, "}, r=", effectSize)
   }
-  
-  
+
+
   if (!stats$p.value < 0.05) {
     if (write_to_clipboard) {
       write_clip(paste0("A ", stats$method, " found no significant effects on ", dv, " ", resultString, ". "))
