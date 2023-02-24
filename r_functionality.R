@@ -1323,7 +1323,9 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
   # Create String
   if (stats$method %in% c("Kruskal-Wallis rank sum test", "Friedman rank sum test")) {
     resultString <- paste0("(\\chisq(", stats$df.error, ")=", statistic, ", \\p{", pValue, "}, r=", effectSize)
-  } else {
+  } else if(stats$method %in% c("Paired t-test")) {
+    resultString <- paste0("(t(", stats$df.error, ")=", statistic, ", \\p{", pValue, "}, r=", effectSize)
+    else {
     # example: \F{7}{24.62}{1.01}, \p{0.45}
     resultString <- paste0("(\\F{", stats$df, "}{", stats$df.error, "}{", statistic, "}, \\p{", pValue, "}, r=", effectSize)
   }
@@ -1337,9 +1339,9 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
     }
   } else {
     if (write_to_clipboard) {
-      write_clip(paste0("A ", stats$method, " found a significant effect of ", iv, "on", dv, " ", resultString, ". "))
+      write_clip(paste0("A ", stats$method, " found a significant effect of ", iv, " on ", dv, " ", resultString, ". "))
     } else {
-      cat(paste0("A ", stats$method, " found a significant effect of ", iv, "on", dv, " ", resultString, ". "))
+      cat(paste0("A ", stats$method, " found a significant effect of ", iv, " on ", dv, " ", resultString, ". "))
     }
   }
 }
