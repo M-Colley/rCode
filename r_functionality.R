@@ -1325,6 +1325,8 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
     resultString <- paste0("(\\chisq(", stats$df.error, ")=", statistic, ", \\p{", pValue, "}, r=", effectSize)
   } else if (stats$method %in% c("Paired t-test")) {
     resultString <- paste0("(t(", stats$df.error, ")=", statistic, ", \\p{", pValue, "}, r=", effectSize)
+  } else if (stats$method %in% c("Wilcoxon signed rank test")) {
+    resultString <- paste0("(V=", statistic, ", \\p{", pValue, "}, r=", effectSize)
   } else {
     # example: \F{7}{24.62}{1.01}, \p{0.45}
     resultString <- paste0("(\\F{", stats$df, "}{", stats$df.error, "}{", statistic, "}, \\p{", pValue, "}, r=", effectSize)
