@@ -1339,9 +1339,9 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
     }
   } else {
     if (write_to_clipboard) {
-      write_clip(paste0("A ", stats$method, " found a significant effect of ", iv, " on ", dv, " ", resultString, ". "))
+      write_clip(paste0("A ", stats$method, " found a significant effect of \\", iv, " on ", dv, " ", resultString, ". "))
     } else {
-      cat(paste0("A ", stats$method, " found a significant effect of ", iv, " on ", dv, " ", resultString, ". "))
+      cat(paste0("A ", stats$method, " found a significant effect of \\", iv, " on ", dv, " ", resultString, ". "))
     }
   }
 }
