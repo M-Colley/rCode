@@ -1,8 +1,10 @@
 # enhance reproducibility
 usethis::use_blank_slate()
 
+library(easystats)
+
 # enforce everybody to use latest R versions of easystats packages
-easystats::install_latest()
+easystats::easystats_update()
 
 # For documentation: To insert a documentation skeleton in RStudio use Ctrl + Alt + Shift + R
 
@@ -11,8 +13,6 @@ easystats::install_latest()
 
 # afex: necessary for ggstatsplot
 # Hmisc: necessary for mean_cl_normal --> 95% confidence intervals
-
-library(easystats)
 library(clipr)
 library(readxl)
 library(tidyverse)
