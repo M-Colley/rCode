@@ -18,7 +18,7 @@ library(readxl)
 library(tidyverse)
 library(Cairo)
 library(rstatix)
-library(nparLD)
+#library(nparLD)
 library(afex)
 library(Hmisc)
 library(FSA)
@@ -35,6 +35,9 @@ library(dunn.test)
 library(xtable)
 library(rstantools)
 library(ARTool)
+library(esquisse)
+
+
 
 
 # library(showtext)
