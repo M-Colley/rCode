@@ -67,6 +67,22 @@ na.zero <- function (x) {
   return(x)
 }
 
+
+#  Converting a Windows path to the format that works in R
+# No need for an argument. The path is printed to your console correctly and written to your clipboard for easy pasting to a script
+# From: https://stackoverflow.com/questions/8425409/file-path-issues-in-r-using-windows-hex-digits-in-character-string-error
+pathPrep <- function(path = "clipboard") {
+  y <- if (path == "clipboard") {
+    readClipboard()
+  } else {
+    cat("Please enter the path:\n\n")
+    readline()
+  }
+  x <- chartr("\\", "/", y)
+  writeClipboard(x)
+  return(x)
+}
+
 # for label of number of data points
 n_fun <- function(x){
   return(data.frame(y = median(x), label = paste0("n = ",length(x))))
