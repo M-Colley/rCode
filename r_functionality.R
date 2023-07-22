@@ -188,7 +188,21 @@ stat_sum_df <- function(fun, geom = "crossbar", ...) {
   stat_summary(fun.data = fun, colour = "red", geom = geom, width = 0.2, ...)
 }
 
-
+#' This function normalizes the values in a vector to the range [new_min, new_max] 
+#' based on their original range [old_min, old_max].
+#'
+#' @param x_vector A numeric vector that you want to normalize.
+#' @param old_min The minimum value in the original scale of the data.
+#' @param old_max The maximum value in the original scale of the data.
+#' @param new_min The minimum value in the new scale to which you want to normalize the data.
+#' @param new_max The maximum value in the new scale to which you want to normalize the data.
+#' @return A numeric vector with the normalized values.
+#' @export
+#' @examples
+#' normalize(c(1, 2, 3, 4, 5), 1, 5, 0, 1)
+normalize <- function(x_vector, old_min, old_max, new_min, new_max) {
+  return(new_min + ((x_vector - old_min) / (old_max - old_min)) * (new_max - new_min))
+}
 
 
 #' Checking the version of R (>= 4.3.1) and effectsize as well as ggstatsplot. If not appropriate, a message for the user is generated.
