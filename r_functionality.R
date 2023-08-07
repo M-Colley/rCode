@@ -224,7 +224,7 @@ checkPackageVersions <- function() {
   } else {
     print("update effectsize!")
   }
-  if (packageVersion("ggstatsplot") >= "0.11.1") {
+  if (packageVersion("ggstatsplot") >= "0.12.0") {
     print("ggstatsplot OK!")
   } else {
     print("update ggstatsplot!")
