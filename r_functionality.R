@@ -14,7 +14,6 @@ easystats::easystats_update()
 # afex: necessary for ggstatsplot
 # Hmisc: necessary for mean_cl_normal --> 95% confidence intervals
 library(clipr)
-library(readxl)
 library(tidyverse)
 library(Cairo)
 library(rstatix)
@@ -37,8 +36,8 @@ library(rstantools)
 library(ARTool)
 library(esquisse)
 library(assertthat)
-
-
+library(stargazer)
+library(reporttools)
 
 
 # library(showtext)
@@ -1383,7 +1382,7 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
 }
 
 
-#' Data Description
+#' replace_values Description
 #'
 #' @name data
 #' @type Data Frame
