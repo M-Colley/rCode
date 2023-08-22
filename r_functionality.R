@@ -1382,3 +1382,37 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
   }
 }
 
+
+#' Data Description
+#'
+#' @name data
+#' @type Data Frame
+#' @description The `data` data frame contains a collection of records, with attributes organized in columns. It may include various types of values, such as numerical, categorical, or textual data.
+#' @param data The input data frame to be modified.
+#' @param to_replace A vector of values to be replaced within the data frame. This must be the same length as `replace_with`.
+#' @param replace_with A vector of corresponding replacement values. This must be the same length as `to_replace`.
+#' @example data <- replace_values(data, c("neg2", "neg1"), c("-2", "-1"))
+#' @note The `replace_values` function ensures that the lengths of `to_replace` and `replace_with` are the same and will generate an error if they are not.
+#' @return Modified data frame with specified values replaced.
+replace_values <- function(data, to_replace, replace_with) {
+  if (length(to_replace) != length(replace_with)) {
+    stop("Length of 'to_replace' and 'replace_with' must be the same.")
+  }
+
+  for (i in 1:ncol(data)) {
+    for (k in 1:nrow(data)) {
+      for (j in 1:length(to_replace)) {
+        if (data[k, i] == to_replace[j]) {
+          data[k, i] <- replace_with[j]
+          break
+        }
+      }
+    }
+  }
+
+  return(data)
+}
+
+
+
+
