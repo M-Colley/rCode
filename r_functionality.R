@@ -881,7 +881,8 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
 
           # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
           # nice format of X in Latex via \times
-          stringtowrite <- gsub("X", "$\\\\times$ \\\\", stringtowrite)
+          # Replace "X" with LaTeX code if preceded by a space
+          stringtowrite <- gsub("(?<=\\s)X", "$\\\\times$ \\\\", stringtowrite, perl = TRUE)
 
           if (write_to_clipboard) {
             write_clip(stringtowrite)
@@ -965,7 +966,8 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
       
       # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
       # nice format of X in Latex via \times
-      stringtowrite <- gsub("X", "$\\\\times$ \\\\", stringtowrite)
+      # Replace "X" with LaTeX code if preceded by a space
+      stringtowrite <- gsub("(?<=\\s)X", "$\\\\times$ \\\\", stringtowrite, perl = TRUE)
       
       if(write_to_clipboard){
         write_clip(stringtowrite)
@@ -998,54 +1000,45 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
 #' @examples model <- art(formula = tlx_mental ~ Video * DriverPosition * gesture * eHMI + Error(UserID / (gesture * eHMI)), data = main_df) |> anova()
 #' reportART(model, "mental workload")
 reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE) {
+  # Check that the model and dependent variable are not empty
   assertthat::not_empty(model)
   assertthat::not_empty(dv)
   
+  # Check if the model has a "Pr(>F)" column
   if ("Pr(>F)" %!in% colnames(model)) {
     cat(paste0("No column ``Pr(>F)'' was found."))
   } else {
+    # Check if any p-values are significant
     if (!any(model$`Pr(>F)` < 0.05, na.rm = TRUE)) {
+      # Output a message depending on the write_to_clipboard option
+      message_to_write <- paste0("The ART found no significant effects on ", dv, ". ")
       if (write_to_clipboard) {
-        write_clip(paste0("The ART found no significant effects on ", dv, ". "))
+        write_clip(message_to_write)
       } else {
-        cat(paste0("The ART found no significant effects on ", dv, ". "))
+        cat(message_to_write)
       }
     } else {
-      
-      # there is a significant effect if any value is under 0.05
-      # make the names accessible in a novel column
-      model$descriptions <- model[,1]
-      
-      # no empty space to allow backslash later
-      model$descriptions <- gsub(":", " X", model$descriptions)
-      
+      # Process significant effects
+      model$descriptions <- model[,1] # Make the names accessible
+      model$descriptions <- gsub(":", " X", model$descriptions) # Replace colon with "X"
       
       for (i in 1:length(model$`Pr(>F)`)) {
-        # Residuals have NA therefore we need this double check
         if (!is.na(model$`Pr(>F)`[i]) && model$`Pr(>F)`[i] < 0.05) {
-          Fvalue <- round(model$`F value`[i], digits = 2) # round(model$`F value`[i], digits = 2)
+          # Extract and round values
+          Fvalue <- round(model$`F value`[i], digits = 2)
           numeratordf <- model$Df[i]
           denominatordf <- model$Df.res[i]
-          
-          
           pValueNumeric <- model$`Pr(>F)`[i]
-          if (pValueNumeric < 0.001) {
-            pValue <- paste0("\\pminor{0.001}")
-          } else {
-            pValue <- paste0("\\p{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
-          }
+          pValue <- if (pValueNumeric < 0.001) paste0("\\pminor{0.001}") else paste0("\\p{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
           
+          # Write interaction or main effect depending on the presence of "X"
+          effect_type <- if (str_detect(model$descriptions[i], "X")) "interaction" else "main"
+          stringtowrite <- paste0("The ART found a significant ", effect_type, " effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
           
-          if (str_detect(model$descriptions[i], "X")) {
-            stringtowrite <- paste0("The ART found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
-          } else {
-            stringtowrite <- paste0("The ART found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
-          }
+          # Replace "X" with LaTeX code if preceded by a space
+          stringtowrite <- gsub("(?<=\\s)X", "$\\\\times$ \\\\", stringtowrite, perl = TRUE)
           
-          # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
-          # nice format of X in Latex via \times
-          stringtowrite <- gsub("X", "$\\\\times$ \\\\", stringtowrite)
-          
+          # Output the string depending on the write_to_clipboard option
           if (write_to_clipboard) {
             write_clip(stringtowrite)
           } else {
@@ -1056,6 +1049,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
     }
   }
 }
+
 
 
 
@@ -1122,7 +1116,8 @@ reportNparLD <- function(model, dv = "Testdependentvariable", write_to_clipboard
       
       # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
       # nice format of X in Latex via \times
-      stringtowrite <- gsub("X", "$\\\\times$ \\\\", stringtowrite)
+      # Replace "X" with LaTeX code if preceded by a space
+      stringtowrite <- gsub("(?<=\\s)X", "$\\\\times$ \\\\", stringtowrite, perl = TRUE)
       
       if(write_to_clipboard){
         write_clip(stringtowrite)
