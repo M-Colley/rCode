@@ -38,6 +38,9 @@ library(ARTool)
 library(assertthat)
 library(stargazer)
 library(reporttools)
+library(readxl)
+library(BayesFactor)
+library(bayestestR)
 
 
 # library(showtext)
