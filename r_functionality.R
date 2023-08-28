@@ -1,6 +1,9 @@
 # enhance reproducibility
 usethis::use_blank_slate()
 
+if (!require("easystats")) install.packages("easystats")
+if (!require("tidyverse")) install.packages("tidyverse")
+
 library(easystats)
 
 # enforce everybody to use latest R versions of easystats packages
