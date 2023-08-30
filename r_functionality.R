@@ -1418,9 +1418,12 @@ replace_values <- function(data, to_replace, replace_with) {
   if (length(to_replace) != length(replace_with)) {
     stop("Length of 'to_replace' and 'replace_with' must be the same.")
   }
-
+  
   for (i in 1:ncol(data)) {
     for (k in 1:nrow(data)) {
+      if (is.na(data[k, i])) {
+        next  # Skip NA values
+      }
       for (j in 1:length(to_replace)) {
         if (data[k, i] == to_replace[j]) {
           data[k, i] <- replace_with[j]
@@ -1429,9 +1432,11 @@ replace_values <- function(data, to_replace, replace_with) {
       }
     }
   }
-
+  
   return(data)
 }
+
+
 
 #' Reshape Excel Data Based on Custom Markers and Include Custom ID Column
 #'
