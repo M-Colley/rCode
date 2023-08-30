@@ -20,11 +20,12 @@ if (!require("styler")) install.packages("styler")
 if (!require("assertthat")) install.packages("assertthat")
 if (!require("reporttools")) install.packages("reporttools")
 if (!require("stargazer")) install.packages("stargazer")
+if (!require("writexl")) install.packages("writexl")
 
 
 library(easystats)
 
-# enforce everybody to use latest R versions of easystats packages
+# enforce everybody to use the latest R versions of easystats packages
 easystats::easystats_update()
 
 # For documentation: To insert a documentation skeleton in RStudio use Ctrl + Alt + Shift + R
@@ -1432,68 +1433,81 @@ replace_values <- function(data, to_replace, replace_with) {
   return(data)
 }
 
-#' Reshape Excel Data Based on Custom Markers
+#' Reshape Excel Data Based on Custom Markers and Include Custom ID Column
 #'
 #' This function takes an Excel file with data in a wide format and transforms it to a long format.
+#' It includes a customizable "ID" column in the first position and repeats it for each slice.
 #' The function identifies sections of columns between markers that start with a user-defined string (default is "videoinfo")
 #' and appends those sections under the first section, aligning by column index.
 #' 
-#' Relevant if you receive data in wide-format but cannot use built-in functionality due to naming (e.g., in)
+#' Relevant if you receive data in wide-format but cannot use built-in functionality due to naming (e.g., in LimeSurvey)
+#' 
+#' Attention, known bug: the ID column will first have only the IDs, this has to be fixed manually.
 #'
 #' @param input_filepath String, the file path of the input Excel file.
 #' @param sheetName String, the name of the sheet to read from the Excel file. Default is "Results".
 #' @param marker String, the string that identifies the start of a new section of columns. Default is "videoinfo".
+#' @param id_col String, the name of the column to use as the ID column. Default is "ID".
 #' @param output_filepath String, the file path for the output Excel file.
 #' @return None, writes the reshaped data to an Excel file specified by output_filepath.
 #' @examples
 #' \dontrun{
-#' reshape_data("results-survey626861.xlsx", marker = "videoinfo", output_filepath= "sample_output.xlsx")
+#' reshape_data("results-survey626861.xlsx", marker = "videoinfo", id_col = "ID", output_filepath= "sample_output.xlsx")
 #' }
-#' @importFrom tidyverse select bind_rows
+#' @importFrom tidyverse select bind_rows bind_cols
 #' @importFrom readxl read_excel
 #' @importFrom writexl write_xlsx
-reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoinfo", output_filepath) {
+reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoinfo", id_col = "ID", output_filepath) {
   # Read the Excel file into a data frame
   df <- readxl::read_excel(input_filepath, sheet = sheetName)
   
   # Initialize an empty data frame to store the final long-form data
-  long_df <- NULL
+  long_df <- data.frame()
   
   # Initialize an empty vector to store the current columns for each marker section
   current_columns <- c()
   
+  # Extract the custom "ID" column
+  id_column <- df %>% select(all_of(id_col))
+  
   # Loop through each column to identify given markers and reshape data accordingly
   for (col in names(df)) {
     if (startsWith(col, marker)) {
-      # If current_columns is not empty, slice the data frame and append to long_df
       if (length(current_columns) > 0) {
+        print(length(current_columns))
         sliced_df <- df %>% select(all_of(current_columns))
         
-        # If long_df is NULL, initialize it with the first sliced_df
-        if (is.null(long_df)) {
-          long_df <- sliced_df
-        } else {
+        if (nrow(long_df) > 0) {
+          # Add the ID column to the front of sliced_df
+          sliced_df <- bind_cols(id_column, sliced_df)
           # Remove column names for alignment by index
           colnames(sliced_df) <- colnames(long_df)
-          long_df <- bind_rows(long_df, sliced_df)
+          
         }
+        
+        long_df <- bind_rows(long_df, sliced_df, .id = NULL)  # Added .id = NULL to handle data types
       }
-      # Reset current_columns for the next "XXX" section
       current_columns <- c()
     } else {
       current_columns <- c(current_columns, col)
     }
   }
   
-  # Handle the last set of columns after the final marker
   if (length(current_columns) > 0) {
     sliced_df <- df %>% select(all_of(current_columns))
+    sliced_df <- bind_cols(id_column, sliced_df)
     colnames(sliced_df) <- colnames(long_df)
     long_df <- bind_rows(long_df, sliced_df)
   }
   
+  # Check if file exists and modify output_filepath to avoid overwriting
+  counter <- 1
+  new_output_filepath <- output_filepath
+  while (file.exists(new_output_filepath)) {
+    new_output_filepath <- paste0(gsub("\\.xlsx$", "", output_filepath), "_", counter, ".xlsx")
+    counter <- counter + 1
+  }
+  
   # Write the long-form data frame to a new Excel file
-  writexl::write_xlsx(long_df, output_filepath)
+  writexl::write_xlsx(long_df, new_output_filepath)
 }
-
-
