@@ -21,7 +21,7 @@ if (!require("assertthat")) install.packages("assertthat")
 if (!require("reporttools")) install.packages("reporttools")
 if (!require("stargazer")) install.packages("stargazer")
 if (!require("writexl")) install.packages("writexl")
-
+if (!require("cli")) install.packages("cli")
 
 library(easystats)
 
