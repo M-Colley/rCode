@@ -62,6 +62,7 @@ library(reporttools)
 library(readxl)
 library(BayesFactor)
 library(bayestestR)
+library(writexl)
 
 
 # library(showtext)
@@ -1431,6 +1432,68 @@ replace_values <- function(data, to_replace, replace_with) {
   return(data)
 }
 
-
+#' Reshape Excel Data Based on Custom Markers
+#'
+#' This function takes an Excel file with data in a wide format and transforms it to a long format.
+#' The function identifies sections of columns between markers that start with a user-defined string (default is "videoinfo")
+#' and appends those sections under the first section, aligning by column index.
+#' 
+#' Relevant if you receive data in wide-format but cannot use built-in functionality due to naming (e.g., in)
+#'
+#' @param input_filepath String, the file path of the input Excel file.
+#' @param sheetName String, the name of the sheet to read from the Excel file. Default is "Results".
+#' @param marker String, the string that identifies the start of a new section of columns. Default is "videoinfo".
+#' @param output_filepath String, the file path for the output Excel file.
+#' @return None, writes the reshaped data to an Excel file specified by output_filepath.
+#' @examples
+#' \dontrun{
+#' reshape_data("results-survey626861.xlsx", marker = "videoinfo", output_filepath= "sample_output.xlsx")
+#' }
+#' @importFrom tidyverse select bind_rows
+#' @importFrom readxl read_excel
+#' @importFrom writexl write_xlsx
+reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoinfo", output_filepath) {
+  # Read the Excel file into a data frame
+  df <- readxl::read_excel(input_filepath, sheet = sheetName)
+  
+  # Initialize an empty data frame to store the final long-form data
+  long_df <- NULL
+  
+  # Initialize an empty vector to store the current columns for each marker section
+  current_columns <- c()
+  
+  # Loop through each column to identify given markers and reshape data accordingly
+  for (col in names(df)) {
+    if (startsWith(col, marker)) {
+      # If current_columns is not empty, slice the data frame and append to long_df
+      if (length(current_columns) > 0) {
+        sliced_df <- df %>% select(all_of(current_columns))
+        
+        # If long_df is NULL, initialize it with the first sliced_df
+        if (is.null(long_df)) {
+          long_df <- sliced_df
+        } else {
+          # Remove column names for alignment by index
+          colnames(sliced_df) <- colnames(long_df)
+          long_df <- bind_rows(long_df, sliced_df)
+        }
+      }
+      # Reset current_columns for the next "XXX" section
+      current_columns <- c()
+    } else {
+      current_columns <- c(current_columns, col)
+    }
+  }
+  
+  # Handle the last set of columns after the final marker
+  if (length(current_columns) > 0) {
+    sliced_df <- df %>% select(all_of(current_columns))
+    colnames(sliced_df) <- colnames(long_df)
+    long_df <- bind_rows(long_df, sliced_df)
+  }
+  
+  # Write the long-form data frame to a new Excel file
+  writexl::write_xlsx(long_df, output_filepath)
+}
 
 
