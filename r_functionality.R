@@ -22,6 +22,8 @@ if (!require("reporttools")) install.packages("reporttools")
 if (!require("stargazer")) install.packages("stargazer")
 if (!require("writexl")) install.packages("writexl")
 if (!require("cli")) install.packages("cli")
+if (!require("DT")) install.packages("DT")
+if (!require("flexdashboard")) install.packages("flexdashboard")
 
 library(easystats)
 
