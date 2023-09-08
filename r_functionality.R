@@ -1518,3 +1518,89 @@ reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoi
   # Write the long-form data frame to a new Excel file
   writexl::write_xlsx(long_df, new_output_filepath)
 }
+
+
+
+
+
+
+
+
+
+
+#' Remove outliers and calculate REI
+#'
+#' This function takes a data frame, optional header information, variables to consider,
+#' and a range for a Likert scale. It then calculates the Response Entropy Index (REI)
+#' and flags suspicious entries based on percentiles.
+#'
+#' For more information on the REI method, refer to:
+#' [Response Entropy Index Method](https://ojs.ub.uni-konstanz.de/srm/article/view/7832)
+#'
+#' @param df Data frame containing the data.
+#' @param header Logical indicating if the data frame has a header. Defaults to FALSE.
+#' @param variables Character string specifying which variables to consider, separated by commas.
+#' @param range Numeric vector specifying the range of the Likert scale. Defaults to c(1, 5).
+#'
+#' @return A data frame with calculated REI, percentile, and a 'Suspicious' flag.
+#'
+#' @examples
+#' \dontrun{
+#' df <- data.frame(var1 = c(1, 2, 3), var2 = c(2, 3, 4))
+#' result <- remove_outliers_REI(df, TRUE, "var1,var2", c(1, 5))
+#' }
+remove_outliers_REI <- function(df, header = FALSE, variables = "", range = c(1, 5)) {
+  # Load required packages
+  library(stringr)
+  
+  # Validate and parse variables
+  if (variables == "" && header == TRUE) {
+    stop("Please input variables to consider!")
+  }
+  iniVariables <- str_split(variables, ",")
+  variableNames <- unique(trimws(iniVariables[[1]]))
+  
+  # Initialize data frame for REI calculation
+  testDF <- data.frame(REI = numeric(nrow(df)))
+  
+  # Extract specified columns
+  if (header == FALSE) {
+    testDF <- cbind(testDF, df)
+  } else { 
+    for (i in variableNames) {
+      columnMatches <- grep(paste("^", i, "$", sep=""), colnames(df))
+      if (length(columnMatches) > 0) {
+        testDF <- cbind(testDF, df[, columnMatches])
+      }
+    }
+  }
+  
+  # Check column count for validity
+  if (NCOL(testDF) <= 2) {
+    stop("Not enough columns found with the given phrase.")
+  }
+  
+  # Calculate REI and related metrics
+  numLevels <- range[2] - range[1] + 1
+  numQuestions <- ncol(testDF) - 1
+  getResponses <- function(df) {
+    recordedResponses <- unique(as.vector(as.matrix(df)))
+    tallies <- sapply(recordedResponses, function(x) rowSums(df == x))
+    return(tallies)
+  }
+  
+  tallies <- getResponses(testDF[,-1])
+  proportions <- tallies / numQuestions
+  logs <- proportions * log10(proportions)
+  logs[is.na(logs)] <- 0
+  testDF[, "REI"] <- rowSums(logs, na.rm = TRUE) * -1
+  
+  # Calculate percentile and flag suspicious entries
+  testDF$Percentile <- round(pnorm(testDF$REI, mean = mean(testDF$REI, na.rm = TRUE), sd = sd(testDF$REI, na.rm = TRUE)), digits = 2) * 100
+  testDF$Suspicious <- "No"
+  testDF$Suspicious[testDF$Percentile <= 10 | testDF$Percentile >= 90] <- "Maybe"
+  testDF$Suspicious[testDF$Percentile <= 5 | testDF$Percentile >= 95] <- "Yes"
+  
+  return(testDF)
+}
+
