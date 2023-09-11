@@ -1659,3 +1659,54 @@ remove_outliers_REI <- function(df, header = FALSE, variables = "", range = c(1,
   return(testDF)
 }
 
+
+reportggstatsplotPostHoc <- function(main_df, p, iv = "testiv", dv = "testdv", label_mappings = NULL) {
+  # Asserts to ensure non-empty inputs
+  assertthat::not_empty(main_df)
+  assertthat::not_empty(p)
+  assertthat::not_empty(iv)
+  assertthat::not_empty(dv)
+  
+  # Extract stats from the ggstatsplot object
+  stats <- extract_stats(p)$pairwise_comparisons_data
+  
+  if (!any(stats$p.value < 0.05, na.rm = TRUE)) {
+    cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
+    return()
+  }
+  
+  for (i in 1:length(stats$p.value)) {
+    if (!is.na(stats$p.value[i]) && stats$p.value[i] < 0.05) {
+      # Format p-value
+      pValue <- if (stats$p.value[i] < 0.001) "\\padjminor{0.001}" else paste0("\\padj{", sprintf("%.3f", round(stats$p.value[i], 3)), "}")
+      
+      # Get conditions
+      firstCondition <- stats$group1[i]
+      secondCondition <- stats$group2[i]
+
+      
+      # Apply label mappings if available
+      firstLabel <- ifelse(is.null(label_mappings), firstCondition, label_mappings[[firstCondition]])
+      secondLabel <- ifelse(is.null(label_mappings), secondCondition, label_mappings[[secondCondition]])
+      
+      valueOne <- main_df %>%
+        filter(!!sym(iv) == firstCondition) %>%
+        summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
+      
+      valueTwo <- main_df %>%
+        filter(!!sym(iv) == secondCondition) %>%
+        summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
+      
+      # Format statistics
+      firstStatsStr <- paste0(" (\\m{", sprintf("%.2f", as.numeric(round(valueOne[1,1], 2))), "}, \\sd{", sprintf("%.2f", as.numeric(round(valueOne[1,2], 2))), "})")
+      secondStatsStr <- paste0(" (\\m{", sprintf("%.2f", as.numeric(round(valueTwo[1,1], 2))), "}, \\sd{", sprintf("%.2f", as.numeric(round(valueTwo[1,2], 2))), "})")
+      
+      # Construct and print output string
+      if (as.numeric(round(valueOne[1,1], 2)) > as.numeric(round(valueTwo[1,1], 2))) {
+        cat(paste0("A post-hoc test found that ", firstLabel, " was significantly higher", firstStatsStr, " in terms of \\", dv, " compared to ", secondLabel, secondStatsStr, "; ", pValue, "). "))
+      } else {
+        cat(paste0("A post-hoc test found that ", secondLabel, " was significantly higher", secondStatsStr, " in terms of \\", dv, " compared to ", firstLabel, firstStatsStr, "; ", pValue, "). "))
+      }
+    }
+  }
+}
