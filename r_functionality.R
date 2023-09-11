@@ -297,7 +297,7 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
-      groups_is_equal <- TRUE
+      group_all_data_equal <- TRUE
     }
   }
   
@@ -356,7 +356,7 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
-      groups_is_equal <- TRUE
+      group_all_data_equal <- TRUE
     }
   }
   
@@ -373,7 +373,7 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
   
   type <- ifelse(normallyDistributed, "p", "np")
   
-  # if one groups_is_equal then we use the var.equal = TRUE, see here: https://github.com/IndrajeetPatil/ggstatsplot/issues/880
+  # if one group_all_data_equal then we use the var.equal = TRUE, see here: https://github.com/IndrajeetPatil/ggstatsplot/issues/880
   ggstatsplot::ggbetweenstats(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp, var.equal = group_all_data_equal,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
@@ -418,7 +418,7 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
-      groups_is_equal <- TRUE
+      group_all_data_equal <- TRUE
     }
   }
   
