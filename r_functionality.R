@@ -1428,7 +1428,7 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
   resultString <- ""
 
   effectSize <- round(stats$estimate, digits = 2)
-  pValue <- round(stats$p.value, digits = 2)
+  pValue <- round(stats$p.value, digits = 3)
   statistic <- round(stats$statistic, digits = 2)
 
   # Create String
