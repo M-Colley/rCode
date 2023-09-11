@@ -290,24 +290,23 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
   
   # Iterate over each group in data[[x]]
   for (group in unique(data[[x]])) {
-    subset_data <- data[data[[x]] == group, y]
+    subset_data <- data[data[[x]] == group, y, drop = TRUE]
+
+    # Check if subset_data is a data frame or list, and convert to numeric vector if needed
+    if (is.data.frame(subset_data) || is.list(subset_data)) {
+      subset_data <- as.numeric(subset_data[[1]])
+    }
+    
+    # Remove NA values if any conversion failed
+    subset_data <- subset_data[!is.na(subset_data)]
+    
     
     # Check if all values in the subset are equal
-    if (nrow(unique(subset_data)) > 1) {
+    if (length(unique(subset_data)) > 1) {
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
       group_all_data_equal <- TRUE
-    }
-  }
-  
-  # Check the p-value for each test result
-  for (i in normality_test) {
-    if (!is.null(i)) {
-      if (i$p.value < 0.05) {
-        normallyDistributed <- FALSE
-        break
-      }
     }
   }
 
@@ -337,6 +336,7 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
 #'
 #' @examples ggbetweenstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE, plotType = "boxviolin")
 ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, showPairwiseComp = TRUE, plotType = "boxviolin") {
+ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, showPairwiseComp = TRUE, plotType = "boxviolin") {
   assertthat::not_empty(data)
   assertthat::not_empty(x)
   assertthat::not_empty(y)
@@ -349,10 +349,19 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
   
   # Iterate over each group in data[[x]]
   for (group in unique(data[[x]])) {
-    subset_data <- data[data[[x]] == group, y]
+    subset_data <- data[data[[x]] == group, y, drop = TRUE]
+
+    # Check if subset_data is a data frame or list, and convert to numeric vector if needed
+    if (is.data.frame(subset_data) || is.list(subset_data)) {
+      subset_data <- as.numeric(subset_data[[1]])
+    }
+    
+    # Remove NA values if any conversion failed
+    subset_data <- subset_data[!is.na(subset_data)]
+    
     
     # Check if all values in the subset are equal
-    if (nrow(unique(subset_data)) > 1) {
+    if (length(unique(subset_data)) > 1) {
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
@@ -380,6 +389,7 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
 }
+
 
 
 #' Check the data's distribution. If non-normal, take the non-parametric variant of *ggbetweenstats*.
@@ -411,24 +421,23 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   
   # Iterate over each group in data[[x]]
   for (group in unique(data[[x]])) {
-    subset_data <- data[data[[x]] == group, y]
+    subset_data <- data[data[[x]] == group, y, drop = TRUE]
+
+    # Check if subset_data is a data frame or list, and convert to numeric vector if needed
+    if (is.data.frame(subset_data) || is.list(subset_data)) {
+      subset_data <- as.numeric(subset_data[[1]])
+    }
+    
+    # Remove NA values if any conversion failed
+    subset_data <- subset_data[!is.na(subset_data)]
+    
     
     # Check if all values in the subset are equal
-    if (nrow(unique(subset_data)) > 1) {
+    if (length(unique(subset_data)) > 1) {
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
       group_all_data_equal <- TRUE
-    }
-  }
-  
-  # Check the p-value for each test result
-  for (i in normality_test) {
-    if (!is.null(i)) {
-      if (i$p.value < 0.05) {
-        normallyDistributed <- FALSE
-        break
-      }
     }
   }
   
