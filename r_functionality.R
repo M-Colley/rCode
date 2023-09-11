@@ -293,7 +293,7 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
     subset_data <- data[data[[x]] == group, y]
     
     # Check if all values in the subset are equal
-    if (length(unique(subset_data)) > 1) {
+    if (nrow(unique(subset_data)) > 1) {
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
@@ -352,7 +352,7 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
     subset_data <- data[data[[x]] == group, y]
     
     # Check if all values in the subset are equal
-    if (length(unique(subset_data)) > 1) {
+    if (nrow(unique(subset_data)) > 1) {
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
@@ -414,7 +414,7 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
     subset_data <- data[data[[x]] == group, y]
     
     # Check if all values in the subset are equal
-    if (length(unique(subset_data)) > 1) {
+    if (nrow(unique(subset_data)) > 1) {
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
