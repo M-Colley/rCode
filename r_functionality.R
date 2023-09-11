@@ -284,12 +284,27 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
   assertthat::not_empty(xlabels)
 
 
-  normality_test <- with(data, tapply(data[[y]], data[[x]], shapiro.test))
+  normality_test <- list()  # Initialize empty list to store test results
   normallyDistributed <- TRUE
+  group_all_data_equal <- FALSE
+  
+  # Iterate over each group in data[[x]]
+  for (group in unique(data[[x]])) {
+    subset_data <- data[data[[x]] == group, y]
+    
+    # Check if all values in the subset are equal
+    if (length(unique(subset_data)) > 1) {
+      normality_test[[group]] <- shapiro.test(subset_data)
+    } else {
+      normality_test[[group]] <- NULL
+      groups_is_equal <- TRUE
+    }
+  }
+  
+  # Check the p-value for each test result
   for (i in normality_test) {
     if (!is.null(i)) {
       if (i$p.value < 0.05) {
-        # print("You have to take the non-parametric test.")
         normallyDistributed <- FALSE
         break
       }
@@ -299,7 +314,7 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
   type <- ifelse(normallyDistributed, "p", "np")
 
   ggstatsplot::ggwithinstats(
-    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp,
+    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp, var.equal = group_all_data_equal,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey",
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
@@ -327,23 +342,40 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
   assertthat::not_empty(y)
   assertthat::not_empty(ylab)
   assertthat::not_empty(xlabels)
-
-  normality_test <- with(data, tapply(data[[y]], data[[x]], shapiro.test))
+  
+  normality_test <- list()  # Initialize empty list to store test results
   normallyDistributed <- TRUE
+  group_all_data_equal <- FALSE
+  
+  # Iterate over each group in data[[x]]
+  for (group in unique(data[[x]])) {
+    subset_data <- data[data[[x]] == group, y]
+    
+    # Check if all values in the subset are equal
+    if (length(unique(subset_data)) > 1) {
+      normality_test[[group]] <- shapiro.test(subset_data)
+    } else {
+      normality_test[[group]] <- NULL
+      groups_is_equal <- TRUE
+    }
+  }
+  
+  # Check the p-value for each test result
   for (i in normality_test) {
     if (!is.null(i)) {
       if (i$p.value < 0.05) {
-        # print("You have to take the non-parametric test.")
         normallyDistributed <- FALSE
         break
       }
     }
   }
-
+  
+  
   type <- ifelse(normallyDistributed, "p", "np")
-
+  
+  # if one groups_is_equal then we use the var.equal = TRUE, see here: https://github.com/IndrajeetPatil/ggstatsplot/issues/880
   ggstatsplot::ggbetweenstats(
-    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp,
+    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp, var.equal = group_all_data_equal,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
@@ -373,12 +405,27 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   assertthat::not_empty(ylab)
   assertthat::not_empty(xlabels)
   
-  normality_test <- with(data, tapply(data[[y]], data[[x]], shapiro.test))
+  normality_test <- list()  # Initialize empty list to store test results
   normallyDistributed <- TRUE
+  group_all_data_equal <- FALSE
+  
+  # Iterate over each group in data[[x]]
+  for (group in unique(data[[x]])) {
+    subset_data <- data[data[[x]] == group, y]
+    
+    # Check if all values in the subset are equal
+    if (length(unique(subset_data)) > 1) {
+      normality_test[[group]] <- shapiro.test(subset_data)
+    } else {
+      normality_test[[group]] <- NULL
+      groups_is_equal <- TRUE
+    }
+  }
+  
+  # Check the p-value for each test result
   for (i in normality_test) {
     if (!is.null(i)) {
       if (i$p.value < 0.05) {
-        # print("You have to take the non-parametric test.")
         normallyDistributed <- FALSE
         break
       }
@@ -411,7 +458,7 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   
   
   p <- ggstatsplot::ggbetweenstats(
-    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = FALSE,
+    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = FALSE, var.equal = group_all_data_equal,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
