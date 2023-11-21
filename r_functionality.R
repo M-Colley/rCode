@@ -310,6 +310,16 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
     }
   }
 
+  for (i in normality_test) {
+    if (!is.null(i)) {
+      if (i$p.value < 0.05) {
+        # print("You have to take the non-parametric test.")
+        normallyDistributed <- FALSE
+        break
+      }
+    }
+  }
+  
   type <- ifelse(normallyDistributed, "p", "np")
 
   ggstatsplot::ggwithinstats(
