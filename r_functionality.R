@@ -448,6 +448,16 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
       group_all_data_equal <- TRUE
     }
   }
+
+  for (i in normality_test) {
+    if (!is.null(i)) {
+      if (i$p.value < 0.05) {
+        # print("You have to take the non-parametric test.")
+        normallyDistributed <- FALSE
+        break
+      }
+    }
+  }
   
   type <- ifelse(normallyDistributed, "p", "np")
   
@@ -475,7 +485,7 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   
   
   p <- ggstatsplot::ggbetweenstats(
-    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = FALSE, var.equal = group_all_data_equal,
+    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.display = "none", var.equal = group_all_data_equal,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
@@ -513,7 +523,7 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
       }
     }
   }
-  
+
   type <- ifelse(normallyDistributed, "p", "np")
   
   
@@ -540,7 +550,7 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
   
   
   p <- ggstatsplot::ggwithinstats(
-    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = FALSE,
+    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.display = "none",
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
