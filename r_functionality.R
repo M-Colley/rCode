@@ -467,6 +467,8 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
       dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) %>%
       dplyr::arrange(group1) %>%
       dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
+
+   df <- df %>% dplyr::filter(!is.na(asterisk_label))
   
   #y_positions_asterisks <- recode(df$asterisk_label, "NA=0.0; else=7.50") # 
   # adjust to maximum value in the dataset
@@ -532,6 +534,8 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
       dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) %>%
       dplyr::arrange(group1) %>%
       dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
+
+  df <- df %>% dplyr::filter(!is.na(asterisk_label))
   
   #y_positions_asterisks <- recode(df$asterisk_label, "NA=0.0; else=7.50") # 
   # adjust to maximum value in the dataset
