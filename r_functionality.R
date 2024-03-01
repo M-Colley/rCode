@@ -240,7 +240,7 @@ normalize <- function(x_vector, old_min, old_max, new_min, new_max) {
 #'
 #' @examples
 checkPackageVersions <- function() {
-  if (R.version.string >= "4.3.2") {
+  if (R.version.string >= "4.3.3") {
     print("R Version OK!")
   } else {
     print("updateR()!")
