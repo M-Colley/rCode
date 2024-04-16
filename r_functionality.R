@@ -233,7 +233,7 @@ normalize <- function(x_vector, old_min, old_max, new_min, new_max) {
 }
 
 
-#' Checking the version of R (>= 4.3.2) and effectsize as well as ggstatsplot. If not appropriate, a message for the user is generated.
+#' Checking the version of R (>= 4.3.3) and effectsize as well as ggstatsplot. If not appropriate, a message for the user is generated.
 #'
 #' @return
 #' @export
@@ -252,7 +252,7 @@ checkPackageVersions <- function() {
   } else {
     print("update effectsize!")
   }
-  if (packageVersion("ggstatsplot") >= "0.12.2") {
+  if (packageVersion("ggstatsplot") >= "0.12.3") {
     print("ggstatsplot OK!")
   } else {
     print("update ggstatsplot!")
@@ -262,7 +262,7 @@ checkPackageVersions <- function() {
 
 
 #' Check the data's distribution. If non-normal, take the non-parametric variant of *ggwithinstats*.
-#' x and y have to be in parantheses, e.g., "ConditionID".
+#' x and y have to be in parentheses, e.g., "ConditionID".
 #'
 #' @param data
 #' @param x the independent variable, most likely "ConditionID"
@@ -331,7 +331,7 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
 
 
 #' Check the data's distribution. If non-normal, take the non-parametric variant of *ggbetweenstats*.
-#' x and y have to be in parantheses, e.g., "ConditionID".
+#' x and y have to be in parentheses, e.g., "ConditionID".
 #'
 #' @param data
 #' @param x the independent variable, most likely "ConditionID"
@@ -402,7 +402,7 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
 
 
 #' Check the data's distribution. If non-normal, take the non-parametric variant of *ggbetweenstats*.
-#' x and y have to be in parantheses, e.g., "ConditionID".
+#' x and y have to be in parentheses, e.g., "ConditionID".
 #'
 #' @param data
 #' @param x the independent variable, most likely "ConditionID"
