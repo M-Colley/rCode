@@ -39,6 +39,8 @@ These functions will automatically determine whether the parametric or the non-p
 These functions will show the graph with APA-conform asterisks (e.g., *** for p<0.001)
 These functions will automatically determine whether the parametric or the non-parametric version of the ggwithinstats/ggbetweenstats version of the [ggstatsplot](https://github.com/IndrajeetPatil/ggstatsplot) package has to be used. Defined with sensible defaults. 
 
+ATTENTION: Do not use the *Asterisk function if you have more than two groups. It internally uses the geom_signif which does not support more than two groups. 
+
 ### `generateEffectPlot`
 This function defines a plot either showing the main or interaction effect in bold.  
 
@@ -86,6 +88,7 @@ Necessary commands in LaTeX are:
 \newcommand{\F}[3]{$F({#1},{#2})={#3}$}  
 \newcommand{\p}{\textit{p=}}  
 \newcommand{\pminor}{\textit{p$<$}}  
+
 
 
 
