@@ -137,8 +137,6 @@ havingIP <- function() {
 
 
 # update all available packages
-
-
 if (havingIP()) {
   
   # list all packages where an update is available
@@ -155,33 +153,13 @@ if (havingIP()) {
   #update.packages(ask = TRUE)
 }
 
-# pal <- wes_palette("FantasticFox1")
-pal <- wes_palette("GrandBudapest1")
-# pal <- wes_palette("GrandBudapest2")
-
-pal <- brewer.pal(n = 6, name = "RdYlBu") # PRGn #BrBG #RdBu #RdYlBu
-
-# Possibility to extend to any number of colors
-mycolors <- colorRampPalette(brewer.pal(12, "Set3"))(16)
-
-
 mywidth <- 0.4
 pdfwidth <- 9
 pdfheight <- 4.5
 pdfsquare <- 6
 myfontsize <- 30
 
-scale_fill_colors <- c("#E69F00", "#999999", "#56B4E9")
-scale_fill_colors2 <- c("#7fcdbb", "#edf8b1", "#2c7fb8")
-scale_fill_colors3 <- c("#a6bddb", "#ece2f0", "#1c9099")
-scale_fill_colors4 <- c("#0EE87C", "#999999", "#148DFF")
-
-
-scale_fill_colors_twelve <- c("#0EE87C", "#999999", "#148DFF", "#7fcdbb", "#edf8b1", "#2c7fb8", "#a6bddb", "#ece2f0", "#1c9099", "#CCCCCC", "#FFFFFF", "#148DFF")
-
-
-
-theme_set(see::theme_lucid() + theme(base_size = 27, legend.title = element_blank(), 
+ggplot2::theme_set(see::theme_lucid() + theme(base_size = 27, legend.title = element_blank(), 
                                 axis.title = element_text(size = 20), axis.text = element_text(size = 17), 
                                 plot.title = element_text(size = 28), plot.subtitle = element_text(size = 17), 
                                 legend.background = element_blank(), legend.position = "inside", 
