@@ -69,8 +69,6 @@ library(writexl)
 library(foreign)
 
 
-# library(showtext)
-theme_set(theme_bw())
 
 source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
 
@@ -154,17 +152,6 @@ if (havingIP()) {
   
   # update
   #update.packages(ask = TRUE)
-
-  # https://fonts.google.com/
-  # You will need to have internet connection
-  # If you restart R you will need to execute this code again to use the font
-  # font_add_google(name = "Pacifico",   # Name of the font on the Google Fonts site
-  #                 family = "pacifico") # Name you want to use to call the font
-  #
-  # font_add_google(name = "Yellowtail", family = "Yellowtail")
-  # font_add_google(name = "Source Serif Pro", family = "SSP")
-  # showtext_auto()
-  #
 }
 
 # pal <- wes_palette("FantasticFox1")
@@ -177,20 +164,11 @@ pal <- brewer.pal(n = 6, name = "RdYlBu") # PRGn #BrBG #RdBu #RdYlBu
 mycolors <- colorRampPalette(brewer.pal(12, "Set3"))(16)
 
 
-
-
-
-
-
-
-
 mywidth <- 0.4
 pdfwidth <- 9
 pdfheight <- 4.5
 pdfsquare <- 6
 myfontsize <- 30
-
-# my_positiondodge <- position_dodge(0.5)
 
 scale_fill_colors <- c("#E69F00", "#999999", "#56B4E9")
 scale_fill_colors2 <- c("#7fcdbb", "#edf8b1", "#2c7fb8")
