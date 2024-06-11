@@ -67,6 +67,7 @@ library(BayesFactor)
 library(bayestestR)
 library(writexl)
 library(foreign)
+library(see)
 
 
 
