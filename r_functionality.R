@@ -202,6 +202,13 @@ scale_fill_colors_twelve <- c("#0EE87C", "#999999", "#148DFF", "#7fcdbb", "#edf8
 
 
 
+theme_set(theme_lucid() + theme(base_size = 27, legend.title = element_blank(), 
+                                axis.title = element_text(size = 20), axis.text = element_text(size = 17), 
+                                plot.title = element_text(size = 28), plot.subtitle = element_text(size = 17), 
+                                legend.background = element_blank(), legend.position = "inside", 
+                                legend.position.inside = c(0.85, 0.45), legend.text = element_text(size = 15)))
+
+
 #' Generating the sum and adding a crossbar.
 #'
 #' @param fun
