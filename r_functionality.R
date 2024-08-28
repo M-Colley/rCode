@@ -24,6 +24,8 @@ if (!require("writexl")) install.packages("writexl")
 if (!require("cli")) install.packages("cli")
 if (!require("DT")) install.packages("DT")
 if (!require("flexdashboard")) install.packages("flexdashboard")
+if (!require("sjPlot")) install.packages("sjPlot")
+if (!require("emmeans")) install.packages("emmeans")
 
 library(easystats)
 
@@ -68,7 +70,8 @@ library(bayestestR)
 library(writexl)
 library(foreign)
 library(see)
-
+library(sjPlot)
+library(emmeans)
 
 
 source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
