@@ -1262,14 +1262,14 @@ generateEffectPlot <- function(df, x, y, fillColourGroup, ytext ="testylab", xte
   assertthat::not_empty(shownEffect)
   
   p <- df %>% ggplot() +
-    theme_bw(base_size = myfontsize + 1) +
     aes(x = !!sym(x), y = !!sym(y), fill = !!sym(fillColourGroup), colour = !!sym(fillColourGroup), group = !!sym(fillColourGroup)) +
-    scale_colour_manual(values=wes_palette("Cavalcanti1", n=numberColors, type = "continuous")) + 
+    scale_colour_see() + 
     ylab(ytext) +
-    theme(legend.background = element_blank(), legend.position = legendPos, legend.text = element_text(size = myfontsize - 10)) +
+    theme(legend.position.inside = legendPos) +
     xlab(xtext) +
     stat_summary(fun = mean, geom = "point", size = 6.0) +
-    stat_summary(fun = mean, geom = "point", size = 6.0,  aes(group = 1))
+    stat_summary(fun = mean, geom = "point", size = 6.0,  aes(group = 1)) +
+      stat_summary(fun.data = "mean_cl_boot", geom = "errorbar", width = .5, position = position_dodge(width = 0.05), alpha = 0.5)
   
   if(shownEffect=="main"){
     p <- p + stat_summary(fun = mean, geom = "line",  size = 2, aes(group = 1)) + stat_summary(fun = mean, geom = "line", linetype = "dashed", size = 1)
