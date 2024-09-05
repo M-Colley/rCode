@@ -1644,6 +1644,7 @@ add_pareto_emoa_column <- function(data, objectives) {
 #' @param legendPos A numeric vector of length 2 specifying the position of the legend inside the plot. Default is `c(0.65, 0.85)`.
 #' @param numberSamplingSteps An integer specifying the number of initial sampling steps before the optimization phase begins. Default is 5.
 #' @param labelPosFormulaY A string specifying the vertical position of the polynomial equation label in the plot. Acceptable values are `"top"`, `"center"`, or `"bottom"`. Default is `"top"`.
+#' @param verticalLinePosY A numeric value of the y-coordinate where the "sampling" and "optimizatin" line should be drawn.
 #'
 #' @return A `ggplot` object representing the multi-objective optimization plot, ready to be rendered.
 #' @export
@@ -1664,20 +1665,20 @@ add_pareto_emoa_column <- function(data, objectives) {
 #'   ConditionID = rep(c("A", "B"), 10)
 #' )
 #' generateMoboPlot(df, x = "x", y = "y", numberSamplingSteps = 3)
-generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, legendPos = c(0.65, 0.85), numberSamplingSteps = 5, labelPosFormulaY = "top") {
+generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, legendPos = c(0.65, 0.85), numberSamplingSteps = 5, labelPosFormulaY = "top", verticalLinePosY = 0.75) {
   assertthat::not_empty(df)
   assertthat::not_empty(x)
   assertthat::not_empty(y)
   assertthat::not_empty(fillColourGroup)
-
+  
   # as default, just add the y variable in Title caps
   if (missing(ytext)) {
     ytext <- stringr::str_to_title(y)
   }
-
+  
   maxIteration <- max(as.numeric(df[[x]]), na.rm = TRUE)
   numberOptimizations <- maxIteration - numberSamplingSteps
-
+  
   p <- df |> ggplot() +
     aes(x = !!sym(x), y = !!sym(y), fill = !!sym(fillColourGroup), colour = !!sym(fillColourGroup), group = !!sym(fillColourGroup)) +
     scale_fill_see() +
@@ -1688,14 +1689,14 @@ generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, l
     stat_summary(fun = mean, geom = "point", size = 4.0, alpha = 0.9) +
     stat_summary(fun = mean, geom = "line", linewidth = 1, alpha = 0.3) +
     stat_summary(fun.data = "mean_cl_boot", geom = "errorbar", width = .5, position = position_dodge(width = 0.1), alpha = 0.5) +
-    annotate("text", x = 2.5, y = 0.5, label = "Sampling") +
-    geom_segment(aes(x = 0, y = 0.75, xend = numberSamplingSteps + 0.2, yend = 0.75), linetype = "dashed", color = "black") +
-    annotate("text", x = 13, y = 0.5, label = "Optimization") +
-    geom_segment(aes(x = numberSamplingSteps + 0.8, y = 0.75, xend = maxIteration, yend = 0.75), color = "black") +
+    annotate("text", x = 2.5, y = verticalLinePosY - 0.2, label = "Sampling") +
+    geom_segment(aes(x = 0, y = verticalLinePosY, xend = numberSamplingSteps + 0.2, yend = verticalLinePosY), linetype = "dashed", color = "black") +
+    annotate("text", x = 13, y = verticalLinePosY - 0.2, label = "Optimization") +
+    geom_segment(aes(x = numberSamplingSteps + 0.8, y = verticalLinePosY, xend = maxIteration, yend = verticalLinePosY), color = "black") +
     stat_poly_eq(use_label(c("eq", "R2")), label.y = labelPosFormulaY) +
     stat_poly_line(fullrange = FALSE, alpha = 0.1, linetype = "dashed", linewidth = 0.5) +
     geom_vline(aes(xintercept = numberSamplingSteps + 0.5), linetype = "dashed", color = "black", alpha = 0.5)
-
+  
   return(p)
 }
 
