@@ -1689,9 +1689,9 @@ generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, l
     stat_summary(fun = mean, geom = "point", size = 4.0, alpha = 0.9) +
     stat_summary(fun = mean, geom = "line", linewidth = 1, alpha = 0.3) +
     stat_summary(fun.data = "mean_cl_boot", geom = "errorbar", width = .5, position = position_dodge(width = 0.1), alpha = 0.5) +
-    annotate("text", x = 2.5, y = verticalLinePosY - 0.2, label = "Sampling") +
+    annotate("text", x = numberSamplingSteps/2.0, y = verticalLinePosY - 0.2, label = "Sampling") +
     geom_segment(aes(x = 0, y = verticalLinePosY, xend = numberSamplingSteps + 0.2, yend = verticalLinePosY), linetype = "dashed", color = "black") +
-    annotate("text", x = 13, y = verticalLinePosY - 0.2, label = "Optimization") +
+    annotate("text", x = numberOptimizations/2.0 numberSamplingSteps+ , y = verticalLinePosY - 0.2, label = "Optimization") +
     geom_segment(aes(x = numberSamplingSteps + 0.8, y = verticalLinePosY, xend = maxIteration, yend = verticalLinePosY), color = "black") +
     stat_poly_eq(use_label(c("eq", "R2")), label.y = labelPosFormulaY) +
     stat_poly_line(fullrange = FALSE, alpha = 0.1, linetype = "dashed", linewidth = 0.5) +
