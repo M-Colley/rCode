@@ -26,6 +26,7 @@ if (!require("DT")) install.packages("DT")
 if (!require("flexdashboard")) install.packages("flexdashboard")
 if (!require("sjPlot")) install.packages("sjPlot")
 if (!require("emmeans")) install.packages("emmeans")
+if (!require("stringr")) install.packages("stringr")
 
 library(easystats)
 
@@ -72,6 +73,7 @@ library(foreign)
 library(see)
 library(sjPlot)
 library(emmeans)
+library(stringr)
 
 
 source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
@@ -1566,9 +1568,136 @@ reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoi
 }
 
 
+#' Add Pareto EMOA Column to a Data Frame
+#'
+#' This function calculates the Pareto front for a given set of objectives in a data frame and adds a new column, `PARETO_EMOA`, which indicates whether each row in the data frame belongs to the Pareto front.
+#'
+#' @param data A data frame containing the data, including the objective columns.
+#' @param objectives A character vector specifying the names of the objective columns in `data`. These columns should be numeric and will be used to calculate the Pareto front.
+#'
+#' @return A data frame with the same columns as `data`, along with an additional column, `PARETO_EMOA`, which is `TRUE` for rows that are on the Pareto front and `FALSE` otherwise.
+#' @export
+#'
+#' @examples
+#' # Define objective columns
+#' objectives <- c("trust", "predictability", "perceivedSafety", "Comfort", "Efficiency", "Satisfaction")
+#'
+#' # Example data frame
+#' main_df <- data.frame(
+#'   trust = runif(10),
+#'   predictability = runif(10),
+#'   perceivedSafety = runif(10),
+#'   Comfort = runif(10),
+#'   Efficiency = runif(10),
+#'   Satisfaction = runif(10)
+#' )
+#'
+#' # Add the Pareto front column
+#' main_df <- add_pareto_emoa_column(main_df, objectives)
+#' head(main_df)
+add_pareto_emoa_column <- function(data, objectives) {
+  # Load required library
+  if (!require("emoa")) install.packages("emoa")
+  library(emoa)
+  
+  # Input checks
+  assertthat::not_empty(data)
+  assertthat::not_empty(objectives)
+
+  # Select only the objective columns
+  objective_data <- data |> select(all_of(objectives))
+
+  # Transpose and convert to matrix as required by the nondominated_points function
+  pareto_points <- emoa::nondominated_points(t(as.matrix(objective_data)))
+
+  # Convert the Pareto points matrix back to a data frame for comparison
+  pareto_df <- as.data.frame(t(pareto_points))
+
+  # Initialize the PARETO_EMOA column as FALSE
+  data$PARETO_EMOA <- FALSE
+
+  # Mark TRUE for rows in the original data that match any row in the Pareto front
+  for (i in 1:nrow(pareto_df)) {
+    matching_row <- which(
+      apply(objective_data, 1, function(x) all(x == pareto_df[i, ]))
+    )
+    if (length(matching_row) > 0) {
+      data$PARETO_EMOA[matching_row] <- TRUE
+    }
+  }
+
+  # Return the updated data frame
+  return(data)
+}
 
 
 
+#' Generate a Multi-objective Optimization Plot
+#'
+#' This function generates a multi-objective optimization plot using `ggplot2`. The plot visualizes the relationship between the `x` and `y` variables, grouping and coloring by a fill variable, with the option to customize legend position, labels, and annotation of sampling and optimization phases.
+#'
+#' @param df A data frame containing the data to be plotted.
+#' @param x A string representing the column name in `df` to be used for the x-axis. Can be either numeric or factor.
+#' @param y A string representing the column name in `df` to be used for the y-axis. This should be a numeric variable.
+#' @param fillColourGroup A string representing the column name in `df` that defines the fill color grouping for the plot. Default is `"ConditionID"`.
+#' @param ytext A custom label for the y-axis. If not provided, the y-axis label will be the title-cased version of `y`.
+#' @param legendPos A numeric vector of length 2 specifying the position of the legend inside the plot. Default is `c(0.65, 0.85)`.
+#' @param numberSamplingSteps An integer specifying the number of initial sampling steps before the optimization phase begins. Default is 5.
+#' @param labelPosFormulaY A string specifying the vertical position of the polynomial equation label in the plot. Acceptable values are `"top"`, `"center"`, or `"bottom"`. Default is `"top"`.
+#'
+#' @return A `ggplot` object representing the multi-objective optimization plot, ready to be rendered.
+#' @export
+#'
+#' @examples
+#' # Example with numeric x-axis
+#' df <- data.frame(
+#'   x = 1:20,
+#'   y = rnorm(20),
+#'   ConditionID = rep(c("A", "B"), 10)
+#' )
+#' generateMoboPlot(df, x = "x", y = "y")
+#'
+#' # Example with factor x-axis
+#' df <- data.frame(
+#'   x = factor(rep(1:5, each = 4)),
+#'   y = rnorm(20),
+#'   ConditionID = rep(c("A", "B"), 10)
+#' )
+#' generateMoboPlot(df, x = "x", y = "y", numberSamplingSteps = 3)
+generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, legendPos = c(0.65, 0.85), numberSamplingSteps = 5, labelPosFormulaY = "top") {
+  assertthat::not_empty(df)
+  assertthat::not_empty(x)
+  assertthat::not_empty(y)
+  assertthat::not_empty(fillColourGroup)
+
+  # as default, just add the y variable in Title caps
+  if (missing(ytext)) {
+    ytext <- stringr::str_to_title(y)
+  }
+
+  maxIteration <- max(as.numeric(df[[x]]), na.rm = TRUE)
+  numberOptimizations <- maxIteration - numberSamplingSteps
+
+  p <- df |> ggplot() +
+    aes(x = !!sym(x), y = !!sym(y), fill = !!sym(fillColourGroup), colour = !!sym(fillColourGroup), group = !!sym(fillColourGroup)) +
+    scale_fill_see() +
+    scale_color_see() +
+    ylab(ytext) +
+    theme(legend.position.inside = legendPos) +
+    xlab("Iteration") +
+    stat_summary(fun = mean, geom = "point", size = 4.0, alpha = 0.9) +
+    stat_summary(fun = mean, geom = "line", linewidth = 1, alpha = 0.3) +
+    stat_summary(fun.data = "mean_cl_boot", geom = "errorbar", width = .5, position = position_dodge(width = 0.1), alpha = 0.5) +
+    annotate("text", x = 2.5, y = 0.5, label = "Sampling") +
+    geom_segment(aes(x = 0, y = 0.75, xend = numberSamplingSteps + 0.2, yend = 0.75), linetype = "dashed", color = "black") +
+    annotate("text", x = 13, y = 0.5, label = "Optimization") +
+    geom_segment(aes(x = numberSamplingSteps + 0.8, y = 0.75, xend = maxIteration, yend = 0.75), color = "black") +
+    stat_poly_eq(use_label(c("eq", "R2")), label.y = labelPosFormulaY) +
+    stat_poly_line(fullrange = FALSE, alpha = 0.1, linetype = "dashed", linewidth = 0.5) +
+    geom_vline(aes(xintercept = numberSamplingSteps + 0.5), linetype = "dashed", color = "black", alpha = 0.5)
+
+  return(p)
+}
 
 
 
@@ -1596,8 +1725,6 @@ reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoi
 #' result <- remove_outliers_REI(df, TRUE, "var1,var2", c(1, 5))
 #' }
 remove_outliers_REI <- function(df, header = FALSE, variables = "", range = c(1, 5)) {
-  # Load required packages
-  library(stringr)
   
   # Validate and parse variables
   if (variables == "" && header == TRUE) {
