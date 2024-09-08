@@ -29,13 +29,16 @@ The primary goal of this package is to significantly reduce repetitive coding ef
 
 ## Primary Functions
 
-### `checkAssumptionsForAnova_X_Factors`
-This function suite checks normality and homogeneity of variance assumptions for ANOVA models. There are versions available for one, two, three, and four factors. For details on assumptions checking, refer to [Datanovia](https://www.datanovia.com/en/lessons/anova-in-r/#check-assumptions-1).
+
+### `checkAssumptionsForAnova`
+This function suite checks normality and homogeneity of variance assumptions for ANOVA models. Takes a vector of factors. For details on assumptions checking, refer to [Datanovia](https://www.datanovia.com/en/lessons/anova-in-r/#check-assumptions-1).
 
 **Example:**
 ```r
-checkAssumptionsForAnovaTwoFactors(data = main_df, y = "dependent_var", factor_1 = "factor1", factor_2 = "factor2")
+checkAssumptionsForAnova(data = main_df, y = "dependent_var", factors = c("factor1", "factor2"))
 ```
+
+
 
 
 
@@ -188,6 +191,17 @@ Replaces specified values in a data frame with custom replacements. This can be 
 ```r
 new_df <- replace_values(main_df, to_replace = c("bad_val1", "bad_val2"), replace_with = c("good_val1", "good_val2"))
 ```
+
+
+### `checkAssumptionsForAnova_X_Factors` - DEPRECATED
+
+This function suite checks normality and homogeneity of variance assumptions for ANOVA models. There are versions available for one, two, three, and four factors. For details on assumptions checking, refer to [Datanovia](https://www.datanovia.com/en/lessons/anova-in-r/#check-assumptions-1).
+
+**Example:**
+```r
+checkAssumptionsForAnovaTwoFactors(data = main_df, y = "dependent_var", factor_1 = "factor1", factor_2 = "factor2")
+```
+
 
 Contact
 For questions or remarks, please contact Mark Colley.
