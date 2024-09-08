@@ -1660,19 +1660,25 @@ add_pareto_emoa_column <- function(data, objectives) {
   # Input checks
   assertthat::not_empty(data)
   assertthat::not_empty(objectives)
-
+  
   # Select only the objective columns
   objective_data <- data |> select(all_of(objectives))
-
+  
+  # If there's only one row, mark it as PARETO_EMOA directly
+  if (nrow(objective_data) == 1) {
+    data$PARETO_EMOA <- TRUE
+    return(data)
+  }
+  
   # Transpose and convert to matrix as required by the nondominated_points function
   pareto_points <- emoa::nondominated_points(t(as.matrix(objective_data)))
-
+  
   # Convert the Pareto points matrix back to a data frame for comparison
   pareto_df <- as.data.frame(t(pareto_points))
-
+  
   # Initialize the PARETO_EMOA column as FALSE
   data$PARETO_EMOA <- FALSE
-
+  
   # Mark TRUE for rows in the original data that match any row in the Pareto front
   for (i in 1:nrow(pareto_df)) {
     matching_row <- which(
@@ -1682,12 +1688,10 @@ add_pareto_emoa_column <- function(data, objectives) {
       data$PARETO_EMOA[matching_row] <- TRUE
     }
   }
-
+  
   # Return the updated data frame
   return(data)
 }
-
-
 
 #' Generate a Multi-objective Optimization Plot
 #'
