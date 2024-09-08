@@ -2,7 +2,7 @@
 
 > Created by [Mark Colley](https://m-colley.github.io/)
 
-`rCode` is a collection of custom R functions that streamline statistical analysis and result reporting. Built upon popular R packages such as `[ggstatsplot](https://github.com/IndrajeetPatil/ggstatsplot)` and `[ARTool](https://github.com/mjskay/ARTool)`, this collection offers a wide array of tools for simplifying reproducible analyses, generating high-quality visualizations, and producing APA-compliant outputs.
+`rCode` is a collection of custom R functions that streamline statistical analysis and result reporting. Built upon popular R packages such as [ggstatsplot](https://github.com/IndrajeetPatil/ggstatsplot) and [ARTool](https://github.com/mjskay/ARTool), this collection offers a wide array of tools for simplifying reproducible analyses, generating high-quality visualizations, and producing APA-compliant outputs.
 
 The primary goal of this package is to significantly reduce repetitive coding efforts, allowing you to focus on interpreting results. Whether you're dealing with ANOVA assumptions, reporting effect sizes, or creating publication-ready visualizations, `rCode` makes these tasks easier.
 
