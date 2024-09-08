@@ -138,13 +138,24 @@ reportART(anova(model), "Dependent Variable")
 ```
 
 ### `add_pareto_emoa_column`
-This function adds a Pareto front classification column to a dataset, which is useful in multi-objective optimization scenarios.
+This function adds a Pareto front classification column to a dataset, useful in multi-objective optimization scenarios.
+
+Attention: must be done per User - Conditon etc group.
 
 **Example:**
 
 ```r
+# This would do it over **all** participants and **all** conditions
 objectives <- c("objective1", "objective2", "objective3")
 main_df <- add_pareto_emoa_column(main_df, objectives)
+
+# This would do it **per** participant and **per** condition combination
+# (so far, does not natively support piping ``|>'')
+main_df <- main_df |> 
+  group_by(User_ID, ConditionID) |> 
+  mutate(PARETO_EMOA = add_pareto_emoa_column(pick(everything()), objectives = objectives)$PARETO_EMOA) |> 
+  ungroup()
+
 ```
 
 ### `generateMoboPlot`
