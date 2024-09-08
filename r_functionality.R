@@ -665,6 +665,59 @@ debug_contr_error <- function(dat, subset_vec = NULL) {
   list(nlevels = nl, levels = lev)
 }
 
+
+#' Check the assumptions for an ANOVA with a variable number of factors: Normality and Homogeneity of variance assumption.
+#'
+#' @param data The dataset
+#' @param y The dependent variable for which assumptions should be checked
+#' @param factors A character vector of factor names
+#'
+#' @return A message indicating whether to use parametric or non-parametric ANOVA
+#' @export
+#'
+#' @examples checkAssumptionsForAnova(data = main_df, y = "tlx_mental", factors = c("Video", "DriverPosition"))
+checkAssumptionsForAnova <- function(data, y, factors) {
+  # Ensure data and variables are not empty
+  assertthat::not_empty(data)
+  assertthat::not_empty(y)
+  assertthat::not_empty(factors)
+  
+  # Dynamically construct the formula based on the number of factors
+  formula_string <- paste(y, "~", paste(factors, collapse = " * "))
+  model <- lm(as.formula(formula_string), data = data)
+  
+  # Shapiro-Wilk test of normality on model residuals
+  model_results <- shapiro_test(residuals(model))
+  if (model_results$p.value < 0.05) {
+    return("You must take the non-parametric ANOVA as model is non-normal.")
+  }
+  
+  # Check normality for each group
+  test <- data %>%
+    group_by(across(all_of(factors))) %>%
+    shapiro_test(!!sym(y))
+  
+  # Check if the normality assumption holds (p > 0.05 for all groups)
+  if (!(min(test$p) > 0.05)) {
+    return("You must take the non-parametric ANOVA as normality assumption by groups is violated (one or more p < 0.05).")
+  }
+  
+  # Homogeneity of variance assumption using Levene's Test
+  levene_formula <- as.formula(paste(y, "~", paste(factors, collapse = " * ")))
+  levene_test_result <- levene_test(data, levene_formula)
+  
+  if (levene_test_result$p < 0.05) {
+    return("You must take the non-parametric ANOVA as Levene’s test is significant (p < 0.05).")
+  }
+  
+  print("You may take parametric ANOVA (function anova_test). See https://www.datanovia.com/en/lessons/anova-in-r/#check-assumptions-1 for more information.")
+}
+
+
+
+
+
+
 #' Check the assumptions for an ANOVA with four factors: Normality and Homogeneity of variance assumption.
 #'
 #' @param data
@@ -679,6 +732,7 @@ debug_contr_error <- function(dat, subset_vec = NULL) {
 #'
 #' @examples checkAssumptionsForAnovaFourFactors(data = main_df, y = "tlx_mental", factor_1 = "Video", factor_2 = "DriverPosition", factor_3 = "eHMI", factor_4 = "gesture")
 checkAssumptionsForAnovaFourFactors <- function(data, y, factor_1, factor_2, factor_3, factor_4) {
+  .Deprecated("checkAssumptionsForAnova")
   assertthat::not_empty(data)
   assertthat::not_empty(y)
   assertthat::not_empty(factor_1)
@@ -690,7 +744,7 @@ checkAssumptionsForAnovaFourFactors <- function(data, y, factor_1, factor_2, fac
   # Create a QQ plot of residuals
   ## ggqqplot(residuals(model))
 
-  # Compute Shapiro-Wilk test of normality
+  # Compute the Shapiro-Wilk test of normality
   model_results <- shapiro_test(residuals(model))
   if (model_results$p.value < 0.05) {
     return("You must take the non-parametric ANOVA as model is non-normal.")
@@ -733,6 +787,7 @@ checkAssumptionsForAnovaFourFactors <- function(data, y, factor_1, factor_2, fac
 #'
 #' @examples checkAssumptionsForAnovaThreeFactors(data = main_df, y = "tlx_mental", factor_1 = "Video", factor_2 = "DriverPosition", factor_3 = "eHMI")
 checkAssumptionsForAnovaThreeFactors <- function(data, y, factor_1, factor_2, factor_3) {
+  .Deprecated("checkAssumptionsForAnova")
   assertthat::not_empty(data)
   assertthat::not_empty(y)
   assertthat::not_empty(factor_1)
@@ -743,7 +798,7 @@ checkAssumptionsForAnovaThreeFactors <- function(data, y, factor_1, factor_2, fa
   # Create a QQ plot of residuals
   ## ggqqplot(residuals(model))
 
-  # Compute Shapiro-Wilk test of normality
+  # Compute the Shapiro-Wilk test of normality
   model_results <- shapiro_test(residuals(model))
   if (model_results$p.value < 0.05) {
     return("You must take the non-parametric ANOVA as model is non-normal.")
@@ -784,6 +839,7 @@ checkAssumptionsForAnovaThreeFactors <- function(data, y, factor_1, factor_2, fa
 #'
 #' @examples checkAssumptionsForAnovaTwoFactors(data = main_df, y = "tlx_mental", factor_1 = "Video", factor_2 = "DriverPosition")
 checkAssumptionsForAnovaTwoFactors <- function(data, y, factor_1, factor_2) {
+  .Deprecated("checkAssumptionsForAnova")
   assertthat::not_empty(data)
   assertthat::not_empty(y)
   assertthat::not_empty(factor_1)
@@ -793,7 +849,7 @@ checkAssumptionsForAnovaTwoFactors <- function(data, y, factor_1, factor_2) {
   # Create a QQ plot of residuals
   ## ggqqplot(residuals(model))
 
-  # Compute Shapiro-Wilk test of normality
+  # Compute the Shapiro-Wilk test of normality
   model_results <- shapiro_test(residuals(model))
   if (model_results$p.value < 0.05) {
     return("You must take the non-parametric ANOVA as model is non-normal.")
@@ -836,6 +892,7 @@ checkAssumptionsForAnovaTwoFactors <- function(data, y, factor_1, factor_2) {
 #'
 #' @examples checkAssumptionsForAnovaTwoFactors(data = main_df, y = "tlx_mental", factor_1 = "Video")
 checkAssumptionsForAnovaOneFactor <- function(data, y, factor_1) {
+  .Deprecated("checkAssumptionsForAnova")
   assertthat::not_empty(data)
   assertthat::not_empty(y)
   assertthat::not_empty(factor_1)
@@ -844,7 +901,7 @@ checkAssumptionsForAnovaOneFactor <- function(data, y, factor_1) {
   # Create a QQ plot of residuals
   ## ggqqplot(residuals(model))
   
-  # Compute Shapiro-Wilk test of normality
+  # Compute the Shapiro-Wilk test of normality
   model_results <- shapiro_test(residuals(model))
   if (model_results$p.value < 0.05) {
     return("You must take the non-parametric ANOVA as model is non-normal.")
@@ -927,13 +984,13 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
 
 
       for (i in 1:length(model$`Pr(>F)`)) {
-        # Residuals have NA therefore we need this double check
+        # Residuals have NA therefore, we need this double-check
         if (!is.na(model$`Pr(>F)`[i]) && model$`Pr(>F)`[i] < 0.05) {
           Fvalue <- round(model$`F value`[i], digits = 2) # round(model$`F value`[i], digits = 2)
           numeratordf <- model$Df[i]
 
           # denominator is next with an NA
-          # potential for out of bounds
+          # potential for out-of-bounds
           for (k in i:length(model$`Pr(>F)`)) {
             if (is.na(model$`Pr(>F)`[k])) {
               denominatordf <- model$Df[k]
