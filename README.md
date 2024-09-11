@@ -203,12 +203,22 @@ checkAssumptionsForAnovaTwoFactors(data = main_df, y = "dependent_var", factor_1
 ```
 
 
-Contact
+*Contact*
 For questions or remarks, please contact Mark Colley.
 
 
 
+## Citations
 
+```bibtex
+@misc{colley2024rcode,
+  author       = {Mark Colley},
+  title        = {rCode: Enhanced R Functions for Statistical Analysis and Reporting},
+  year         = {2024},
+  howpublished = {\url{https://github.com/M-Colley/rCode}},
+  note         = {A collection of custom R functions for streamlining statistical analysis, visualizations, and APA-compliant reporting.}
+}
+```
 
 
 
