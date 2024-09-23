@@ -1479,6 +1479,10 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
 
   effectSize <- round(stats$estimate, digits = 2)
   pValue <- round(stats$p.value, digits = 3)
+  if (pValue == 0.000) {
+    pValue <- "<0.001"
+  }
+  
   statistic <- round(stats$statistic, digits = 2)
 
   # Create String
