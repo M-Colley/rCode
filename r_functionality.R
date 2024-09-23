@@ -164,7 +164,7 @@ pdfheight <- 4.5
 pdfsquare <- 6
 myfontsize <- 30
 
-ggplot2::theme_set(see::theme_lucid() + theme(base_size = 27, legend.title = element_blank(), 
+ggplot2::theme_set(see::theme_lucid() + theme(legend.title = element_blank(), 
                                 axis.title = element_text(size = 20), axis.text = element_text(size = 17), 
                                 plot.title = element_text(size = 28), plot.subtitle = element_text(size = 17), 
                                 legend.background = element_blank(), legend.position = "inside", 
