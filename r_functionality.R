@@ -1269,7 +1269,7 @@ reportNparLD <- function(model, dv = "Testdependentvariable", write_to_clipboard
 #' #' To easily copy and paste the results to your manuscript, the following commands must be defined in Latex:
 #' \newcommand{\m}{\textit{M=}}
 #' \newcommand{\sd}{\textit{SD=}}
-#' @param main_df
+#' @param data
 #' @param iv the independent variable
 #' @param dv the dependent variable
 #'
@@ -1277,13 +1277,13 @@ reportNparLD <- function(model, dv = "Testdependentvariable", write_to_clipboard
 #' @export
 #'
 #' @examples
-reportMeanAndSD <- function(main_df, iv = "testiv", dv = "testdv") {
-  assertthat::not_empty(main_df)
+reportMeanAndSD <- function(data, iv = "testiv", dv = "testdv") {
+  assertthat::not_empty(data)
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
   
 
-  test <- main_df  %>% drop_na(!! sym(iv)) %>% drop_na(!! sym(dv)) %>% group_by(!! sym(iv)) %>% summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
+  test <- data  %>% drop_na(!! sym(iv)) %>% drop_na(!! sym(dv)) %>% group_by(!! sym(iv)) %>% summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
   
   for(i in 1:nrow(test)) {
     row <- test[i,]
@@ -1312,15 +1312,15 @@ reportMeanAndSD <- function(main_df, iv = "testiv", dv = "testdv") {
 #' @return a plot
 #' @export
 #'
-#' @examples generateEffectPlot(df = main_df, x = "strategy", y = "trust_mean", fillColourGroup = "Emotion", ytext = "Trust", xtext = "Strategy", legendPos = c(0.1,0.23), shownEffect = "interaction")
-generateEffectPlot <- function(df, x, y, fillColourGroup, ytext ="testylab", xtext="testxlab", legendPos = c(0.1,0.23), shownEffect ="main", numberColors = 6) {
-  assertthat::not_empty(df)
+#' @examples generateEffectPlot(data = main_df, x = "strategy", y = "trust_mean", fillColourGroup = "Emotion", ytext = "Trust", xtext = "Strategy", legendPos = c(0.1,0.23), shownEffect = "interaction")
+generateEffectPlot <- function(data, x, y, fillColourGroup, ytext ="testylab", xtext="testxlab", legendPos = c(0.1,0.23), shownEffect ="main", numberColors = 6) {
+  assertthat::not_empty(data)
   assertthat::not_empty(x)
   assertthat::not_empty(y)
   assertthat::not_empty(fillColourGroup)
   assertthat::not_empty(shownEffect)
   
-  p <- df %>% ggplot() +
+  p <- data %>% ggplot() +
     aes(x = !!sym(x), y = !!sym(y), fill = !!sym(fillColourGroup), colour = !!sym(fillColourGroup), group = !!sym(fillColourGroup)) +
     scale_colour_see() + 
     ylab(ytext) +
@@ -1349,7 +1349,7 @@ generateEffectPlot <- function(df, x, y, fillColourGroup, ytext ="testylab", xte
 # \newcommand{\padjminor}{\textit{p$_{adj}<$}}
 # \newcommand{\padj}{\textit{p$_{adj}$=}}
 #'
-#' @param main_df 
+#' @param data 
 #' @param d 
 #' @param iv 
 #' @param dv 
@@ -1357,10 +1357,10 @@ generateEffectPlot <- function(df, x, y, fillColourGroup, ytext ="testylab", xte
 #' @return
 #' @export
 #'
-#' @examples reportDunnTest(main_df, d, iv = "scene", dv = "NASATLX")
+#' @examples reportDunnTest(data, d, iv = "scene", dv = "NASATLX")
 #' # d <- dunnTest(NASATLX ~ scene, data = main_df, method = "holm")
-reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
-  assertthat::not_empty(main_df)
+reportDunnTest <- function(data, d, iv = "testiv", dv = "testdv") {
+  assertthat::not_empty(data)
   assertthat::not_empty(d)
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
@@ -1387,12 +1387,12 @@ reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
       firstCondition <- strsplit(d$res$Comparison[i], " - ", fixed = T)[[1]][1]
       secondCondition <- strsplit(d$res$Comparison[i], " - ", fixed = T)[[1]][2]
 
-      valueOne <- main_df %>%
+      valueOne <- data %>%
         filter(!!sym(iv) == firstCondition) %>%
         summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       firstCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueOne[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueOne[[2]], digits = 2)), "}")
 
-      valueTwo <- main_df %>%
+      valueTwo <- data %>%
         filter(!!sym(iv) == secondCondition) %>%
         summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       secondCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueTwo[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueTwo[[2]], digits = 2)), "}")
@@ -1412,7 +1412,7 @@ reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
 
 #' report Dunn test as a table. Customizable with sensible defaults.
 #'
-#' @param main_df 
+#' @param data 
 #' @param iv 
 #' @param dv 
 #' @param order 
@@ -1422,13 +1422,13 @@ reportDunnTest <- function(main_df, d, iv = "testiv", dv = "testdv") {
 #' @return
 #' @export
 #'
-#' @examples reportDunnTestTable(main_df, iv = "scene" , dv = "NASATLX")
-reportDunnTestTable <- function(main_df, iv = "testiv", dv = "testdv", order = FALSE, numberDigitsForPValue = 4, latexSize = "small", orderText = TRUE){
-  assertthat::not_empty(main_df)
+#' @examples reportDunnTestTable(data, iv = "scene" , dv = "NASATLX")
+reportDunnTestTable <- function(data, iv = "testiv", dv = "testdv", order = FALSE, numberDigitsForPValue = 4, latexSize = "small", orderText = TRUE){
+  assertthat::not_empty(data)
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
   
-  table <- dunn.test(main_df[[dv]], main_df[[iv]], method = "holm", list=TRUE)
+  table <- dunn.test(data[[dv]], data[[iv]], method = "holm", list=TRUE)
   table <- cbind.data.frame(table$comparisons,table$Z,table$P.adjusted)
   
   # only show significant ones
@@ -1654,7 +1654,7 @@ reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoi
 #' )
 #'
 #' # Add the Pareto front column
-#' main_df <- add_pareto_emoa_column(main_df, objectives)
+#' main_df <- add_pareto_emoa_column(data = main_df, objectives)
 #' head(main_df)
 add_pareto_emoa_column <- function(data, objectives) {
   # Load required library
@@ -1844,9 +1844,9 @@ remove_outliers_REI <- function(df, header = FALSE, variables = "", range = c(1,
 }
 
 
-reportggstatsplotPostHoc <- function(main_df, p, iv = "testiv", dv = "testdv", label_mappings = NULL) {
+reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", label_mappings = NULL) {
   # Asserts to ensure non-empty inputs
-  assertthat::not_empty(main_df)
+  assertthat::not_empty(data)
   assertthat::not_empty(p)
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
@@ -1873,11 +1873,11 @@ reportggstatsplotPostHoc <- function(main_df, p, iv = "testiv", dv = "testdv", l
       firstLabel <- ifelse(is.null(label_mappings), firstCondition, label_mappings[[firstCondition]])
       secondLabel <- ifelse(is.null(label_mappings), secondCondition, label_mappings[[secondCondition]])
       
-      valueOne <- main_df %>%
+      valueOne <- data %>%
         filter(!!sym(iv) == firstCondition) %>%
         summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       
-      valueTwo <- main_df %>%
+      valueTwo <- data %>%
         filter(!!sym(iv) == secondCondition) %>%
         summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       
