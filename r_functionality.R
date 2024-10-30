@@ -1,6 +1,7 @@
 # enhance reproducibility
 usethis::use_blank_slate()
 
+if (!require("httr")) install.packages("httr")
 if (!require("easystats")) install.packages("easystats")
 if (!require("tidyverse")) install.packages("tidyverse")
 if (!require("Cairo")) install.packages("Cairo")
