@@ -1479,23 +1479,25 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
   resultString <- ""
 
   effectSize <- round(stats$estimate, digits = 2)
-  pValue <- round(stats$p.value, digits = 3)
-  if (pValue == 0.000) {
-    pValue <- "<0.001"
+  pValueNumeric <- round(stats$p.value, digits = 3)
+  if (pValueNumeric < 0.001) {
+     pValue <- paste0("\\pminor{0.001}")
+  } else {
+     pValue <- paste0("\\p{", sprintf("%.3f", pValueNumeric), "}")
   }
   
   statistic <- round(stats$statistic, digits = 2)
 
   # Create String
   if (stats$method %in% c("Kruskal-Wallis rank sum test", "Friedman rank sum test")) {
-    resultString <- paste0("(\\chisq(", stats$df.error, ")=", statistic, ", \\p{", pValue, "}, r=", effectSize, ")")
+    resultString <- paste0("(\\chisq(", stats$df.error, ")=", statistic, ", ", pValue, ", r=", effectSize, ")")
   } else if (stats$method %in% c("Paired t-test")) {
-    resultString <- paste0("(t(", stats$df.error, ")=", statistic, ", \\p{", pValue, "}, r=", effectSize, ")")
+    resultString <- paste0("(t(", stats$df.error, ")=", statistic, ", ", pValue, ", r=", effectSize, ")")
   } else if (stats$method %in% c("Wilcoxon signed rank test")) {
-    resultString <- paste0("(V=", statistic, ", \\p{", pValue, "}, r=", effectSize, ")")
+    resultString <- paste0("(V=", statistic, ", ", pValue, ", r=", effectSize, ")")
   } else {
     # example: \F{7}{24.62}{1.01}, \p{0.45}
-    resultString <- paste0("(\\F{", stats$df, "}{", stats$df.error, "}{", statistic, "}, \\p{", pValue, "}, r=", effectSize, ")")
+    resultString <- paste0("(\\F{", stats$df, "}{", stats$df.error, "}{", statistic, "}, ", pValue, ", r=", effectSize, ")")
   }
 
 
