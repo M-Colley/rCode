@@ -210,7 +210,7 @@ normalize <- function(x_vector, old_min, old_max, new_min, new_max) {
 #'
 #' @examples
 checkPackageVersions <- function() {
-  if (R.version.string >= "4.4.1") {
+  if (R.version.string >= "4.4.2") {
     print("R Version OK!")
   } else {
     print("updateR()!")
@@ -222,7 +222,7 @@ checkPackageVersions <- function() {
   } else {
     print("update effectsize!")
   }
-  if (packageVersion("ggstatsplot") >= "0.12.4") {
+  if (packageVersion("ggstatsplot") >= "0.13.0") {
     print("ggstatsplot OK!")
   } else {
     print("update ggstatsplot!")
