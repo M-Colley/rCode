@@ -203,7 +203,7 @@ normalize <- function(x_vector, old_min, old_max, new_min, new_max) {
 }
 
 
-#' Checking the version of R (>= 4.4.1) and effectsize as well as ggstatsplot. If not appropriate, a message for the user is generated.
+#' Checking the version of R (>= 4.4.2) and effectsize as well as ggstatsplot. If not appropriate, a message for the user is generated.
 #'
 #' @return
 #' @export
@@ -217,15 +217,15 @@ checkPackageVersions <- function() {
     print("Attention: novel version of RTools is required!")
   }
 
-  if (packageVersion("effectsize") >= "0.8.9") {
+  if (packageVersion("effectsize") >= "1.0.0") {
     print("effectsize OK!")
   } else {
-    print("update effectsize!")
+    print("update effectsize - highly important!")
   }
   if (packageVersion("ggstatsplot") >= "0.13.0") {
     print("ggstatsplot OK!")
   } else {
-    print("update ggstatsplot!")
+    print("update ggstatsplot - highly important!")
   }
 }
 
