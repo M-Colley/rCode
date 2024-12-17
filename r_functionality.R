@@ -77,7 +77,7 @@ library(foreign)
 library(see)
 library(sjPlot)
 library(emmeans)
-library(string)
+library(stringr)
 library(ggpmisc)
 
 
