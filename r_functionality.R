@@ -28,6 +28,9 @@ if (!require("flexdashboard")) install.packages("flexdashboard")
 if (!require("sjPlot")) install.packages("sjPlot")
 if (!require("emmeans")) install.packages("emmeans")
 if (!require("stringr")) install.packages("stringr")
+if (!require("ggpmisc")) install.packages("ggpmisc")
+
+
 
 library(easystats)
 
@@ -74,7 +77,9 @@ library(foreign)
 library(see)
 library(sjPlot)
 library(emmeans)
-library(stringr)
+library(string)
+library(ggpmisc)
+
 
 
 source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
