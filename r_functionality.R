@@ -1538,22 +1538,24 @@ replace_values <- function(data, to_replace, replace_with) {
     stop("Length of 'to_replace' and 'replace_with' must be the same.")
   }
   
-  for (i in 1:ncol(data)) {
-    for (k in 1:nrow(data)) {
-      if (is.na(data[k, i])) {
-        next  # Skip NA values
-      }
-      for (j in 1:length(to_replace)) {
-        if (data[k, i] == to_replace[j]) {
-          data[k, i] <- replace_with[j]
-          break
-        }
-      }
-    }
-  }
+  # Create a named vector for replacements
+  replace_map <- setNames(replace_with, to_replace)
+  
+  # Apply replacements column-wise
+  data[] <- lapply(data, function(column) {
+    # Convert factors to characters
+    if (is.factor(column)) column <- as.character(column)
+    
+    # Replace values using replace_map
+    column <- ifelse(!is.na(column) & column %in% names(replace_map),
+                     replace_map[column],
+                     column)
+    return(column)
+  })
   
   return(data)
 }
+
 
 
 
