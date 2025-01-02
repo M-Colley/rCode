@@ -1485,7 +1485,7 @@ generateEffectPlot <- function(data,
         show.legend = effectLegend
       )+
       scale_shape_manual(
-        name = "Interaction Effect",
+        name = "",
         values = setNames(16, effectDescription) #16 = shape code for solid dot
       ) +
       stat_summary(
