@@ -29,6 +29,7 @@ if (!require("sjPlot")) install.packages("sjPlot")
 if (!require("emmeans")) install.packages("emmeans")
 if (!require("stringr")) install.packages("stringr")
 if (!require("ggpmisc")) install.packages("ggpmisc")
+if (!require("ggtext")) install.packages("ggtext")
 
 
 
@@ -79,7 +80,7 @@ library(sjPlot)
 library(emmeans)
 library(stringr)
 library(ggpmisc)
-
+library(ggtext)
 
 
 source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
@@ -1312,40 +1313,192 @@ reportMeanAndSD <- function(data, iv = "testiv", dv = "testdv") {
 #' @param ytext label for y-axis
 #' @param xtext label for x-axis
 #' @param legendPos position for legend 
+#' @param legendHeading custom heading for legend 
 #' @param shownEffect either "main" or "interaction"
+#' @param effectLegend TRUE: show legend for effect (Default: FALSE)
+#' @param effectDescription custom label for effect 
+#' @param xLabelsOverwrite custom labels for x-axis 
+#' @param useLatexMarkup use latex font and markup 
 #' @param numberColors  
 #'
 #' @return a plot
 #' @export
 #'
 #' @examples generateEffectPlot(data = main_df, x = "strategy", y = "trust_mean", fillColourGroup = "Emotion", ytext = "Trust", xtext = "Strategy", legendPos = c(0.1,0.23), shownEffect = "interaction")
-generateEffectPlot <- function(data, x, y, fillColourGroup, ytext ="testylab", xtext="testxlab", legendPos = c(0.1,0.23), shownEffect ="main", numberColors = 6) {
+generateEffectPlot <- function(data,
+                                  x,
+                                  y,
+                                  fillColourGroup,
+                                  ytext = "testylab",
+                                  xtext = "testxlab",
+                                  legendPos = c(0.1, 0.23),
+                                  legendHeading = NULL,
+                                  shownEffect = "main",
+                                  effectLegend = FALSE,
+                                  effectDescription = NULL,
+                                  xLabelsOverwrite = NULL,
+                                  useLatexMarkup = FALSE,
+                                  numberColors = 6) {
   assertthat::not_empty(data)
   assertthat::not_empty(x)
   assertthat::not_empty(y)
   assertthat::not_empty(fillColourGroup)
   assertthat::not_empty(shownEffect)
   
-  p <- data %>% ggplot() +
-    aes(x = !!sym(x), y = !!sym(y), fill = !!sym(fillColourGroup), colour = !!sym(fillColourGroup), group = !!sym(fillColourGroup)) +
-    scale_colour_see() + 
+  p <- data %>%
+    ggplot() +
+    aes(
+      x = !!sym(x),
+      y = !!sym(y),
+      fill = !!sym(fillColourGroup),
+      colour = !!sym(fillColourGroup),
+      group = !!sym(fillColourGroup)
+    ) +
+    scale_colour_see() +
     ylab(ytext) +
-    theme(legend.position.inside = legendPos) +
     xlab(xtext) +
-    stat_summary(fun = mean, geom = "point", size = 6.0) +
-    stat_summary(fun = mean, geom = "point", size = 6.0,  aes(group = 1)) +
-      stat_summary(fun.data = "mean_cl_boot", geom = "errorbar", width = .5, position = position_dodge(width = 0.05), alpha = 0.5)
+    theme(legend.position.inside = legendPos,
+          legend.title = element_text(face = "bold",color = "black", size = 14)
+          ) +
+    
+    # Points for each group
+    stat_summary(
+      fun = mean,
+      geom = "point",
+      size = 5
+    ) +
+    
+    # Error bars
+    stat_summary(
+      fun.data = "mean_cl_boot",
+      geom = "errorbar",
+      width = .5,
+      position = position_dodge(width = 0.05),
+      alpha = 0.5
+    )+ 
+    
+    # Ensure consistent order of legends
+    guides(
+      colour = guide_legend(order = 1),
+      fill   = guide_legend(order = 1),
+      shape  = guide_legend(order = 2)
+    )
   
-  if(shownEffect=="main"){
-    p <- p + stat_summary(fun = mean, geom = "line",  size = 2, aes(group = 1)) + stat_summary(fun = mean, geom = "line", linetype = "dashed", size = 1)
-  }else if(shownEffect=="interaction"){
-    p <- p + stat_summary(fun = mean, geom = "line", linetype = "dashed",  size = 1, aes(group = 1)) + stat_summary(fun = mean, geom = "line", size = 2)
-  }else{
+  # Legend heading
+  if (!is.null(legendHeading) && nzchar(legendHeading)) {
+    p <- p + labs(
+      color = legendHeading,
+      fill  = legendHeading
+    )
+  }
+  
+  # Overwrite x-axis labels
+  if (!is.null(xLabelsOverwrite)) {
+    p <- p  +
+      scale_x_discrete(
+        name = xtext,
+        labels = xLabelsOverwrite
+        )
+  }
+  
+  # Latex extension
+  if(useLatexMarkup) {
+    p <- p + theme(
+      legend.text = element_text(
+        family = "sans",
+        size = 17,
+        color = "#000000"
+      ),
+      axis.title.x = element_text(
+        family = "sans",
+        face = "bold",
+        size = 18,
+        color = "#000000"
+      ),
+      axis.title.y = element_markdown( #Enables usage of e.g. "**Bold Text**" or unicode
+        family = "sans",
+        size = 18,
+        color = "#000000"
+      ),
+      axis.text.x = element_text(
+        family = "sans",
+        size = 17,
+        color = "#000000"
+      ),
+      axis.text.y = element_text(
+        family = "sans",
+        size = 17,
+        color = "#000000"
+      )
+    )
+  }
+  
+  
+  
+  # Main / Interaction Effect visualization
+  if(is.null(effectDescription) || !nzchar(effectDescription)) {
+    effectDescription <- paste("Mean of", xtext)
+  }
+  
+  if (shownEffect == "main") {
+    p <- p +
+      stat_summary(
+        fun = mean,
+        geom = "line",
+        linewidth = 2,
+        aes(group = 1),
+        show.legend = FALSE
+      ) +
+      stat_summary(
+        fun = mean,
+        geom = "point",
+        size = 6,
+        aes(group = 1, shape = effectDescription),
+        show.legend = effectLegend
+      ) +
+      scale_shape_manual(
+        name = "Main Effect",
+        values = setNames(16, effectDescription) #16 = shape code for solid dot
+      ) +
+      stat_summary(
+        fun = mean,
+        geom = "line",
+        linetype = "dashed",
+        linewidth = 1,
+        show.legend = FALSE
+      )
+  } else if (shownEffect == "interaction") {
+    p <- p +
+      stat_summary(
+        fun = mean,
+        geom = "line",
+        linetype = "dashed",
+        linewidth = 1,
+        aes(group = 1),
+        show.legend = FALSE
+      ) +
+      stat_summary(
+        fun = mean,
+        geom = "point",
+        size = 6,
+        aes(group = 1, shape = effectDescription),
+        show.legend = effectLegend
+      )+
+      scale_shape_manual(
+        name = "Interaction Effect",
+        values = setNames(16, effectDescription) #16 = shape code for solid dot
+      ) +
+      stat_summary(
+        fun = mean,
+        geom = "line",
+        linewidth = 2,
+        show.legend = FALSE
+      )
+  } else {
     stop("ERROR: wrong effect defined for visualization.")
   }
   
   return(p)
-  
 }
 
 
