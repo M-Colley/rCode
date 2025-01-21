@@ -968,6 +968,7 @@ checkAssumptionsForAnovaOneFactor <- function(data, y, factor_1) {
 #' @examples model <- np.anova(formel = tlx_mental ~ Video * DriverPosition * gesture * eHMI + Error(UserID / (gesture * eHMI)), data = main_df, method = 0, compact = T)
 #' reportNPAV(model, "mental workload")
 reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE) {
+  .Deprecated("ARTool")
   assertthat::not_empty(model)
   assertthat::not_empty(dv)
 
@@ -1057,6 +1058,7 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
 #' @return
 #' @export
 reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE) {
+  .Deprecated("ARTool")
   assertthat::not_empty(model)
   assertthat::not_empty(dv)
   
