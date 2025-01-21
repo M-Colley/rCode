@@ -82,10 +82,10 @@ library(stringr)
 library(ggpmisc)
 library(ggtext)
 
+# JANUARY 2025: no longer available
+# source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
 
-source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
-
-# don't use scientific notation
+# Do not use scientific notation for readability
 options(scipen = 999)
 options(digits = 10)
 
