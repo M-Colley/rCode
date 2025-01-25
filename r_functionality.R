@@ -1292,7 +1292,7 @@ reportMeanAndSD <- function(data, iv = "testiv", dv = "testdv") {
   assertthat::not_empty(dv)
   
 
-  test <- data  %>% drop_na(!! sym(iv)) %>% drop_na(!! sym(dv)) %>% group_by(!! sym(iv)) %>% summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
+  test <- data  %>% drop_na(!! sym(iv)) %>% drop_na(!! sym(dv)) %>% group_by(!! sym(iv)) %>% dplyr::summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
   
   for(i in 1:nrow(test)) {
     row <- test[i,]
@@ -1550,12 +1550,12 @@ reportDunnTest <- function(data, d, iv = "testiv", dv = "testdv") {
 
       valueOne <- data %>%
         filter(!!sym(iv) == firstCondition) %>%
-        summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
+        dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       firstCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueOne[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueOne[[2]], digits = 2)), "}")
 
       valueTwo <- data %>%
         filter(!!sym(iv) == secondCondition) %>%
-        summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
+        dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       secondCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueTwo[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueTwo[[2]], digits = 2)), "}")
 
       # firstCondition bigger than second
@@ -2040,11 +2040,11 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
       
       valueOne <- data %>%
         filter(!!sym(iv) == firstCondition) %>%
-        summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
+        dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       
       valueTwo <- data %>%
         filter(!!sym(iv) == secondCondition) %>%
-        summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
+        dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       
       # Format statistics
       firstStatsStr <- paste0(" (\\m{", sprintf("%.2f", as.numeric(round(valueOne[1,1], 2))), "}, \\sd{", sprintf("%.2f", as.numeric(round(valueOne[1,2], 2))), "})")
