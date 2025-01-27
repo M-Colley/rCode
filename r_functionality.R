@@ -1932,6 +1932,61 @@ generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, l
 
 
 
+#' Transform text from `report::report()` into LaTeX-friendly output.
+#'
+#' @param x Character vector or a single string containing the report text.
+#' @return A single string with replacements for LaTeX.
+#'
+latexify_report <- function(x, print_result = TRUE) {
+  # If x is a character vector of lines, collapse to a single string
+  if (length(x) > 1) {
+    x <- paste(x, collapse = "\n")
+  }
+  
+  # Perform substitutions:
+  #  1. R2 -> $R^2$
+  #  2. %  -> \%
+  #  3. ~  -> $\sim$
+  out <- x |>
+    gsub("R2", "$R^2$", x = _, fixed = TRUE) |>
+    gsub("%", "\\%", x = _, fixed = TRUE) |>
+    gsub("~", "$\\sim$", x = _, fixed = TRUE)
+  
+  # Split into lines for possible itemization
+  lines <- strsplit(out, "\n")[[1]]
+  
+  # Identify lines that should become bullet points
+  bullet_idx <- grep("^\\s*-\\s+", lines)
+  
+  # Convert bullet points into a LaTeX itemize environment
+  if (length(bullet_idx) > 0) {
+    # Replace '- ' with '\item '
+    lines[bullet_idx] <- sub("^\\s*-\\s+", "\\\\item ", lines[bullet_idx])
+    
+    first_bullet <- bullet_idx[1]
+    last_bullet  <- bullet_idx[length(bullet_idx)]
+    
+    lines <- c(
+      lines[1:(first_bullet - 1)],
+      "\\begin{itemize}",
+      lines[first_bullet:last_bullet],
+      "\\end{itemize}",
+      if (last_bullet < length(lines)) lines[(last_bullet + 1):length(lines)] else character(0)
+    )
+  }
+  
+  # Re-combine the result
+  out <- paste(lines, collapse = "\n")
+  
+  # By default, print nicely to the console but still return the string
+  if (print_result) {
+    cat(out, "\n")
+  }
+  
+  invisible(out)
+}
+      
+
 
 
 #' Remove outliers and calculate REI
