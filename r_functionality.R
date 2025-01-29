@@ -128,7 +128,7 @@ n_fun <- function(x){
 }
 
 
-#' Check whether Internet connection is present.
+#' Check whether an Internet connection is present.
 #'
 #' @return
 #' @export
@@ -175,7 +175,8 @@ ggplot2::theme_set(see::theme_lucid() + theme(legend.title = element_blank(),
                                 axis.title = element_text(size = 20), axis.text = element_text(size = 17), 
                                 plot.title = element_text(size = 28), plot.subtitle = element_text(size = 17), 
                                 legend.background = element_blank(), legend.position = "inside", 
-                                legend.position.inside = c(0.85, 0.45), legend.text = element_text(size = 15)))
+                                legend.position.inside = c(0.85, 0.45), legend.text = element_text(size = 15), 
+                                              strip.text = element_text(size = 22)))
 
 
 #' Generating the sum and adding a crossbar.
