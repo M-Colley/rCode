@@ -30,6 +30,8 @@ if (!require("emmeans")) install.packages("emmeans")
 if (!require("stringr")) install.packages("stringr")
 if (!require("ggpmisc")) install.packages("ggpmisc")
 if (!require("ggtext")) install.packages("ggtext")
+if (!require("marginaleffects")) install.packages("marginaleffects")
+
 
 
 
