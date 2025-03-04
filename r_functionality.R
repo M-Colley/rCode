@@ -212,14 +212,14 @@ normalize <- function(x_vector, old_min, old_max, new_min, new_max) {
 }
 
 
-#' Checking the version of R (>= 4.4.2) and effectsize as well as ggstatsplot. If not appropriate, a message for the user is generated.
+#' Checking the version of R and effectsize as well as ggstatsplot. If not appropriate, a message for the user is generated.
 #'
 #' @return
 #' @export
 #'
 #' @examples
 checkPackageVersions <- function() {
-  if (R.version.string >= "4.4.2") {
+  if (R.version.string >= "4.4.3") {
     print("R Version OK!")
   } else {
     print("updateR()!")
