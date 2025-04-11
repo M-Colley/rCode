@@ -219,7 +219,7 @@ normalize <- function(x_vector, old_min, old_max, new_min, new_max) {
 #'
 #' @examples
 checkPackageVersions <- function() {
-  if (R.version.string >= "4.4.3") {
+  if (R.version.string >= "4.5.0") {
     print("R Version OK!")
   } else {
     print("updateR()!")
