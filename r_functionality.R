@@ -231,7 +231,7 @@ checkPackageVersions <- function() {
   } else {
     print("update effectsize - highly important!")
   }
-  if (packageVersion("ggstatsplot") >= "0.13.0") {
+  if (packageVersion("ggstatsplot") >= "0.13.1") {
     print("ggstatsplot OK!")
   } else {
     print("update ggstatsplot - highly important!")
