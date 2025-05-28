@@ -226,7 +226,7 @@ checkPackageVersions <- function() {
     print("Attention: novel version of RTools is required!")
   }
 
-  if (packageVersion("effectsize") >= "1.0.0") {
+  if (packageVersion("effectsize") >= "1.0.1") {
     print("effectsize OK!")
   } else {
     print("update effectsize - highly important!")
