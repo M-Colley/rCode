@@ -31,7 +31,7 @@ if (!require("stringr")) install.packages("stringr")
 if (!require("ggpmisc")) install.packages("ggpmisc")
 if (!require("ggtext")) install.packages("ggtext")
 if (!require("marginaleffects")) install.packages("marginaleffects")
-
+if (!require("scales")) install.packages("scales")
 
 
 
@@ -83,6 +83,8 @@ library(emmeans)
 library(stringr)
 library(ggpmisc)
 library(ggtext)
+library(scales)
+
 
 # JANUARY 2025: no longer available
 # source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
@@ -153,7 +155,7 @@ havingIP <- function() {
 # update all available packages
 if (havingIP()) {
   
-  # list all packages where an update is available
+  # List all packages where an update is available
   numberOldPackages <- nrow(old.packages())
   
   if(!is.null(numberOldPackages) && numberOldPackages > 0){
@@ -219,7 +221,7 @@ normalize <- function(x_vector, old_min, old_max, new_min, new_max) {
 #'
 #' @examples
 checkPackageVersions <- function() {
-  if (R.version.string >= "4.5.0") {
+  if (R.version.string >= "4.5.1") {
     print("R Version OK!")
   } else {
     print("updateR()!")
