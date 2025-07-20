@@ -1614,13 +1614,23 @@ reportDunnTestTable <- function(data, iv = "testiv", dv = "testdv", order = FALS
   names(table)[names(table) == 'table$Z'] <- 'Z'
   names(table)[names(table) == 'table$comparisons'] <- 'Comparison'
   
-
   if (!any(table$`p-adjusted` < 0.05, na.rm = TRUE)) {
     cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
-  }else{
+  } else {
     
-    print(xtable(table, digits = c(4,4,4,numberDigitsForPValue), caption = paste0("Post-hoc comparisons for independent variable \\", iv, " and dependent variable \\", dv, ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true."), label = paste0("tab:posthoc-", iv), ), type = "latex", size = latexSize, caption.placement = "top", include.rownames=FALSE)
-    message("Reminder: adjust all 0.000 to command $<$0.001.")
+    # Replace 0.000 with <0.001 automatically
+    table$`p-adjusted` <- ifelse(table$`p-adjusted` < 0.001, "<0.001", 
+                                 formatC(table$`p-adjusted`, digits = numberDigitsForPValue, format = "f"))
+    
+    # Adjust the xtable call to handle the modified p-adjusted column
+    xtable_obj <- xtable(table, 
+                         digits = c(0, 0, 4, 0),  # Changed last digit to 0 since p-adjusted is now character
+                         caption = paste0("Post-hoc comparisons for independent variable \\", iv, 
+                                          " and dependent variable \\", dv, 
+                                          ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true."), 
+                         label = paste0("tab:posthoc-", iv, "-", dv))
+    
+    print(xtable_obj, type = "latex", size = latexSize, caption.placement = "top", include.rownames = FALSE,)
   }
 }
 
