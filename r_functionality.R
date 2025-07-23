@@ -1,6 +1,23 @@
 # enhance reproducibility
 usethis::use_blank_slate()
 
+message("
+If you use these functions, please cite:
+
+Colley, M. (2024). rCode: Enhanced R Functions for Statistical Analysis and Reporting. 
+Retrieved from https://github.com/M-Colley/rCode
+
+BibTeX:
+@misc{colley2024rcode,
+  author       = {Mark Colley},
+  title        = {rCode: Enhanced R Functions for Statistical Analysis and Reporting},
+  year         = {2024},
+  howpublished = {\\url{https://github.com/M-Colley/rCode}},
+  note         = {A collection of custom R functions for streamlining statistical analysis, visualizations, and APA-compliant reporting.}
+}
+")
+
+
 if (!require("httr")) install.packages("httr")
 if (!require("easystats")) install.packages("easystats")
 if (!require("tidyverse")) install.packages("tidyverse")
