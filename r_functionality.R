@@ -274,7 +274,7 @@ checkPackageVersions <- function() {
 #' @export
 #'
 #' @examples ggwithinstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE, plotType = "boxviolin")
-ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, showPairwiseComp = TRUE, plotType = "boxviolin") {
+ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels = NULL, showPairwiseComp = TRUE, plotType = "boxviolin") {
   assertthat::not_empty(data)
   assertthat::not_empty(x)
   assertthat::not_empty(y)
