@@ -279,7 +279,6 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
   assertthat::not_empty(x)
   assertthat::not_empty(y)
   assertthat::not_empty(ylab)
-  assertthat::not_empty(xlabels)
 
 
   normality_test <- list()  # Initialize empty list to store test results
@@ -320,11 +319,21 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, show
   
   type <- ifelse(normallyDistributed, "p", "np")
 
-  ggstatsplot::ggwithinstats(
+
+
+
+  plot <- ggstatsplot::ggwithinstats(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp, var.equal = group_all_data_equal,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey",
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
-  ) + scale_x_discrete(labels = xlabels)
+  )
+  
+  # Only apply custom xlabels if they are provided
+  if (!is.null(xlabels) && length(xlabels) > 0) {
+    plot <- plot + scale_x_discrete(labels = xlabels)
+  }
+  
+  return(plot)
 }
 
 
