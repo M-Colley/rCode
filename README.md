@@ -2,6 +2,8 @@
 
 > Created by [Mark Colley](https://m-colley.github.io/)
 
+[![DOI](https://zenodo.org/badge/833015227.svg)](https://doi.org/10.5281/zenodo.16849778)
+
 `rCode` is a collection of custom R functions that streamline statistical analysis and result reporting. Built upon popular R packages such as [ggstatsplot](https://github.com/IndrajeetPatil/ggstatsplot) and [ARTool](https://github.com/mjskay/ARTool), this collection offers a wide array of tools for simplifying reproducible analyses, generating high-quality visualizations, and producing APA-compliant outputs.
 
 The primary goal of this package is to significantly reduce repetitive coding efforts, allowing you to focus on interpreting results. Whether you're dealing with ANOVA assumptions, reporting effect sizes, or creating publication-ready visualizations, `rCode` makes these tasks easier.
@@ -216,7 +218,8 @@ For questions or remarks, please contact Mark Colley.
   title        = {rCode: Enhanced R Functions for Statistical Analysis and Reporting},
   year         = {2024},
   howpublished = {\url{https://github.com/M-Colley/rCode}},
-  note         = {A collection of custom R functions for streamlining statistical analysis, visualizations, and APA-compliant reporting.}
+  note         = {A collection of custom R functions for streamlining statistical analysis, visualizations, and APA-compliant reporting.},
+  doi          = {10.5281/zenodo.16849778},
 }
 ```
 
