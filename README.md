@@ -220,6 +220,7 @@ For questions or remarks, please contact Mark Colley.
   howpublished = {\url{https://github.com/M-Colley/rCode}},
   note         = {A collection of custom R functions for streamlining statistical analysis, visualizations, and APA-compliant reporting.},
   doi          = {10.5281/zenodo.16849778},
+  url          = {https://doi.org/10.5281/zenodo.16849778},
 }
 ```
 
