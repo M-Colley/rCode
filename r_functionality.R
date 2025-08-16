@@ -111,12 +111,12 @@ library(scales)
 options(scipen = 999)
 options(digits = 10)
 
+# Ensure dplyr functions are available and are not overwritten by plyr functions loaded by HMisc
+mutate <- dplyr::mutate
+filter <- dplyr::filter
+summarise <- dplyr::summarise
+select <- dplyr::select
 
-# Box plot
-# wes_palette("Royal1", n=5)
-# wes_palette("Cavalcanti1", n=5)
-# wes_palette("FantasticFox1", n=5)
-# wes_palette("Darjeeling1", n=5)
 
 # not in 
 '%!in%' <- function(x,y)!('%in%'(x,y))
@@ -2431,4 +2431,5 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
