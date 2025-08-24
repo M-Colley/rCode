@@ -14,7 +14,7 @@ BibTeX:
   year         = {2024},
   howpublished = {\\url{https://github.com/M-Colley/rCode}},
   note         = {A collection of custom R functions for streamlining statistical analysis, visualizations, and APA-compliant reporting.},
-  doi          = {10.5281/zenodo.16849778},
+  doi          = {10.5281/zenodo.16875755},
 }
 ")
 
@@ -2431,5 +2431,6 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
