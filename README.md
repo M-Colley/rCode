@@ -195,16 +195,6 @@ new_df <- replace_values(main_df, to_replace = c("bad_val1", "bad_val2"), replac
 ```
 
 
-### `checkAssumptionsForAnova_X_Factors` - DEPRECATED
-
-This function suite checks normality and homogeneity of variance assumptions for ANOVA models. There are versions available for one, two, three, and four factors. For details on assumptions checking, refer to [Datanovia](https://www.datanovia.com/en/lessons/anova-in-r/#check-assumptions-1).
-
-**Example:**
-```r
-checkAssumptionsForAnovaTwoFactors(data = main_df, y = "dependent_var", factor_1 = "factor1", factor_2 = "factor2")
-```
-
-
 *Contact*
 For questions or remarks, please contact Mark Colley.
 
