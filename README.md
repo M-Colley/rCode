@@ -1,8 +1,8 @@
 # rCode: Enhanced R Functions for Statistical Analysis and Reporting
 
 > Created by [Mark Colley](https://m-colley.github.io/)
-10.5281/zenodo.16875755
-[![DOI](https://zenodo.org/badge/833015227.svg)](https://doi.org/10.5281/zenodo.16875755)
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16875755.svg)](https://doi.org/10.5281/zenodo.16875755)
 
 `rCode` is a collection of custom R functions that streamline statistical analysis and result reporting. Built upon popular R packages such as [ggstatsplot](https://github.com/IndrajeetPatil/ggstatsplot) and [ARTool](https://github.com/mjskay/ARTool), this collection offers a wide array of tools for simplifying reproducible analyses, generating high-quality visualizations, and producing APA-compliant outputs.
 
@@ -11,7 +11,7 @@ The primary goal of this package is to significantly reduce repetitive coding ef
 ## Key Features
 - **Automated Assumption Checking**: For ANOVA models, automatically verify normality and homogeneity of variance.
 - **Enhanced ggstatsplot Functions**: Easily switch between parametric and non-parametric versions of tests based on the data's characteristics.
-- **APA-Compliant Reporting**: Copy-paste ready results in LaTeX format, suitable for academic publications.
+- **APA-Compliant Reporting**: Copy-paste-ready results in LaTeX format, suitable for academic publications.
 - **Custom Visualizations**: Generate effect plots and multi-objective optimization plots with minimal effort.
 - **Pareto Analysis and Post-Hoc Tests**: Automate these analyses and produce formatted outputs.
 
@@ -138,7 +138,7 @@ Generates LaTeX-formatted results from art models for factorial designs. The nec
 **Example:**
 
 ```r
-model <- art(formula = dependent_var ~ factor1 * factor2 + Error(Subject / (factor1 * factor2)), data = main_df)
+model <- art(formula = dependent_var ~ factor1 * factor2 + Error(Subject / (factor1 * factor2)), data = main_df) |> anova()
 reportART(anova(model), "Dependent Variable")
 ```
 
@@ -195,8 +195,8 @@ new_df <- replace_values(main_df, to_replace = c("bad_val1", "bad_val2"), replac
 ```
 
 
-*Contact*
-For questions or remarks, please contact Mark Colley.
+## Contact
+For questions or remarks, please contact [Mark Colley](https://m-colley.github.io/).
 
 
 
