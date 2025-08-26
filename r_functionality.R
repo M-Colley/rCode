@@ -110,6 +110,7 @@ library(scales)
 # Do not use scientific notation for readability
 options(scipen = 999)
 options(digits = 10)
+options(digits.secs = 3) # Set to 3 for millisecond precision
 
 # Ensure dplyr functions are available and are not overwritten by plyr functions loaded by HMisc
 mutate <- dplyr::mutate
@@ -2204,6 +2205,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
