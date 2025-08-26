@@ -1,6 +1,10 @@
-# enhance reproducibility
-usethis::use_blank_slate()
+## --- rCode bootstrap ------------------------------------------------------
 
+## Keep RStudio projects clean
+try(if (rstudioapi::isAvailable()) usethis::use_blank_slate(), silent = TRUE)
+
+
+    
 message("
 If you use these functions, please cite:
 
@@ -50,13 +54,14 @@ if (!require("ggpmisc")) install.packages("ggpmisc")
 if (!require("ggtext")) install.packages("ggtext")
 if (!require("marginaleffects")) install.packages("marginaleffects")
 if (!require("scales")) install.packages("scales")
+if (!require("conflicted")) install.packages("conflicted")
 
 
 
 library(easystats)
 
-# enforce everybody to use the latest R versions of the easystats packages
-easystats::easystats_update()
+## Keep easystats current
+try(easystats::easystats_update(ask = FALSE), silent = TRUE)
 
 # For documentation: To insert a documentation skeleton in RStudio, use Ctrl + Alt + Shift + R
 
@@ -112,11 +117,14 @@ options(scipen = 999)
 options(digits = 10)
 options(digits.secs = 3) # Set to 3 for millisecond precision
 
-# Ensure dplyr functions are available and are not overwritten by plyr functions loaded by HMisc
-mutate <- dplyr::mutate
-filter <- dplyr::filter
-summarise <- dplyr::summarise
-select <- dplyr::select
+## Prefer dplyr over plyr or Hmisc in name clashes
+conflicted::conflict_prefer("mutate",   "dplyr")
+conflicted::conflict_prefer("filter",   "dplyr")
+conflicted::conflict_prefer("select",   "dplyr")
+conflicted::conflict_prefer("summarise","dplyr")
+conflicted::conflict_prefer("summarize","dplyr")
+conflicted::conflict_prefer("rename",   "dplyr")
+conflicted::conflict_prefer("arrange",  "dplyr")
 
 
 # not in 
@@ -2205,6 +2213,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
