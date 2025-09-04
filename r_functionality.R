@@ -1774,7 +1774,7 @@ generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, l
   assertthat::not_empty(x)
   assertthat::not_empty(y)
   assertthat::not_empty(fillColourGroup)
-  
+    
   # as default, just add the y variable in Title caps
   if (missing(ytext)) {
     ytext <- stringr::str_to_title(y)
@@ -1801,6 +1801,96 @@ generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, l
     stat_poly_line(fullrange = FALSE, alpha = 0.1, linetype = "dashed", linewidth = 0.5) +
     geom_vline(aes(xintercept = numberSamplingSteps + 0.5), linetype = "dashed", color = "black", alpha = 0.5)
   
+  return(p)
+}
+
+#' Generate a Multi-objective Optimization Plot
+#'
+#' This function generates a multi-objective optimization plot using `ggplot2`. The plot visualizes the relationship between the `x` and `y` variables, grouping and coloring by a fill variable, with the option to customize legend position, labels, and annotation of sampling and optimization phases.
+#' Appropriate if you use https://github.com/Pascal-Jansen/Bayesian-Optimization-for-Unity in version 1.1.0 or higher.
+#'
+#' @param data A data frame containing the data to be plotted.
+#' @param x A string representing the column name in `data` to be used for the x-axis. Can be either numeric or factor. Default is `"Iteration"`.
+#' @param y A string representing the column name in `data` to be used for the y-axis. This should be a numeric variable.
+#' @param fillColourGroup A string representing the column name in `data` that defines the fill color grouping for the plot. Default is `"ConditionID"`.
+#' @param ytext A custom label for the y-axis. If not provided, the y-axis label will be the title-cased version of `y`.
+#' @param legendPos A numeric vector of length 2 specifying the position of the legend inside the plot. Default is `c(0.65, 0.85)`.
+#' @param labelPosFormulaY A string specifying the vertical position of the polynomial equation label in the plot. Acceptable values are `"top"`, `"center"`, or `"bottom"`. Default is `"top"`.
+#' @param verticalLinePosY A numeric value of the y-coordinate where the "sampling" and "optimization" line should be drawn.
+#'
+#' @return A `ggplot` object representing the multi-objective optimization plot, ready to be rendered.
+#' @export
+#'
+#' @examples
+#' # Example with numeric x-axis
+#' df <- data.frame(
+#'   x = 1:20,
+#'   y = rnorm(20),
+#'   ConditionID = rep(c("A", "B"), 10)
+#' )
+#' generateMoboPlot2(data = df, x = "x", y = "y")
+#'
+#' # Example with factor x-axis
+#' df <- data.frame(
+#'   x = factor(rep(1:5, each = 4)),
+#'   y = rnorm(20),
+#'   ConditionID = rep(c("A", "B"), 10)
+#' )
+#' generateMoboPlot2(data = df, x = "x", y = "y")
+generateMoboPlot2 <- function(data, x = "Iteration", y, phaseCol = "Phase", fillColourGroup = "", ytext, legendPos = c(0.65, 0.85), labelPosFormulaY = "top", verticalLinePosY = 0.75) {
+  assertthat::not_empty(data)
+  assertthat::not_empty(x)
+  assertthat::not_empty(y)
+  assertthat::not_empty(fillColourGroup)
+  stopifnot(all(c(x, y, phaseCol) %in% names(data)))
+  
+  
+  # as default, just add the y variable in Title caps
+  if (missing(ytext)) {
+    ytext <- stringr::str_to_title(y)
+  }
+  
+  numberSamplingSteps <- max(as.numeric(data[[x]][data[[phaseCol]] == "sampling"]), na.rm = TRUE)
+  numberOptimizations <- max(as.numeric(data[[x]][data[[phaseCol]] == "optimization"]), na.rm = TRUE) - numberSamplingSteps
+  
+  maxIteration <- numberSamplingSteps + numberOptimizations
+  
+  
+  y_sym <- rlang::sym(y)
+  x_sym <- rlang::sym(x)
+  
+  p <- data |>
+    ggplot2::ggplot(ggplot2::aes(x = !!x_sym, y = !!y_sym)) +
+    ggplot2::ylab(ytext) +
+    ggplot2::xlab("Iteration") +
+    ggplot2::theme(legend.position.inside = legendPos) +
+    ggplot2::stat_summary(fun = base::mean, geom = "point", size = 4.0, alpha = 0.9) +
+    ggplot2::stat_summary(fun = base::mean, geom = "line", linewidth = 1, alpha = 0.3) +
+    ggplot2::stat_summary(fun.data = "mean_cl_boot", geom = "errorbar",
+                          width = 0.5, position = ggplot2::position_dodge(width = 0.1), alpha = 0.5) +
+    ggplot2::annotate("text", x = numberSamplingSteps / 2.0, y = verticalLinePosY - 0.2, label = "Sampling") +
+    ggplot2::geom_segment(ggplot2::aes(x = 0, y = verticalLinePosY,
+                                       xend = numberSamplingSteps + 0.2, yend = verticalLinePosY),
+                          linetype = "dashed", color = "black") +
+    ggplot2::annotate("text", x = numberOptimizations / 2.0 + numberSamplingSteps,
+                      y = verticalLinePosY - 0.2, label = "Optimization") +
+    ggplot2::geom_segment(ggplot2::aes(x = numberSamplingSteps + 0.8, y = verticalLinePosY,
+                                       xend = maxIteration, yend = verticalLinePosY),
+                          color = "black") +
+    ggpmisc::stat_poly_eq(ggpmisc::use_label(c("eq", "R2")), label.y = labelPosFormulaY) +
+    ggpmisc::stat_poly_line(fullrange = FALSE, alpha = 0.1, linetype = "dashed", linewidth = 0.5) +
+    ggplot2::geom_vline(ggplot2::aes(xintercept = numberSamplingSteps + 0.5),
+                        linetype = "dashed", color = "black", alpha = 0.5)
+  
+  if (is.character(fillColourGroup) && length(fillColourGroup) >1) {
+    f_sym <- rlang::sym(fillColourGroup)
+    p <- p +
+      ggplot2::aes(fill = !!f_sym, colour = !!f_sym, group = !!f_sym) +
+      see::scale_fill_see() +
+      see::scale_color_see()
+  } else {
+    p <- p + ggplot2::aes(group = 1)
+  }
   return(p)
 }
 
@@ -2263,6 +2353,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
