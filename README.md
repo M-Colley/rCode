@@ -163,12 +163,13 @@ main_df <- main_df |>
 
 ```
 
-### `generateMoboPlot`
+### `generateMoboPlot` and `generateMoboPlot2`
 Creates a multi-objective optimization plot, visualizing sampling and optimization phases. This is particularly useful for visualizing iterations in optimization problems.
+`generateMoboPlot2` is appropriate when using https://github.com/Pascal-Jansen/Bayesian-Optimization-for-Unity/releases starting version 1.1.0.
 
 **Example:**
 ```r
-generateMoboPlot(df = main_df, x = "iteration", y = "objective1", fillColourGroup = "group", ytext = "Y Axis Label")
+generateMoboPlot2(data = main_df, x = "Iteration", y = "objective1", fillColourGroup = "group", ytext = "Y Axis Label")
 ```
 
 Example Plot:
