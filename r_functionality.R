@@ -1940,7 +1940,8 @@ latexify_report <- function(x,
   out <- x |>
     gsub("R2", "$R^2$", x = _, fixed = TRUE) |>
     gsub("%", "\\%", x = _, fixed = TRUE) |>
-    gsub("~", "$\\sim$", x = _, fixed = TRUE)
+    gsub("~", "$\\sim$", x = _, fixed = TRUE) |>
+    gsub("Rhat", "$R^$", x = _, fixed = TRUE)
   
   # Split into individual lines for processing
   lines <- strsplit(out, "\n")[[1]]
@@ -1959,7 +1960,7 @@ latexify_report <- function(x,
       next  # Skip this line entirely
     }
     
-    # Check if the line is a bullet candidate (i.e. starts with a dash)
+    # Check if the line is a bullet candidate (i.e., starts with a dash)
     if (grepl("^\\s*-\\s+", line)) {
       # If only_sig==TRUE, skip bullet items that contain "non-significant"
       if (only_sig && grepl("non-significant", line, fixed = TRUE)) {
@@ -2353,6 +2354,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
