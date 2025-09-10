@@ -1941,7 +1941,7 @@ latexify_report <- function(x,
     gsub("R2", "$R^2$", x = _, fixed = TRUE) |>
     gsub("%", "\\%", x = _, fixed = TRUE) |>
     gsub("~", "$\\sim$", x = _, fixed = TRUE) |>
-    gsub("Rhat", "$R^$", x = _, fixed = TRUE)
+    gsub("Rhat", "$\hat{R}$", x = _, fixed = TRUE)
   
   # Split into individual lines for processing
   lines <- strsplit(out, "\n")[[1]]
@@ -2354,6 +2354,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
