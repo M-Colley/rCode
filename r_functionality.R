@@ -310,7 +310,7 @@ checkPackageVersions <- function() {
   } else {
     print("update effectsize - highly important!")
   }
-  if (packageVersion("ggstatsplot") >= "0.13.1") {
+  if (packageVersion("ggstatsplot") >= "0.13.2") {
     print("ggstatsplot OK!")
   } else {
     print("update ggstatsplot - highly important!")
@@ -2354,6 +2354,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
