@@ -1389,44 +1389,61 @@ reportDunnTest <- function(data, d, iv = "testiv", dv = "testdv") {
   assertthat::not_empty(d)
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
-
+  
   if (!any(d$res$P.adj < 0.05, na.rm = TRUE)) {
     cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
   }
-
-
+  
   for (i in 1:length(d$res$P.adj)) {
     # Residuals have NA therefore we need this double check
     if (!is.na(d$res$P.adj[i]) && d$res$P.adj[i] < 0.05) {
-
       # first get p-value
       pValueNumeric <- d$res$P.adj[i]
-
       if (pValueNumeric < 0.001) {
         pValue <- paste0("\\padjminor{0.001}")
       } else {
         pValue <- paste0("\\padj{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
       }
-
+      
       # next, get comparison
       firstCondition <- strsplit(d$res$Comparison[i], " - ", fixed = T)[[1]][1]
       secondCondition <- strsplit(d$res$Comparison[i], " - ", fixed = T)[[1]][2]
-
+      
+      # Calculate effect size (rank biserial)
+      data_subset <- data %>%
+        filter(!!sym(iv) %in% c(firstCondition, secondCondition))
+      
+      tryCatch({
+        es <- effectsize::rank_biserial(as.formula(paste(dv, "~", iv)), 
+                                        data = data_subset)
+        effectSize <- paste0(", \\rankbiserial{", sprintf("%.2f", abs(es$r_rank_biserial)), "}")
+      }, error = function(e) {
+        effectSize <- ""
+      })
+      
       valueOne <- data %>%
         filter(!!sym(iv) == firstCondition) %>%
         dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
-      firstCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueOne[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueOne[[2]], digits = 2)), "}")
-
+      firstCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueOne[[1]], digits = 2)), 
+                                    "}, \\sd{", sprintf("%.2f", round(valueOne[[2]], digits = 2)), "}")
+      
       valueTwo <- data %>%
         filter(!!sym(iv) == secondCondition) %>%
         dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
-      secondCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueTwo[[1]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(valueTwo[[2]], digits = 2)), "}")
-
+      secondCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueTwo[[1]], digits = 2)), 
+                                     "}, \\sd{", sprintf("%.2f", round(valueTwo[[2]], digits = 2)), "}")
+      
       # firstCondition bigger than second
       if (valueOne[[1]][1] > valueTwo[[1]][1]) {
-        stringtowrite <- paste0("A post-hoc test found that ", trimws(firstCondition), " was significantly higher", firstCondtionValues, ") in terms of \\", dv, " compared to ", secondCondition, secondCondtionValues, "; ", pValue, "). ")
+        stringtowrite <- paste0("A post-hoc test found that ", trimws(firstCondition), 
+                                " was significantly higher", firstCondtionValues, 
+                                ") in terms of \\", dv, " compared to ", secondCondition, 
+                                secondCondtionValues, "; ", pValue, effectSize, "). ")
       } else {
-        stringtowrite <- paste0("A post-hoc test found that ", trimws(secondCondition), " was significantly higher", secondCondtionValues, ") in terms of \\", dv, " compared to ", firstCondition, firstCondtionValues, "; ", pValue, "). ")
+        stringtowrite <- paste0("A post-hoc test found that ", trimws(secondCondition), 
+                                " was significantly higher", secondCondtionValues, 
+                                ") in terms of \\", dv, " compared to ", firstCondition, 
+                                firstCondtionValues, "; ", pValue, effectSize, "). ")
       }
       cat(stringtowrite)
     }
@@ -1453,8 +1470,30 @@ reportDunnTestTable <- function(data, iv = "testiv", dv = "testdv", order = FALS
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
   
-  table <- dunn.test(data[[dv]], data[[iv]], method = "holm", list=TRUE)
-  table <- cbind.data.frame(table$comparisons,table$Z,table$P.adjusted)
+  table <- dunn.test::dunn.test(data[[dv]], data[[iv]], method = "holm", list=TRUE)
+  table <- cbind.data.frame(table$comparisons, table$Z, table$P.adjusted)
+  
+  # Calculate effect sizes for all comparisons
+  effectSizes <- numeric(nrow(table))
+  for (i in 1:nrow(table)) {
+    comparison <- as.character(table[i, 1])
+    firstCondition <- trimws(strsplit(comparison, " - ", fixed = TRUE)[[1]][1])
+    secondCondition <- trimws(strsplit(comparison, " - ", fixed = TRUE)[[1]][2])
+    
+    data_subset <- data %>%
+      filter(!!sym(iv) %in% c(firstCondition, secondCondition))
+    
+    tryCatch({
+      es <- effectsize::rank_biserial(as.formula(paste(dv, "~", iv)), 
+                                      data = data_subset)
+      effectSizes[i] <- abs(es$r_rank_biserial)
+    }, error = function(e) {
+      effectSizes[i] <- NA
+    })
+  }
+  
+  # Add effect size column
+  table <- cbind(table, effectSizes)
   
   # only show significant ones
   table <- subset(table, `table$P.adjusted` < 0.05)
@@ -1467,11 +1506,11 @@ reportDunnTestTable <- function(data, iv = "testiv", dv = "testdv", order = FALS
     table <- table[order(table$`table$comparisons`),]
   }
   
-  
-  #rename
+  # Rename columns
   names(table)[names(table) == 'table$P.adjusted'] <- 'p-adjusted'
   names(table)[names(table) == 'table$Z'] <- 'Z'
   names(table)[names(table) == 'table$comparisons'] <- 'Comparison'
+  names(table)[names(table) == 'effectSizes'] <- 'r'
   
   if (!any(table$`p-adjusted` < 0.05, na.rm = TRUE)) {
     cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
@@ -1481,15 +1520,18 @@ reportDunnTestTable <- function(data, iv = "testiv", dv = "testdv", order = FALS
     table$`p-adjusted` <- ifelse(table$`p-adjusted` < 0.001, "<0.001", 
                                  formatC(table$`p-adjusted`, digits = numberDigitsForPValue, format = "f"))
     
-    # Adjust the xtable call to handle the modified p-adjusted column
+    # Format effect size
+    table$r <- formatC(table$r, digits = 2, format = "f")
+    
+    # Adjust the xtable call to handle the modified columns
     xtable_obj <- xtable(table, 
-                         digits = c(0, 0, 4, 0),  # Changed last digit to 0 since p-adjusted is now character
+                         digits = c(0, 0, 4, 0, 0),  # Added digit specification for effect size
                          caption = paste0("Post-hoc comparisons for independent variable \\", iv, 
                                           " and dependent variable \\", dv, 
-                                          ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true."), 
+                                          ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true. Effect size reported as rank-biserial correlation (r)."), 
                          label = paste0("tab:posthoc-", iv, "-", dv))
     
-    print(xtable_obj, type = "latex", size = latexSize, caption.placement = "top", include.rownames = FALSE,)
+    print(xtable_obj, type = "latex", size = latexSize, caption.placement = "top", include.rownames = FALSE)
   }
 }
 
@@ -2354,6 +2396,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
