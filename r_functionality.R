@@ -1382,9 +1382,9 @@ generateEffectPlot <- function(data,
 #' @return
 #' @export
 #'
-#' @examples reportDunnTest(data, d, iv = "scene", dv = "NASATLX")
+#' @examples reportDunnTest(d, data, iv = "scene", dv = "NASATLX")
 #' # d <- dunnTest(NASATLX ~ scene, data = main_df, method = "holm")
-reportDunnTest <- function(data, d, iv = "testiv", dv = "testdv") {
+reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
   assertthat::not_empty(data)
   assertthat::not_empty(d)
   assertthat::not_empty(iv)
@@ -1464,14 +1464,15 @@ reportDunnTest <- function(data, d, iv = "testiv", dv = "testdv") {
 #' @return
 #' @export
 #'
-#' @examples reportDunnTestTable(data, iv = "scene" , dv = "NASATLX")
-reportDunnTestTable <- function(data, iv = "testiv", dv = "testdv", order = FALSE, numberDigitsForPValue = 4, latexSize = "small", orderText = TRUE){
+#' @examples reportDunnTestTable(d, data, iv = "scene" , dv = "NASATLX")
+reportDunnTestTable <- function(d, data, iv = "testiv", dv = "testdv", orderByP = FALSE, numberDigitsForPValue = 4, latexSize = "small", orderText = TRUE){
   assertthat::not_empty(data)
+  assertthat::not_empty(d)
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
   
-  table <- dunn.test::dunn.test(data[[dv]], data[[iv]], method = "holm", list=TRUE)
-  table <- cbind.data.frame(table$comparisons, table$Z, table$P.adjusted)
+  # Use the dunn test result that was passed in
+  table <- cbind.data.frame(d$comparisons, d$Z, d$P.adjusted)
   
   # Calculate effect sizes for all comparisons
   effectSizes <- numeric(nrow(table))
@@ -1496,23 +1497,23 @@ reportDunnTestTable <- function(data, iv = "testiv", dv = "testdv", order = FALS
   table <- cbind(table, effectSizes)
   
   # only show significant ones
-  table <- subset(table, `table$P.adjusted` < 0.05)
+  table <- subset(table, `d$P.adjusted` < 0.05)
   
-  if(order){
-    table <- table[order(table$`table$P.adjusted`),]
+  if(orderByP){
+    table <- table[order(table$`d$P.adjusted`),]
   }
   
   if(orderText){
-    table <- table[order(table$`table$comparisons`),]
+    table <- table[order(table$`d$comparisons`),]
   }
   
   # Rename columns
-  names(table)[names(table) == 'table$P.adjusted'] <- 'p-adjusted'
-  names(table)[names(table) == 'table$Z'] <- 'Z'
-  names(table)[names(table) == 'table$comparisons'] <- 'Comparison'
+  names(table)[names(table) == 'd$P.adjusted'] <- 'p-adjusted'
+  names(table)[names(table) == 'd$Z'] <- 'Z'
+  names(table)[names(table) == 'd$comparisons'] <- 'Comparison'
   names(table)[names(table) == 'effectSizes'] <- 'r'
   
-  if (!any(table$`p-adjusted` < 0.05, na.rm = TRUE)) {
+  if (nrow(table) == 0) {
     cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
   } else {
     
@@ -1525,7 +1526,7 @@ reportDunnTestTable <- function(data, iv = "testiv", dv = "testdv", order = FALS
     
     # Adjust the xtable call to handle the modified columns
     xtable_obj <- xtable(table, 
-                         digits = c(0, 0, 4, 0, 0),  # Added digit specification for effect size
+                         digits = c(0, 0, 4, 0, 0),
                          caption = paste0("Post-hoc comparisons for independent variable \\", iv, 
                                           " and dependent variable \\", dv, 
                                           ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true. Effect size reported as rank-biserial correlation (r)."), 
@@ -1534,7 +1535,7 @@ reportDunnTestTable <- function(data, iv = "testiv", dv = "testdv", order = FALS
     print(xtable_obj, type = "latex", size = latexSize, caption.placement = "top", include.rownames = FALSE)
   }
 }
-
+    
 #' Report statistical details for ggstatsplot.
 #'
 #' @param p: the object returned by ggwithinstats or ggbetweenstats
@@ -2396,6 +2397,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
