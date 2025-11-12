@@ -1465,19 +1465,39 @@ reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
 #' @export
 #'
 #' @examples reportDunnTestTable(d, data, iv = "scene" , dv = "NASATLX")
-reportDunnTestTable <- function(d, data, iv = "testiv", dv = "testdv", orderByP = FALSE, numberDigitsForPValue = 4, latexSize = "small", orderText = TRUE){
+reportDunnTestTable <- function(d = NULL, data, iv = "testiv", dv = "testdv", orderByP = FALSE, numberDigitsForPValue = 4, latexSize = "small", orderText = TRUE){
   assertthat::not_empty(data)
-  assertthat::not_empty(d)
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
   
-  # Use the dunn test result that was passed in
-  table <- cbind.data.frame(d$comparisons, d$Z, d$P.adjusted)
+  # If d is not provided, calculate it
+  if(is.null(d)) {
+    d <- FSA::dunnTest(as.formula(paste(dv, "~", iv)), data = data, method = "holm")
+  }
   
-  # Calculate effect sizes for all comparisons
+  
+  # Use the dunn test result that was passed in
+  # dunnTest returns a list with $res component
+  table <- data.frame(
+    Comparison = d$res$Comparison,
+    Z = d$res$Z,
+    `p-adjusted` = d$res$P.adj,
+    check.names = FALSE
+  )
+  
+  # only show significant ones
+  table <- subset(table, `p-adjusted` < 0.05)
+  
+  # Check if there are any significant results
+  if (nrow(table) == 0) {
+    cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
+    return(invisible(NULL))
+  }
+  
+  # Calculate effect sizes for all comparisons (only for significant ones)
   effectSizes <- numeric(nrow(table))
   for (i in 1:nrow(table)) {
-    comparison <- as.character(table[i, 1])
+    comparison <- as.character(table[i, 'Comparison'])
     firstCondition <- trimws(strsplit(comparison, " - ", fixed = TRUE)[[1]][1])
     secondCondition <- trimws(strsplit(comparison, " - ", fixed = TRUE)[[1]][2])
     
@@ -1494,46 +1514,32 @@ reportDunnTestTable <- function(d, data, iv = "testiv", dv = "testdv", orderByP 
   }
   
   # Add effect size column
-  table <- cbind(table, effectSizes)
-  
-  # only show significant ones
-  table <- subset(table, `d$P.adjusted` < 0.05)
+  table$r <- effectSizes
   
   if(orderByP){
-    table <- table[order(table$`d$P.adjusted`),]
+    table <- table[order(table$`p-adjusted`),]
   }
   
   if(orderText){
-    table <- table[order(table$`d$comparisons`),]
+    table <- table[order(table$Comparison),]
   }
   
-  # Rename columns
-  names(table)[names(table) == 'd$P.adjusted'] <- 'p-adjusted'
-  names(table)[names(table) == 'd$Z'] <- 'Z'
-  names(table)[names(table) == 'd$comparisons'] <- 'Comparison'
-  names(table)[names(table) == 'effectSizes'] <- 'r'
+  # Replace 0.000 with <0.001 automatically
+  table$`p-adjusted` <- ifelse(table$`p-adjusted` < 0.001, "<0.001", 
+                               formatC(table$`p-adjusted`, digits = numberDigitsForPValue, format = "f"))
   
-  if (nrow(table) == 0) {
-    cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
-  } else {
-    
-    # Replace 0.000 with <0.001 automatically
-    table$`p-adjusted` <- ifelse(table$`p-adjusted` < 0.001, "<0.001", 
-                                 formatC(table$`p-adjusted`, digits = numberDigitsForPValue, format = "f"))
-    
-    # Format effect size
-    table$r <- formatC(table$r, digits = 2, format = "f")
-    
-    # Adjust the xtable call to handle the modified columns
-    xtable_obj <- xtable(table, 
-                         digits = c(0, 0, 4, 0, 0),
-                         caption = paste0("Post-hoc comparisons for independent variable \\", iv, 
-                                          " and dependent variable \\", dv, 
-                                          ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true. Effect size reported as rank-biserial correlation (r)."), 
-                         label = paste0("tab:posthoc-", iv, "-", dv))
-    
-    print(xtable_obj, type = "latex", size = latexSize, caption.placement = "top", include.rownames = FALSE)
-  }
+  # Format effect size
+  table$r <- formatC(table$r, digits = 2, format = "f")
+  
+  # Adjust the xtable call to handle the modified columns
+  xtable_obj <- xtable(table, 
+                       digits = c(0, 0, 4, 0, 0),
+                       caption = paste0("Post-hoc comparisons for independent variable \\", iv, 
+                                        " and dependent variable \\", dv, 
+                                        ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true. Effect size reported as rank-biserial correlation (r)."), 
+                       label = paste0("tab:posthoc-", iv, "-", dv))
+  
+  print(xtable_obj, type = "latex", size = latexSize, caption.placement = "top", include.rownames = FALSE)
 }
     
 #' Report statistical details for ggstatsplot.
@@ -2397,6 +2403,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
