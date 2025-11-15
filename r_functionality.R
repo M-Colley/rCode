@@ -299,23 +299,43 @@ normalize <- function(x_vector, old_min, old_max, new_min, new_max) {
 #'
 #' @examples
 checkPackageVersions <- function() {
-  if (R.version.string >= "4.5.1") {
-    print("R Version OK!")
+  required_r_version <- package_version("4.5.2")
+
+  if (getRversion() >= required_r_version) {
+    message("R Version OK!")
   } else {
-    print("updateR()!")
-    print("Attention: novel version of RTools is required!")
+    message("updateR()!")
+    message("Attention: novel version of RTools is required!")
   }
 
-  if (packageVersion("effectsize") >= "1.0.1") {
-    print("effectsize OK!")
-  } else {
-    print("update effectsize - highly important!")
+  check_pkg_version <- function(pkg, required_version, ok_msg, update_msg) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      message(sprintf("Package '%s' is not installed - %s", pkg, update_msg))
+      return(invisible(FALSE))
+    }
+
+    if (packageVersion(pkg) >= package_version(required_version)) {
+      message(ok_msg)
+    } else {
+      message(update_msg)
+    }
+
+    invisible(TRUE)
   }
-  if (packageVersion("ggstatsplot") >= "0.13.2") {
-    print("ggstatsplot OK!")
-  } else {
-    print("update ggstatsplot - highly important!")
-  }
+
+  check_pkg_version(
+    pkg = "effectsize",
+    required_version = "1.0.1",
+    ok_msg = "effectsize OK!",
+    update_msg = "update effectsize - highly important!"
+  )
+
+  check_pkg_version(
+    pkg = "ggstatsplot",
+    required_version = "0.13.2",
+    ok_msg = "ggstatsplot OK!",
+    update_msg = "update ggstatsplot - highly important!"
+  )
 }
 
 
