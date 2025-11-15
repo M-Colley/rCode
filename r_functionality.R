@@ -55,6 +55,7 @@ if (!require("ggtext")) install.packages("ggtext")
 if (!require("marginaleffects")) install.packages("marginaleffects")
 if (!require("scales")) install.packages("scales")
 if (!require("conflicted")) install.packages("conflicted")
+if (!require("curl")) install.packages("curl")
 
 
 
@@ -216,13 +217,12 @@ n_fun <- function(x){
 #'
 #' @examples
 havingIP <- function() {
-  if (.Platform$OS.type == "windows") {
-    ipmessage <- system("ipconfig", intern = TRUE)
-  } else {
-    ipmessage <- system("ifconfig", intern = TRUE)
+  if (requireNamespace("curl", quietly = TRUE)) {
+    return(isTRUE(tryCatch(curl::has_internet(), error = function(...) FALSE)))
   }
-  validIP <- "((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.]){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
-  any(grep(validIP, ipmessage))
+
+  warning("Package 'curl' is not available; assuming no internet connection.")
+  FALSE
 }
 
 
@@ -231,17 +231,18 @@ havingIP <- function() {
 
 # update all available packages
 if (havingIP()) {
-  
+
   # List all packages where an update is available
-  numberOldPackages <- nrow(old.packages())
-  
-  if(!is.null(numberOldPackages) && numberOldPackages > 0){
+  packages_to_update <- old.packages()
+  numberOldPackages <- if (!is.null(packages_to_update)) nrow(packages_to_update) else 0
+
+  if (numberOldPackages > 0) {
     warning("YOU HAVE TO UPDATE PACKAGES as ", numberOldPackages, " are outdated!")
-    warning(paste(old.packages()[, c("Package")], collapse=", "))
-  }else{
+    warning(paste(packages_to_update[, c("Package")], collapse = ", "))
+  } else {
     message("All packages are up-to-date.")
   }
-  
+
   # update
   #update.packages(ask = TRUE)
 }
@@ -344,7 +345,8 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels = NUL
   normality_test <- list()  # Initialize empty list to store test results
   normallyDistributed <- TRUE
   group_all_data_equal <- FALSE
-  
+  normality_assessable <- TRUE
+
   # Iterate over each group in data[[x]]
   for (group in unique(data[[x]])) {
     subset_data <- data[data[[x]] == group, y, drop = TRUE]
@@ -353,27 +355,36 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels = NUL
     if (is.data.frame(subset_data) || is.list(subset_data)) {
       subset_data <- as.numeric(subset_data[[1]])
     }
-    
+
     # Remove NA values if any conversion failed
     subset_data <- subset_data[!is.na(subset_data)]
-    
-    
-    # Check if all values in the subset are equal
-    if (length(unique(subset_data)) > 1) {
+
+    has_variation <- length(unique(subset_data)) > 1
+    sufficient_sample <- length(subset_data) >= 3
+
+    if (sufficient_sample && has_variation) {
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
-      group_all_data_equal <- TRUE
+      if (!sufficient_sample) {
+        normality_assessable <- FALSE
+      }
+      if (!has_variation) {
+        group_all_data_equal <- TRUE
+        normality_assessable <- FALSE
+      }
     }
   }
 
+  if (!normality_assessable) {
+    normallyDistributed <- FALSE
+  }
+
   for (i in normality_test) {
-    if (!is.null(i)) {
-      if (i$p.value < 0.05) {
-        # print("You have to take the non-parametric test.")
-        normallyDistributed <- FALSE
-        break
-      }
+    if (!is.null(i) && i$p.value < 0.05) {
+      # print("You have to take the non-parametric test.")
+      normallyDistributed <- FALSE
+      break
     }
   }
   
@@ -422,7 +433,8 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
   normality_test <- list()  # Initialize empty list to store test results
   normallyDistributed <- TRUE
   group_all_data_equal <- FALSE
-  
+  normality_assessable <- TRUE
+
   # Iterate over each group in data[[x]]
   for (group in unique(data[[x]])) {
     subset_data <- data[data[[x]] == group, y, drop = TRUE]
@@ -431,27 +443,36 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
     if (is.data.frame(subset_data) || is.list(subset_data)) {
       subset_data <- as.numeric(subset_data[[1]])
     }
-    
+
     # Remove NA values if any conversion failed
     subset_data <- subset_data[!is.na(subset_data)]
-    
-    
-    # Check if all values in the subset are equal
-    if (length(unique(subset_data)) > 1) {
+
+    has_variation <- length(unique(subset_data)) > 1
+    sufficient_sample <- length(subset_data) >= 3
+
+    if (sufficient_sample && has_variation) {
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
-      group_all_data_equal <- TRUE
+      if (!sufficient_sample) {
+        normality_assessable <- FALSE
+      }
+      if (!has_variation) {
+        group_all_data_equal <- TRUE
+        normality_assessable <- FALSE
+      }
     }
   }
-  
+
   # Check the p-value for each test result
+  if (!normality_assessable) {
+    normallyDistributed <- FALSE
+  }
+
   for (i in normality_test) {
-    if (!is.null(i)) {
-      if (i$p.value < 0.05) {
-        normallyDistributed <- FALSE
-        break
-      }
+    if (!is.null(i) && i$p.value < 0.05) {
+      normallyDistributed <- FALSE
+      break
     }
   }
   
@@ -493,7 +514,8 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   normality_test <- list()  # Initialize empty list to store test results
   normallyDistributed <- TRUE
   group_all_data_equal <- FALSE
-  
+  normality_assessable <- TRUE
+
   # Iterate over each group in data[[x]]
   for (group in unique(data[[x]])) {
     subset_data <- data[data[[x]] == group, y, drop = TRUE]
@@ -502,28 +524,37 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
     if (is.data.frame(subset_data) || is.list(subset_data)) {
       subset_data <- as.numeric(subset_data[[1]])
     }
-    
+
     # Remove NA values if any conversion failed
     subset_data <- subset_data[!is.na(subset_data)]
-    
-    
-    # Check if all values in the subset are equal
-    if (length(unique(subset_data)) > 1) {
+
+    has_variation <- length(unique(subset_data)) > 1
+    sufficient_sample <- length(subset_data) >= 3
+
+    if (sufficient_sample && has_variation) {
       normality_test[[group]] <- shapiro.test(subset_data)
     } else {
       normality_test[[group]] <- NULL
-      group_all_data_equal <- TRUE
+      if (!sufficient_sample) {
+        normality_assessable <- FALSE
+      }
+      if (!has_variation) {
+        group_all_data_equal <- TRUE
+        normality_assessable <- FALSE
+      }
     }
   }
 
   for (i in normality_test) {
-    if (!is.null(i)) {
-      if (i$p.value < 0.05) {
-        # print("You have to take the non-parametric test.")
-        normallyDistributed <- FALSE
-        break
-      }
+    if (!is.null(i) && i$p.value < 0.05) {
+      # print("You have to take the non-parametric test.")
+      normallyDistributed <- FALSE
+      break
     }
+  }
+
+  if (!normality_assessable) {
+    normallyDistributed <- FALSE
   }
   
   type <- ifelse(normallyDistributed, "p", "np")
@@ -581,15 +612,39 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
   assertthat::not_empty(ylab)
   assertthat::not_empty(xlabels)
   
-  normality_test <- with(data, tapply(data[[y]], data[[x]], shapiro.test))
+  normality_test <- list()
   normallyDistributed <- TRUE
+  normality_assessable <- TRUE
+
+  for (group in unique(data[[x]])) {
+    subset_data <- data[data[[x]] == group, y, drop = TRUE]
+
+    if (is.data.frame(subset_data) || is.list(subset_data)) {
+      subset_data <- as.numeric(subset_data[[1]])
+    }
+
+    subset_data <- subset_data[!is.na(subset_data)]
+
+    has_variation <- length(unique(subset_data)) > 1
+    sufficient_sample <- length(subset_data) >= 3
+
+    if (sufficient_sample && has_variation) {
+      normality_test[[group]] <- shapiro.test(subset_data)
+    } else {
+      normality_test[[group]] <- NULL
+      normality_assessable <- FALSE
+    }
+  }
+
+  if (!normality_assessable) {
+    normallyDistributed <- FALSE
+  }
+
   for (i in normality_test) {
-    if (!is.null(i)) {
-      if (i$p.value < 0.05) {
-        # print("You have to take the non-parametric test.")
-        normallyDistributed <- FALSE
-        break
-      }
+    if (!is.null(i) && i$p.value < 0.05) {
+      # print("You have to take the non-parametric test.")
+      normallyDistributed <- FALSE
+      break
     }
   }
 
