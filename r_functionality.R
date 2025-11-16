@@ -1263,7 +1263,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
           )
           
           if (nzchar(effect_size_text)) {
-            stringtowrite <- paste0(stringtowrite, ", ", effect_size_text, ")")
+            stringtowrite <- paste0(stringtowrite, effect_size_text, ")")
           }
           
           stringtowrite <- paste0(stringtowrite, ". ")
@@ -2644,6 +2644,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
