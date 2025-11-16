@@ -23,41 +23,36 @@ BibTeX:
 ")
 
 
-if (!require("httr")) install.packages("httr")
-if (!require("easystats")) install.packages("easystats")
-if (!require("tidyverse")) install.packages("tidyverse")
-if (!require("Cairo")) install.packages("Cairo")
-if (!require("rstatix")) install.packages("rstatix")
-if (!require("afex")) install.packages("afex")
-if (!require("Hmisc")) install.packages("Hmisc")
-if (!require("FSA")) install.packages("FSA")
-if (!require("PMCMRplus")) install.packages("PMCMRplus")
-if (!require("psych")) install.packages("psych")
-if (!require("pals")) install.packages("pals")
-if (!require("wesanderson")) install.packages("wesanderson")
-if (!require("ggstatsplot")) install.packages("ggstatsplot")
-if (!require("ARTool")) install.packages("ARTool")
-if (!require("pastecs")) install.packages("pastecs")
-if (!require("rstantools")) install.packages("rstantools")
-if (!require("styler")) install.packages("styler")
-if (!require("assertthat")) install.packages("assertthat")
-if (!require("reporttools")) install.packages("reporttools")
-if (!require("stargazer")) install.packages("stargazer")
-if (!require("writexl")) install.packages("writexl")
-if (!require("cli")) install.packages("cli")
-if (!require("DT")) install.packages("DT")
-if (!require("flexdashboard")) install.packages("flexdashboard")
-if (!require("sjPlot")) install.packages("sjPlot")
-if (!require("emmeans")) install.packages("emmeans")
-if (!require("stringr")) install.packages("stringr")
-if (!require("ggpmisc")) install.packages("ggpmisc")
-if (!require("ggtext")) install.packages("ggtext")
-if (!require("marginaleffects")) install.packages("marginaleffects")
-if (!require("scales")) install.packages("scales")
-if (!require("conflicted")) install.packages("conflicted")
-if (!require("curl")) install.packages("curl")
+auto_install_packages <- isTRUE(getOption("rcode.auto_install", TRUE))
 
+load_or_install_package <- function(pkg) {
+  is_available <- requireNamespace(pkg, quietly = TRUE)
+  if (!is_available && auto_install_packages) {
+    install.packages(pkg)
+    is_available <- requireNamespace(pkg, quietly = TRUE)
+  }
 
+  if (is_available) {
+    suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+    return(TRUE)
+  }
+
+  warning(sprintf("Package '%s' is not installed. Some functionality may be unavailable.", pkg))
+  FALSE
+}
+
+rcode_packages <- c(
+  "httr", "easystats", "tidyverse", "Cairo", "rstatix", "afex", "Hmisc", "FSA",
+  "PMCMRplus", "psych", "pals", "wesanderson", "ggstatsplot", "ARTool",
+  "pastecs", "rstantools", "styler", "assertthat", "reporttools", "stargazer",
+  "writexl", "cli", "DT", "flexdashboard", "sjPlot", "emmeans", "stringr",
+  "ggpmisc", "ggtext", "marginaleffects", "scales", "conflicted", "curl",
+  "clipr", "car", "dunn.test", "xtable", "readxl", "BayesFactor", "bayestestR",
+  "foreign", "see", "marginaleffects", "effectsize", "ggsignif", "emoa",
+  "RColorBrewer"
+)
+
+invisible(lapply(unique(rcode_packages), load_or_install_package))
 
 library(easystats)
 
@@ -71,43 +66,7 @@ try(easystats::easystats_update(ask = FALSE), silent = TRUE)
 
 # afex: necessary for ggstatsplot
 # Hmisc: necessary for mean_cl_normal --> 95% confidence intervals
-library(clipr)
 library(tidyverse)
-library(Cairo)
-library(rstatix)
-#library(nparLD)
-library(afex)
-library(Hmisc)
-library(FSA)
-library(PMCMRplus)
-library(psych)
-library(RColorBrewer)
-library(pals)
-library(wesanderson)
-library(ggstatsplot)
-library(styler)
-library(pastecs)
-library(car)
-library(dunn.test)
-library(xtable)
-library(rstantools)
-library(ARTool)
-#library(esquisse)
-library(assertthat)
-library(stargazer)
-library(reporttools)
-library(readxl)
-library(BayesFactor)
-library(bayestestR)
-library(writexl)
-library(foreign)
-library(see)
-library(sjPlot)
-library(emmeans)
-library(stringr)
-library(ggpmisc)
-library(ggtext)
-library(scales)
 
 
 # JANUARY 2025: no longer available
@@ -119,63 +78,63 @@ options(digits = 10)
 options(digits.secs = 3) # Set to 3 for millisecond precision
 
 ## Prefer dplyr over plyr or Hmisc in name clashes
-conflicted::conflict_prefer("mutate",   "dplyr")
-conflicted::conflict_prefer("filter",   "dplyr")
-conflicted::conflict_prefer("select",   "dplyr")
-conflicted::conflict_prefer("summarise","dplyr")
-conflicted::conflict_prefer("summarize","dplyr")
-conflicted::conflict_prefer("rename",   "dplyr")
-conflicted::conflict_prefer("arrange",  "dplyr")
+try(conflicted::conflict_prefer("mutate",   "dplyr"), silent = TRUE)
+try(conflicted::conflict_prefer("filter",   "dplyr"), silent = TRUE)
+try(conflicted::conflict_prefer("select",   "dplyr"), silent = TRUE)
+try(conflicted::conflict_prefer("summarise","dplyr"), silent = TRUE)
+try(conflicted::conflict_prefer("summarize","dplyr"), silent = TRUE)
+try(conflicted::conflict_prefer("rename",   "dplyr"), silent = TRUE)
+try(conflicted::conflict_prefer("arrange",  "dplyr"), silent = TRUE)
 
-conflicts_prefer(scales::alpha)
-conflicts_prefer(ggplot2::annotate)
-conflicts_prefer(brms::ar)
-conflicts_prefer(car::bootCase)
-conflicts_prefer(httr::cache_info)
-conflicts_prefer(effectsize::cohens_d)
-conflicts_prefer(scales::col_factor)
-conflicts_prefer(correlation::cor_test)
-conflicts_prefer(brms::cs)
-conflicts_prefer(ggplot2::`%+%`)
-conflicts_prefer(scales::alpha)
-conflicts_prefer(ggplot2::annotate)
-conflicts_prefer(brms::ar)
-conflicts_prefer(car::bootCase)
-conflicts_prefer(httr::cache_info)
-conflicts_prefer(effectsize::cohens_d)
-conflicts_prefer(scales::col_factor)
-conflicts_prefer(correlation::cor_test)
-conflicts_prefer(brms::cs)
-conflicts_prefer(psych::describe)
-conflicts_prefer(purrr::discard)
-conflicts_prefer(report::display)
-conflicts_prefer(effectsize::eta_squared)
-conflicts_prefer(tidyr::expand)
-conflicts_prefer(tidyr::extract)
-conflicts_prefer(dplyr::filter)
-conflicts_prefer(dplyr::first)
-conflicts_prefer(insight::format_error)
-conflicts_prefer(insight::format_message)
-conflicts_prefer(insight::format_warning)
-conflicts_prefer(modelbased::get_emmeans)
-conflicts_prefer(tibble::has_name)
-conflicts_prefer(psych::headtail)
-conflicts_prefer(xtable::label)
-conflicts_prefer(Hmisc::`label<-`)
-conflicts_prefer(dplyr::lag)
-conflicts_prefer(dplyr::last)
-conflicts_prefer(lme4::lmer)
-conflicts_prefer(psych::logit)
-conflicts_prefer(lme4::ngrps)
-conflicts_prefer(tidyr::pack)
-conflicts_prefer(effectsize::phi)
-conflicts_prefer(dplyr::recode)
-conflicts_prefer(datawizard::rescale)
-conflicts_prefer(purrr::some)
-conflicts_prefer(dplyr::src)
-conflicts_prefer(dplyr::summarize)
-conflicts_prefer(devtools::test)
-conflicts_prefer(tidyr::unpack)
+try(conflicts_prefer(scales::alpha), silent = TRUE)
+try(conflicts_prefer(ggplot2::annotate), silent = TRUE)
+try(conflicts_prefer(brms::ar), silent = TRUE)
+try(conflicts_prefer(car::bootCase), silent = TRUE)
+try(conflicts_prefer(httr::cache_info), silent = TRUE)
+try(conflicts_prefer(effectsize::cohens_d), silent = TRUE)
+try(conflicts_prefer(scales::col_factor), silent = TRUE)
+try(conflicts_prefer(correlation::cor_test), silent = TRUE)
+try(conflicts_prefer(brms::cs), silent = TRUE)
+try(conflicts_prefer(ggplot2::`%+%`), silent = TRUE)
+try(conflicts_prefer(scales::alpha), silent = TRUE)
+try(conflicts_prefer(ggplot2::annotate), silent = TRUE)
+try(conflicts_prefer(brms::ar), silent = TRUE)
+try(conflicts_prefer(car::bootCase), silent = TRUE)
+try(conflicts_prefer(httr::cache_info), silent = TRUE)
+try(conflicts_prefer(effectsize::cohens_d), silent = TRUE)
+try(conflicts_prefer(scales::col_factor), silent = TRUE)
+try(conflicts_prefer(correlation::cor_test), silent = TRUE)
+try(conflicts_prefer(brms::cs), silent = TRUE)
+try(conflicts_prefer(psych::describe), silent = TRUE)
+try(conflicts_prefer(purrr::discard), silent = TRUE)
+try(conflicts_prefer(report::display), silent = TRUE)
+try(conflicts_prefer(effectsize::eta_squared), silent = TRUE)
+try(conflicts_prefer(tidyr::expand), silent = TRUE)
+try(conflicts_prefer(tidyr::extract), silent = TRUE)
+try(conflicts_prefer(dplyr::filter), silent = TRUE)
+try(conflicts_prefer(dplyr::first), silent = TRUE)
+try(conflicts_prefer(insight::format_error), silent = TRUE)
+try(conflicts_prefer(insight::format_message), silent = TRUE)
+try(conflicts_prefer(insight::format_warning), silent = TRUE)
+try(conflicts_prefer(modelbased::get_emmeans), silent = TRUE)
+try(conflicts_prefer(tibble::has_name), silent = TRUE)
+try(conflicts_prefer(psych::headtail), silent = TRUE)
+try(conflicts_prefer(xtable::label), silent = TRUE)
+try(conflicts_prefer(Hmisc::`label<-`), silent = TRUE)
+try(conflicts_prefer(dplyr::lag), silent = TRUE)
+try(conflicts_prefer(dplyr::last), silent = TRUE)
+try(conflicts_prefer(lme4::lmer), silent = TRUE)
+try(conflicts_prefer(psych::logit), silent = TRUE)
+try(conflicts_prefer(lme4::ngrps), silent = TRUE)
+try(conflicts_prefer(tidyr::pack), silent = TRUE)
+try(conflicts_prefer(effectsize::phi), silent = TRUE)
+try(conflicts_prefer(dplyr::recode), silent = TRUE)
+try(conflicts_prefer(datawizard::rescale), silent = TRUE)
+try(conflicts_prefer(purrr::some), silent = TRUE)
+try(conflicts_prefer(dplyr::src), silent = TRUE)
+try(conflicts_prefer(dplyr::summarize), silent = TRUE)
+try(conflicts_prefer(devtools::test), silent = TRUE)
+try(conflicts_prefer(tidyr::unpack), silent = TRUE)
 
 
 # not in 
@@ -192,15 +151,44 @@ na.zero <- function (x) {
 #  Converting a Windows path to the format that works in R
 # No need for an argument. The path is printed to your console correctly and written to your clipboard for easy pasting to a script
 # From: https://stackoverflow.com/questions/8425409/file-path-issues-in-r-using-windows-hex-digits-in-character-string-error
-pathPrep <- function(path = "clipboard") {
-  y <- if (path == "clipboard") {
-    readClipboard()
-  } else {
-    cat("Please enter the path:\n\n")
-    readline()
+pathPrep <- function(path = "clipboard", read_fn = NULL, write_fn = NULL) {
+  get_clip_reader <- function() {
+    if (!is.null(read_fn)) {
+      return(read_fn)
+    }
+    if (requireNamespace("clipr", quietly = TRUE) && clipr::clipr_available()) {
+      return(clipr::read_clip)
+    }
+    if (exists("readClipboard", mode = "function")) {
+      return(get("readClipboard", mode = "function"))
+    }
+    stop("Clipboard is not available. Provide a custom `read_fn` or a direct path.")
   }
+
+  get_clip_writer <- function() {
+    if (!is.null(write_fn)) {
+      return(write_fn)
+    }
+    if (requireNamespace("clipr", quietly = TRUE) && clipr::clipr_available()) {
+      return(clipr::write_clip)
+    }
+    if (exists("writeClipboard", mode = "function")) {
+      return(get("writeClipboard", mode = "function"))
+    }
+    return(function(...) invisible(NULL))
+  }
+
+  writer <- get_clip_writer()
+
+  y <- if (identical(path, "clipboard")) {
+    reader <- get_clip_reader()
+    reader()
+  } else {
+    path
+  }
+
   x <- chartr("\\", "/", y)
-  writeClipboard(x)
+  writer(x)
   return(x)
 }
 
@@ -292,6 +280,24 @@ normalize <- function(x_vector, old_min, old_max, new_min, new_max) {
 }
 
 
+get_latest_package_version <- function(pkg) {
+  repos <- getOption("repos")
+  if (is.null(repos) || identical(repos["CRAN"], "@CRAN@")) {
+    repos["CRAN"] <- "https://cloud.r-project.org"
+  }
+
+  tryCatch(
+    {
+      pkg_info <- available.packages(repos = repos)
+      if (pkg %in% rownames(pkg_info)) {
+        return(package_version(pkg_info[pkg, "Version"]))
+      }
+      NA
+    },
+    error = function(...) NA
+  )
+}
+
 #' Checking the version of R and effectsize as well as ggstatsplot. If not appropriate, a message for the user is generated.
 #'
 #' @return
@@ -314,10 +320,16 @@ checkPackageVersions <- function() {
       return(invisible(FALSE))
     }
 
-    if (packageVersion(pkg) >= package_version(required_version)) {
+    installed_version <- packageVersion(pkg)
+    if (installed_version >= package_version(required_version)) {
       message(ok_msg)
     } else {
       message(update_msg)
+    }
+
+    latest_version <- get_latest_package_version(pkg)
+    if (!is.na(latest_version) && latest_version > installed_version) {
+      message(sprintf("A newer CRAN version of %s is available: %s", pkg, latest_version))
     }
 
     invisible(TRUE)
@@ -889,8 +901,7 @@ checkAssumptionsForAnova <- function(data, y, factors) {
 
 #' Generate the Latex-text based on the NPAV by Lüpsen (see \url{http://www.uni-koeln.de/~luepsen/R/}).
 #' Only significant main and interaction effects are reported.
-#' P-values are rounded for the third digit.
-#' Attention: Effect sizes are not calculated!
+#' P-values are rounded for the third digit and partial eta squared values are provided when possible.
 #' Attention: the independent variables of the formula and the term specifying the participant must be factors (i.e., use as.factor()).
 #'
 #' To easily copy and paste the results to your manuscript, the following commands must be defined in Latex:
@@ -955,10 +966,48 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
 
 
           if (str_detect(model$descriptions[i], "X")) {
-            stringtowrite <- paste0("The NPAV found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
+            stringtowrite <- paste0("The NPAV found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, ")")
           } else {
-            stringtowrite <- paste0("The NPAV found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
+            stringtowrite <- paste0("The NPAV found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, ")")
           }
+
+          effect_size_text <- ""
+          if (!is.na(denominatordf) && is.finite(denominatordf)) {
+            effect_size <- tryCatch(
+              effectsize::F_to_eta2(
+                f = Fvalue,
+                df = numeratordf,
+                df_error = denominatordf,
+                ci = 0.95
+              ),
+              error = function(e) NULL
+            )
+
+            if (!is.null(effect_size)) {
+              effect_size <- as.data.frame(effect_size)
+              eta_value <- effect_size$Eta2_partial
+              ci_low <- effect_size$CI_low
+              ci_high <- effect_size$CI_high
+              if (!is.null(eta_value) && !is.na(eta_value)) {
+                effect_size_text <- paste0(
+                  ", $\\eta_{p}^{2}=",
+                  sprintf("%.2f", eta_value)
+                )
+                if (!is.null(ci_low) && !is.null(ci_high) && !any(is.na(c(ci_low, ci_high)))) {
+                  effect_size_text <- paste0(
+                    effect_size_text,
+                    " [",
+                    sprintf("%.2f", ci_low),
+                    ", ",
+                    sprintf("%.2f", ci_high),
+                    "]"
+                  )
+                }
+              }
+            }
+          }
+
+          stringtowrite <- paste0(stringtowrite, effect_size_text, ". ")
 
           # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
           # nice format of X in Latex via \times
@@ -983,7 +1032,7 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
 #' Only significant main and interaction effects are reported.
 #' P-values are rounded for the third digit.
 #' This is the version to report CHI Square values, which is necessary for between-subject studies!
-#' Attention: Effect sizes are not calculated!
+#' Cohen's $w$ effect sizes are provided when a sample size is supplied.
 #' Attention: the independent variables of the formula and the term specifying the participant must be factors (i.e., use as.factor()).
 #'
 #'
@@ -994,10 +1043,11 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
 #'
 #' @param model the model of the np.anova
 #' @param dv the name of the dependent variable that should be reported
+#' @param sample_size Optional sample size used to compute Cohen's $w$ from the chi-square statistic.
 #'
 #' @return
 #' @export
-reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE) {
+reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE, sample_size = NULL) {
   .Deprecated("ARTool")
   assertthat::not_empty(model)
   assertthat::not_empty(dv)
@@ -1040,12 +1090,49 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
       
       
       if (str_detect(model$descriptions[i], "X")) {
-        
-        stringtowrite <- paste0("The NPAV found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\chisq~(1)=", Chivalue, ", ", pValue, "). ")
-      
+
+        stringtowrite <- paste0("The NPAV found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\chisq~(1)=", Chivalue, ", ", pValue, ")")
+
         } else {
-        stringtowrite <- paste0("The NPAV found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\chisq~(1)=", Chivalue, ", ",  pValue, "). ")
+        stringtowrite <- paste0("The NPAV found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\chisq~(1)=", Chivalue, ", ",  pValue, ")")
       }
+
+      effect_size_text <- ""
+      if (!is.null(sample_size) && is.numeric(sample_size) && sample_size > 0) {
+        effect_size <- tryCatch(
+          effectsize::chisq_to_w(
+            chi = Chivalue,
+            n = sample_size,
+            ci = 0.95
+          ),
+          error = function(e) NULL
+        )
+
+        if (!is.null(effect_size)) {
+          effect_size <- as.data.frame(effect_size)
+          w_value <- effect_size$Cohens_w
+          ci_low <- effect_size$CI_low
+          ci_high <- effect_size$CI_high
+          if (!is.null(w_value) && !is.na(w_value)) {
+            effect_size_text <- paste0(
+              ", $w=",
+              sprintf("%.2f", w_value)
+            )
+            if (!is.null(ci_low) && !is.null(ci_high) && !any(is.na(c(ci_low, ci_high)))) {
+              effect_size_text <- paste0(
+                effect_size_text,
+                " [",
+                sprintf("%.2f", ci_low),
+                ", ",
+                sprintf("%.2f", ci_high),
+                "]"
+              )
+            }
+          }
+        }
+      }
+
+      stringtowrite <- paste0(stringtowrite, effect_size_text, ". ")
       
       # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
       # nice format of X in Latex via \times
@@ -1209,8 +1296,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
 #' Report the model produced by nparLD. The model provided must be the model generated by the command 'nparLD' \code{\link[nparLD]{nparLD}} (see \url{https://cran.r-project.org/web/packages/nparLD/nparLD.pdf}).
 #'
 #' #' Only significant main and interaction effects are reported.
-#' P-values are rounded for the third digit.
-#' Attention: Effect sizes are not calculated!
+#' P-values are rounded for the third digit and relative treatment effects (RTE) are included when available.
 #' Attention: the independent variables of the formula and the term specifying the participant must be factors (i.e., use as.factor()).
 #'
 #' #' To easily copy and paste the results to your manuscript, the following commands must be defined in Latex:
@@ -1257,10 +1343,23 @@ reportNparLD <- function(model, dv = "Testdependentvariable", write_to_clipboard
 
 
       if (str_detect(model$descriptions[i], "X")) {
-        stringtowrite <- paste0("The NPVA found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", Fvalue, "}, \\df{", numeratordf, "}, ", pValue, "). ")
+        stringtowrite <- paste0("The NPVA found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", Fvalue, "}, \\df{", numeratordf, "}, ", pValue, ")")
       } else {
-        stringtowrite <- paste0("The NPVA found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", Fvalue, "}, \\df{", numeratordf, "}, ", pValue, "). ")
+        stringtowrite <- paste0("The NPVA found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", Fvalue, "}, \\df{", numeratordf, "}, ", pValue, ")")
       }
+
+      effect_size_text <- ""
+      if ("RTE" %in% names(model)) {
+        rte_value <- model$RTE[i]
+        if (!is.null(rte_value) && !is.na(rte_value)) {
+          effect_size_text <- paste0(
+            ", $RTE=",
+            sprintf("%.2f", rte_value)
+          )
+        }
+      }
+
+      stringtowrite <- paste0(stringtowrite, effect_size_text, ". ")
       
       # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
       # nice format of X in Latex via \times
@@ -1888,9 +1987,9 @@ reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoi
 #' main_df <- add_pareto_emoa_column(data = main_df, objectives)
 #' head(main_df)
 add_pareto_emoa_column <- function(data, objectives) {
-  # Load required library
-  if (!require("emoa")) install.packages("emoa")
-  library(emoa)
+  if (!requireNamespace("emoa", quietly = TRUE)) {
+    stop("Package 'emoa' is required for add_pareto_emoa_column().")
+  }
   
   # Input checks
   assertthat::not_empty(data)
