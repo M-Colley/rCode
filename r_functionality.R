@@ -1169,7 +1169,7 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
 #' @export
 #'
 #' @examples model <- art(formula = tlx_mental ~ Video * DriverPosition * gesture * eHMI + Error(UserID / (gesture * eHMI)), data = main_df) |> anova()
-#' reportART(model, "mental workload")
+#' reportART(model, "mental demand")
 reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE) {
   # Check that the model and dependent variable are not empty
   assertthat::not_empty(model)
@@ -1233,7 +1233,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
               if (!is.null(ci_low) && !is.null(ci_high) && !any(is.na(c(ci_low, ci_high)))) {
                 effect_size_text <- paste0(
                   effect_size_text,
-                  " [",
+                  ", CI: [",
                   sprintf("%.2f", ci_low),
                   ", ",
                   sprintf("%.2f", ci_high),
@@ -1259,12 +1259,11 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
             "}{",
             sprintf("%.2f", Fvalue),
             "}, ",
-            pValue,
-            ")"
+            pValue
           )
           
           if (nzchar(effect_size_text)) {
-            stringtowrite <- paste0(stringtowrite, effect_size_text)
+            stringtowrite <- paste0(stringtowrite, ", " effect_size_text, ")")
           }
           
           stringtowrite <- paste0(stringtowrite, ". ")
@@ -2645,6 +2644,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
