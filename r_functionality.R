@@ -1111,7 +1111,6 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
         if (!is.na(model$`Pr(>F)`[i]) && model$`Pr(>F)`[i] < 0.05) {
           # Extract and round values
           Fvalue <- round(model$`F value`[i], digits = 2)
-          print(Fvalue)
           numeratordf <- model$Df[i]
           denominatordf <- model$Df.res[i]
           pValueNumeric <- model$`Pr(>F)`[i]
@@ -1157,7 +1156,6 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
             }
           }
           
-          print(effect_size_text)
           # Write interaction or main effect depending on the presence of "X"
           effect_type <- if (str_detect(model$descriptions[i], "X")) "interaction" else "main"
           stringtowrite <- paste0(
@@ -2548,6 +2546,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
