@@ -916,6 +916,7 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
   } else {
     if (!any(model$`Pr(>F)` < 0.05, na.rm = TRUE)) {
       if (write_to_clipboard) {
+        cat(paste0("The NPAV found no significant effects on ", dv, ". "))
         write_clip(paste0("The NPAV found no significant effects on ", dv, ". "))
       } else {
         cat(paste0("The NPAV found no significant effects on ", dv, ". "))
@@ -965,6 +966,7 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
           stringtowrite <- gsub("(?<=\\s)X", "$\\\\times$ \\\\", stringtowrite, perl = TRUE)
 
           if (write_to_clipboard) {
+            cat(stringtowrite)
             write_clip(stringtowrite)
           } else {
             cat(stringtowrite)
@@ -974,7 +976,6 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
     }
   }
 }
-
 
 
 
@@ -1007,6 +1008,7 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
   
   if (!any(model$` Pr(>Chi)` < 0.05, na.rm = TRUE)) {
     if(write_to_clipboard){
+      cat(paste0("The NPAV found no significant effects on ", dv, ". "))
       write_clip(paste0("The NPAV found no significant effects on ", dv, ". "))
     }else{
       cat(paste0("The NPAV found no significant effects on ", dv, ". "))
@@ -1051,6 +1053,7 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
       stringtowrite <- gsub("(?<=\\s)X", "$\\\\times$ \\\\", stringtowrite, perl = TRUE)
       
       if(write_to_clipboard){
+        cat(stringtowrite)
         write_clip(stringtowrite)
       }else{
         cat(stringtowrite)
@@ -1094,6 +1097,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
       # Output a message depending on the write_to_clipboard option
       message_to_write <- paste0("The ART found no significant effects on ", dv, ". ")
       if (write_to_clipboard) {
+        cat(message_to_write)
         write_clip(message_to_write)
       } else {
         cat(message_to_write)
@@ -1107,6 +1111,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
         if (!is.na(model$`Pr(>F)`[i]) && model$`Pr(>F)`[i] < 0.05) {
           # Extract and round values
           Fvalue <- round(model$`F value`[i], digits = 2)
+          print(Fvalue)
           numeratordf <- model$Df[i]
           denominatordf <- model$Df.res[i]
           pValueNumeric <- model$`Pr(>F)`[i]
@@ -1115,12 +1120,76 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
           # Write interaction or main effect depending on the presence of "X"
           effect_type <- if (str_detect(model$descriptions[i], "X")) "interaction" else "main"
           stringtowrite <- paste0("The ART found a significant ", effect_type, " effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
+          # Derive effect sizes via effectsize::F_to_eta2
+          effect_size <- tryCatch(
+            effectsize::F_to_eta2(
+              f = Fvalue,
+              df = numeratordf,
+              df_error = denominatordf,
+              ci = 0.95
+            ),
+            error = function(e) NULL
+          )
+          
+          effect_size_text <- ""
+          if (!is.null(effect_size)) {
+            effect_size <- as.data.frame(effect_size)
+            eta_value <- effect_size$Eta2_partial
+            ci_low <- effect_size$CI_low
+            ci_high <- effect_size$CI_high
+            
+            if (!is.null(eta_value) && !is.na(eta_value)) {
+              effect_size_text <- paste0(
+                ", $\\eta_{p}^{2} = ",
+                sprintf("%.2f", eta_value)
+              )
+              
+              if (!is.null(ci_low) && !is.null(ci_high) && !any(is.na(c(ci_low, ci_high)))) {
+                effect_size_text <- paste0(
+                  effect_size_text,
+                  " [",
+                  sprintf("%.2f", ci_low),
+                  ", ",
+                  sprintf("%.2f", ci_high),
+                  "]"
+                )
+              }
+            }
+          }
+          
+          print(effect_size_text)
+          # Write interaction or main effect depending on the presence of "X"
+          effect_type <- if (str_detect(model$descriptions[i], "X")) "interaction" else "main"
+          stringtowrite <- paste0(
+            "The ART found a significant ",
+            effect_type,
+            " effect of \\",
+            trimws(model$descriptions[i]),
+            " on ",
+            dv,
+            " (\\F{",
+            numeratordf,
+            "}{",
+            denominatordf,
+            "}{",
+            sprintf("%.2f", Fvalue),
+            "}, ",
+            pValue,
+            ")"
+          )
+          
+          if (nzchar(effect_size_text)) {
+            stringtowrite <- paste0(stringtowrite, effect_size_text)
+          }
+          
+          stringtowrite <- paste0(stringtowrite, ". ")
           
           # Replace "X" with LaTeX code if preceded by a space
           stringtowrite <- gsub("(?<=\\s)X", "$\\\\times$ \\\\", stringtowrite, perl = TRUE)
           
           # Output the string depending on the write_to_clipboard option
           if (write_to_clipboard) {
+            cat(stringtowrite)
             write_clip(stringtowrite)
           } else {
             cat(stringtowrite)
@@ -1201,6 +1270,7 @@ reportNparLD <- function(model, dv = "Testdependentvariable", write_to_clipboard
       stringtowrite <- gsub("(?<=\\s)X", "$\\\\times$ \\\\", stringtowrite, perl = TRUE)
       
       if(write_to_clipboard){
+        cat(stringtowrite)
         write_clip(stringtowrite)
       }else{
         cat(stringtowrite)
@@ -1230,7 +1300,6 @@ reportMeanAndSD <- function(data, iv = "testiv", dv = "testdv") {
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
   
-
   test <- data  %>% drop_na(!! sym(iv)) %>% drop_na(!! sym(dv)) %>% group_by(!! sym(iv)) %>% dplyr::summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
   
   for(i in 1:nrow(test)) {
@@ -1239,13 +1308,12 @@ reportMeanAndSD <- function(data, iv = "testiv", dv = "testdv") {
     cat(paste0("%", row[[1]], ": \\m{",  sprintf("%.2f", round(row[[2]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(row[[3]], digits = 2)), "}\n")) 
   }
   
-  
 }
 
 
 
 
-#' Function to define a plot either showing the main or interaction effect in bold.
+#' Function to define a plot, either showing the main or interaction effect in bold.
 #'
 #' @param df 
 #' @param x factor shown on the x-axis
@@ -1661,12 +1729,14 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
 
   if (!stats$p.value < 0.05) {
     if (write_to_clipboard) {
+      cat(paste0("A ", stats$method, " found no significant effects on ", dv, " ", resultString, ". "))
       write_clip(paste0("A ", stats$method, " found no significant effects on ", dv, " ", resultString, ". "))
     } else {
       cat(paste0("A ", stats$method, " found no significant effects on ", dv, " ", resultString, ". "))
     }
   } else {
     if (write_to_clipboard) {
+      cat(paste0("A ", stats$method, " found a significant effect of \\", iv, " on ", dv, " ", resultString, ". "))
       write_clip(paste0("A ", stats$method, " found a significant effect of \\", iv, " on ", dv, " ", resultString, ". "))
     } else {
       cat(paste0("A ", stats$method, " found a significant effect of \\", iv, " on ", dv, " ", resultString, ". "))
@@ -2478,6 +2548,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
