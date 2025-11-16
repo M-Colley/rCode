@@ -1233,7 +1233,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
               if (!is.null(ci_low) && !is.null(ci_high) && !any(is.na(c(ci_low, ci_high)))) {
                 effect_size_text <- paste0(
                   effect_size_text,
-                  ", CI: [",
+                  ", 95\% CI: [",
                   sprintf("%.2f", ci_low),
                   ", ",
                   sprintf("%.2f", ci_high),
@@ -1263,7 +1263,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
           )
           
           if (nzchar(effect_size_text)) {
-            stringtowrite <- paste0(stringtowrite, ", " effect_size_text, ")")
+            stringtowrite <- paste0(stringtowrite, ", ", effect_size_text, ")")
           }
           
           stringtowrite <- paste0(stringtowrite, ". ")
@@ -2644,6 +2644,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
