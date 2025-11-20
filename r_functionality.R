@@ -990,7 +990,7 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
               ci_high <- effect_size$CI_high
               if (!is.null(eta_value) && !is.na(eta_value)) {
                 effect_size_text <- paste0(
-                  ", $\\eta_{p}^{2}=",
+                  ", $\\eta_{p}^{2}$=",
                   sprintf("%.2f", eta_value)
                 )
                 if (!is.null(ci_low) && !is.null(ci_high) && !any(is.na(c(ci_low, ci_high)))) {
@@ -1226,7 +1226,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
             
             if (!is.null(eta_value) && !is.na(eta_value)) {
               effect_size_text <- paste0(
-                ", $\\eta_{p}^{2} = ",
+                ", $\\eta_{p}^{2}$ = ",
                 sprintf("%.2f", eta_value)
               )
               
@@ -2644,6 +2644,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
