@@ -1609,9 +1609,10 @@ generateEffectPlot <- function(data,
 
 
 
-#' Report dunnTest as text. Required commands in Latex:
+#' Report dunnTest as text. Required commands in LaTeX:
 # \newcommand{\padjminor}{\textit{p$_{adj}<$}}
 # \newcommand{\padj}{\textit{p$_{adj}$=}}
+# \newcommand{\rankbiserial}[1]{$r_{rb} = #1$}
 #'
 #' @param data 
 #' @param d 
@@ -2644,6 +2645,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
