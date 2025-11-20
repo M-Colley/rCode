@@ -1630,62 +1630,111 @@ reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
   assertthat::not_empty(iv)
   assertthat::not_empty(dv)
   
+  # Check for significance globally first
+  # Note: d$res$P.adj can contain NAs, so we remove them for the check
   if (!any(d$res$P.adj < 0.05, na.rm = TRUE)) {
     cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
+    return(invisible(NULL))
   }
   
+  # 1. Collect all significant findings into a data frame/list
+  findings <- list()
+  
   for (i in 1:length(d$res$P.adj)) {
-    # Residuals have NA therefore we need this double check
     if (!is.na(d$res$P.adj[i]) && d$res$P.adj[i] < 0.05) {
-      # first get p-value
+      
+      # --- P-Value Formatting ---
       pValueNumeric <- d$res$P.adj[i]
       if (pValueNumeric < 0.001) {
-        pValue <- paste0("\\padjminor{0.001}")
+        pValueStr <- "\\padjminor{0.001}"
       } else {
-        pValue <- paste0("\\padj{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
+        pValueStr <- paste0("\\padj{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
       }
       
-      # next, get comparison
-      firstCondition <- strsplit(d$res$Comparison[i], " - ", fixed = T)[[1]][1]
-      secondCondition <- strsplit(d$res$Comparison[i], " - ", fixed = T)[[1]][2]
+      # --- Split Conditions ---
+      # Assuming standard Dunn output "A - B"
+      parts <- strsplit(d$res$Comparison[i], " - ", fixed = TRUE)[[1]]
+      condA <- parts[1]
+      condB <- parts[2]
       
-      # Calculate effect size (rank biserial)
+      # --- Calculate Effect Size ---
       data_subset <- data %>%
-        filter(!!sym(iv) %in% c(firstCondition, secondCondition))
+        filter(!!sym(iv) %in% c(condA, condB))
       
+      esStr <- ""
       tryCatch({
-        es <- effectsize::rank_biserial(as.formula(paste(dv, "~", iv)), 
-                                        data = data_subset)
-        effectSize <- paste0(", \\rankbiserial{", sprintf("%.2f", abs(es$r_rank_biserial)), "}")
-      }, error = function(e) {
-        effectSize <- ""
-      })
+        es <- effectsize::rank_biserial(as.formula(paste(dv, "~", iv)), data = data_subset)
+        esStr <- paste0(", \\rankbiserial{", sprintf("%.2f", abs(es$r_rank_biserial)), "}")
+      }, error = function(e) { })
       
-      valueOne <- data %>%
-        filter(!!sym(iv) == firstCondition) %>%
-        dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
-      firstCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueOne[[1]], digits = 2)), 
-                                    "}, \\sd{", sprintf("%.2f", round(valueOne[[2]], digits = 2)), "}")
+      # --- Calculate Means/SDs ---
+      statsA <- data %>%
+        filter(!!sym(iv) == condA) %>%
+        summarise(m = mean(!!sym(dv), na.rm = TRUE), sd = sd(!!sym(dv), na.rm = TRUE))
       
-      valueTwo <- data %>%
-        filter(!!sym(iv) == secondCondition) %>%
-        dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
-      secondCondtionValues <- paste0(" (\\m{", sprintf("%.2f", round(valueTwo[[1]], digits = 2)), 
-                                     "}, \\sd{", sprintf("%.2f", round(valueTwo[[2]], digits = 2)), "}")
+      statsB <- data %>%
+        filter(!!sym(iv) == condB) %>%
+        summarise(m = mean(!!sym(dv), na.rm = TRUE), sd = sd(!!sym(dv), na.rm = TRUE))
       
-      # firstCondition bigger than second
-      if (valueOne[[1]][1] > valueTwo[[1]][1]) {
-        stringtowrite <- paste0("A post-hoc test found that ", trimws(firstCondition), 
-                                " was significantly higher", firstCondtionValues, 
-                                ") in terms of \\", dv, " compared to ", secondCondition, 
-                                secondCondtionValues, "; ", pValue, effectSize, "). ")
+      strStatsA <- paste0("(\\m{", sprintf("%.2f", statsA$m), "}, \\sd{", sprintf("%.2f", statsA$sd), "})")
+      strStatsB <- paste0("(\\m{", sprintf("%.2f", statsB$m), "}, \\sd{", sprintf("%.2f", statsB$sd), "})")
+      
+      # --- Determine Direction (Winner vs Loser) ---
+      if (statsA$m >= statsB$m) {
+        winner <- trimws(condA)
+        winnerStats <- strStatsA
+        loser <- trimws(condB)
+        # The stats/p/es string for the "loser" part of the sentence
+        loserString <- paste0(trimws(condB), " (\\m{", sprintf("%.2f", statsB$m), 
+                              "}, \\sd{", sprintf("%.2f", statsB$sd), "}; ", pValueStr, esStr, ")")
       } else {
-        stringtowrite <- paste0("A post-hoc test found that ", trimws(secondCondition), 
-                                " was significantly higher", secondCondtionValues, 
-                                ") in terms of \\", dv, " compared to ", firstCondition, 
-                                firstCondtionValues, "; ", pValue, effectSize, "). ")
+        winner <- trimws(condB)
+        winnerStats <- strStatsB
+        loser <- trimws(condA)
+        loserString <- paste0(trimws(condA), " (\\m{", sprintf("%.2f", statsA$m), 
+                              "}, \\sd{", sprintf("%.2f", statsA$sd), "}; ", pValueStr, esStr, ")")
       }
-      cat(stringtowrite)
+      
+      # Store finding
+      findings[[length(findings) + 1]] <- list(
+        winner = winner,
+        winnerStats = winnerStats,
+        loserString = loserString
+      )
+    }
+  }
+  
+  # 2. Group findings by Winner and construct sentences
+  if (length(findings) > 0) {
+    # Convert list to dataframe for easier grouping
+    df_res <- do.call(rbind, lapply(findings, as.data.frame, stringsAsFactors = FALSE))
+    
+    unique_winners <- unique(df_res$winner)
+    
+    for (w in unique_winners) {
+      # Get all entries where this condition was the winner
+      subset_res <- df_res[df_res$winner == w, ]
+      
+      # Helper for Oxford comma logic (A, B, and C)
+      losers <- subset_res$loserString
+      n <- length(losers)
+      
+      if (n == 1) {
+        joined_losers <- losers[1]
+      } else if (n == 2) {
+        joined_losers <- paste(losers, collapse = " and ")
+      } else {
+        # Oxford comma: "A, B, and C"
+        joined_losers <- paste0(paste(losers[1:(n-1)], collapse = ", "), ", and ", losers[n])
+      }
+      
+      # Construct the final sentence
+      # Note: Taking winnerStats from the first row (they are identical for the same winner)
+      final_str <- paste0("A post-hoc test found that ", dv, " for the scenario ", w, 
+                          " was significantly higher ", subset_res$winnerStats[1], 
+                          " than for ", joined_losers, ". ")
+      
+      cat(final_str)
     }
   }
 }
@@ -2645,6 +2694,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
