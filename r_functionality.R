@@ -1728,9 +1728,11 @@ reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
         joined_losers <- paste0(paste(losers[1:(n-1)], collapse = ", "), ", and ", losers[n])
       }
       
-      # Construct the final sentence
-      # Note: Taking winnerStats from the first row (they are identical for the same winner)
-      final_str <- paste0("A post-hoc test found that ", dv, " for the scenario ", w, 
+      # --- Construct the final sentence ---
+      # Replace "scenario" with the LaTeX formatted IV name (e.g., \miou)
+      iv_cmd <- paste0("\\", iv)
+      
+      final_str <- paste0("A post-hoc test found that ", dv, " for the ", iv_cmd, " ", w, 
                           " was significantly higher ", subset_res$winnerStats[1], 
                           " than for ", joined_losers, ". ")
       
@@ -2694,6 +2696,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
