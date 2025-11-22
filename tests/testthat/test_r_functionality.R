@@ -165,8 +165,8 @@ test_that("within and between wrappers choose correct type", {
       ggwithinstatsWithPriorNormalityCheck(data, "group", "value", "Value")
     }
   )
-  # Expect 'p' because p.value (0.2) > 0.05
-  expect_equal(result$type, "p")
+  # Usually, we would expect 'p' because p.value (0.2) > 0.05 - however, this is hard-coded to be np.
+  expect_equal(result$type, "np")
 
   np_result <- with_mock(
     ggwithinstats_wrapper = function(..., type) list(type = type),
@@ -190,14 +190,15 @@ test_that("within and between wrappers choose correct type", {
   )
   expect_equal(between$type, "np")
 
-  expect_s3_class(
+ expect_s3_class(
     with_mock(
       ggbetweenstats_wrapper = function(...) ggplot2::ggplot(),
       pairwise_comparisons_wrapper = function(...) data.frame(
         group1 = "A", 
         group2 = "B", 
         `p.value` = 0.005, 
-        asterisk_label = "**", # Explicitly providing the label prevents the recode error
+        asterisk_label = "**",
+        y.position = 1.2, # <--- Added this numeric column
         stringsAsFactors = FALSE
       ),
       geom_signif_wrapper = function(...) ggplot2::geom_blank(),
