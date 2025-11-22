@@ -1858,7 +1858,7 @@ reportDunnTestTable <- function(d = NULL, data, iv = "testiv", dv = "testdv", or
     print(xtable_obj, type = "latex", size = latexSize, caption.placement = "top", include.rownames = FALSE)
   } else {
     cat(paste0(
-      "Post-hoc comparisons for independent variable \", iv,
+      "Post-hoc comparisons for independent variable \\", iv,
       " and dependent variable \", dv,
       ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true. Effect size reported as rank-biserial correlation (r).\n"
     ))
@@ -2733,6 +2733,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
