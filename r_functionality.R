@@ -801,12 +801,8 @@ rFromNPAV <- function(pvalue, N) {
   z <- qnorm(pvalue / 2)
   r <- z / sqrt(N)
   
-  stringtowrite <- paste0("\\effectsize{", +round(x = r, digits = 3),"}, Z=",  round(x = z, digits = 2))
-  stringtowrite <- trimws(stringtowrite)
+  stringtowrite <- sprintf("\\effectsize{%s}, Z=%s", format(round(r, 3), trim = TRUE, nsmall = 3), format(round(z, 2), trim = TRUE, nsmall = 2))
   cat(stringtowrite)
-  #cat("Effect Size, r= ", round(x = r, digits = 3), " z= ", z)
-  
-  #cat("Effect Size, r= ", round(x = r, digits = 3), " z= ", z)
 }
 
 
@@ -2733,6 +2729,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
     }
   }
 }
+
 
 
 
