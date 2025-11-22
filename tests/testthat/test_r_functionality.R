@@ -188,7 +188,7 @@ test_that("effect size helpers print expected summaries", {
   wilcox_obj <- list(p.value = 0.04, data.name = "Sample")
   expect_output(rFromWilcox(wilcox_obj, 20), "Effect Size")
   expect_output(rFromWilcoxAdjusted(wilcox_obj, 20, 2), "Effect Size")
-  expect_output(rFromNPAV(0.02, 30), "\\effectsize")
+  expect_output(rFromNPAV(0.02, 30), "\effectsize{-0.425}, Z=-2.33")
 })
 
 
