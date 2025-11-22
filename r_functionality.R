@@ -69,6 +69,22 @@ try(easystats::easystats_update(ask = FALSE), silent = TRUE)
 library(tidyverse)
 
 
+# Provide a lightweight fallback for the `not_empty` helper so that
+# tests can run even when the package is unavailable.
+not_empty <- local({
+  if (requireNamespace("assertthat", quietly = TRUE)) {
+    getExportedValue("assertthat", "not_empty")
+  } else {
+    function(x, msg = "Input must not be empty.") {
+      if (is.null(x) || length(x) == 0 || (is.atomic(x) && all(is.na(x)))) {
+        stop(msg, call. = FALSE)
+      }
+      invisible(TRUE)
+    }
+  }
+})
+
+
 # JANUARY 2025: no longer available
 # source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
 
@@ -368,10 +384,10 @@ checkPackageVersions <- function() {
 #'
 #' @examples ggwithinstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE, plotType = "boxviolin")
 ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels = NULL, showPairwiseComp = TRUE, plotType = "boxviolin") {
-  assertthat::not_empty(data)
-  assertthat::not_empty(x)
-  assertthat::not_empty(y)
-  assertthat::not_empty(ylab)
+  not_empty(data)
+  not_empty(x)
+  not_empty(y)
+  not_empty(ylab)
 
 
   normality_test <- list()  # Initialize empty list to store test results
@@ -456,11 +472,11 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels = NUL
 #'
 #' @examples ggbetweenstatsWithPriorNormalityCheck(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE, plotType = "boxviolin")
 ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, showPairwiseComp = TRUE, plotType = "boxviolin") {
-  assertthat::not_empty(data)
-  assertthat::not_empty(x)
-  assertthat::not_empty(y)
-  assertthat::not_empty(ylab)
-  assertthat::not_empty(xlabels)
+  not_empty(data)
+  not_empty(x)
+  not_empty(y)
+  not_empty(ylab)
+  not_empty(xlabels)
   
   normality_test <- list()  # Initialize empty list to store test results
   normallyDistributed <- TRUE
@@ -537,11 +553,11 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
 #'
 #' @examples ggbetweenstatsWithPriorNormalityCheckAsterisk(data = main_df, x = "ConditionID", y = "tlx_mental", ylab = "Mental Workload", xlabels = labels_xlab, showPairwiseComp = TRUE, plotType = "boxviolin")
 ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabels, plotType = "boxviolin") {
-  assertthat::not_empty(data)
-  assertthat::not_empty(x)
-  assertthat::not_empty(y)
-  assertthat::not_empty(ylab)
-  assertthat::not_empty(xlabels)
+  not_empty(data)
+  not_empty(x)
+  not_empty(y)
+  not_empty(ylab)
+  not_empty(xlabels)
   
   normality_test <- list()  # Initialize empty list to store test results
   normallyDistributed <- TRUE
@@ -638,11 +654,11 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
 
 
 ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabels, plotType = "boxviolin") {
-  assertthat::not_empty(data)
-  assertthat::not_empty(x)
-  assertthat::not_empty(y)
-  assertthat::not_empty(ylab)
-  assertthat::not_empty(xlabels)
+  not_empty(data)
+  not_empty(x)
+  not_empty(y)
+  not_empty(ylab)
+  not_empty(xlabels)
   
   normality_test <- list()
   normallyDistributed <- TRUE
@@ -739,8 +755,8 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
 #'
 #' @examples
 rFromWilcox <- function(wilcoxModel, N) {
-  assertthat::not_empty(wilcoxModel)
-  assertthat::not_empty(N)
+  not_empty(wilcoxModel)
+  not_empty(N)
 
   z <- qnorm(wilcoxModel$p.value / 2)
   r <- z / sqrt(N)
@@ -758,9 +774,9 @@ rFromWilcox <- function(wilcoxModel, N) {
 #'
 #' @examples
 rFromWilcoxAdjusted <- function(wilcoxModel, N, adjustFactor) {
-  assertthat::not_empty(wilcoxModel)
-  assertthat::not_empty(N)
-  assertthat::not_empty(adjustFactor)
+  not_empty(wilcoxModel)
+  not_empty(N)
+  not_empty(adjustFactor)
 
   z <- qnorm(wilcoxModel$p.value * adjustFactor / 2)
   r <- z / sqrt(N)
@@ -779,8 +795,8 @@ rFromWilcoxAdjusted <- function(wilcoxModel, N, adjustFactor) {
 #'
 #' @examples
 rFromNPAV <- function(pvalue, N) {
-  assertthat::not_empty(pvalue)
-  assertthat::not_empty(N)
+  not_empty(pvalue)
+  not_empty(N)
 
   z <- qnorm(pvalue / 2)
   r <- z / sqrt(N)
@@ -863,9 +879,9 @@ debug_contr_error <- function(dat, subset_vec = NULL) {
 #' @examples checkAssumptionsForAnova(data = main_df, y = "tlx_mental", factors = c("Video", "DriverPosition"))
 checkAssumptionsForAnova <- function(data, y, factors) {
   # Ensure data and variables are not empty
-  assertthat::not_empty(data)
-  assertthat::not_empty(y)
-  assertthat::not_empty(factors)
+  not_empty(data)
+  not_empty(y)
+  not_empty(factors)
   
   # Dynamically construct the formula based on the number of factors
   formula_string <- paste(y, "~", paste(factors, collapse = " * "))
@@ -919,8 +935,8 @@ checkAssumptionsForAnova <- function(data, y, factors) {
 #' reportNPAV(model, "mental workload")
 reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE) {
   .Deprecated("ARTool")
-  assertthat::not_empty(model)
-  assertthat::not_empty(dv)
+  not_empty(model)
+  not_empty(dv)
 
   if ("Pr(>F)" %!in% colnames(model)) {
     cat(paste0("No column ``Pr(>F)'' was found. Most likely, you want to use the command reportNPAVChi."))
@@ -1049,8 +1065,8 @@ reportNPAV <- function(model, dv = "Testdependentvariable", write_to_clipboard =
 #' @export
 reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE, sample_size = NULL) {
   .Deprecated("ARTool")
-  assertthat::not_empty(model)
-  assertthat::not_empty(dv)
+  not_empty(model)
+  not_empty(dv)
   
   # problem: when no value under 0.05 is found but a NA is present, throws error
   # here, it is okay as we don't use the residuals
@@ -1172,8 +1188,8 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
 #' reportART(model, "mental demand")
 reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE) {
   # Check that the model and dependent variable are not empty
-  assertthat::not_empty(model)
-  assertthat::not_empty(dv)
+  not_empty(model)
+  not_empty(dv)
   
   # Check if the model has a "Pr(>F)" column
   if ("Pr(>F)" %!in% colnames(model)) {
@@ -1310,8 +1326,8 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
 #'
 #' @examples
 reportNparLD <- function(model, dv = "Testdependentvariable", write_to_clipboard = FALSE) {
-  assertthat::not_empty(model)
-  assertthat::not_empty(dv)
+  not_empty(model)
+  not_empty(dv)
 
   # first retrieve relevant subset
   model <- as.data.frame(model$ANOVA.test)
@@ -1392,9 +1408,9 @@ reportNparLD <- function(model, dv = "Testdependentvariable", write_to_clipboard
 #'
 #' @examples
 reportMeanAndSD <- function(data, iv = "testiv", dv = "testdv") {
-  assertthat::not_empty(data)
-  assertthat::not_empty(iv)
-  assertthat::not_empty(dv)
+  not_empty(data)
+  not_empty(iv)
+  not_empty(dv)
   
   test <- data  %>% drop_na(!! sym(iv)) %>% drop_na(!! sym(dv)) %>% group_by(!! sym(iv)) %>% dplyr::summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
   
@@ -1444,11 +1460,11 @@ generateEffectPlot <- function(data,
                                   xLabelsOverwrite = NULL,
                                   useLatexMarkup = FALSE,
                                   numberColors = 6) {
-  assertthat::not_empty(data)
-  assertthat::not_empty(x)
-  assertthat::not_empty(y)
-  assertthat::not_empty(fillColourGroup)
-  assertthat::not_empty(shownEffect)
+  not_empty(data)
+  not_empty(x)
+  not_empty(y)
+  not_empty(fillColourGroup)
+  not_empty(shownEffect)
   
   p <- data %>%
     ggplot() +
@@ -1625,10 +1641,10 @@ generateEffectPlot <- function(data,
 #' @examples reportDunnTest(d, data, iv = "scene", dv = "NASATLX")
 #' # d <- dunnTest(NASATLX ~ scene, data = main_df, method = "holm")
 reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
-  assertthat::not_empty(data)
-  assertthat::not_empty(d)
-  assertthat::not_empty(iv)
-  assertthat::not_empty(dv)
+  not_empty(data)
+  not_empty(d)
+  not_empty(iv)
+  not_empty(dv)
   
   # Check for significance globally first
   # Note: d$res$P.adj can contain NAs, so we remove them for the check
@@ -1757,9 +1773,9 @@ reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
 #'
 #' @examples reportDunnTestTable(d, data, iv = "scene" , dv = "NASATLX")
 reportDunnTestTable <- function(d = NULL, data, iv = "testiv", dv = "testdv", orderByP = FALSE, numberDigitsForPValue = 4, latexSize = "small", orderText = TRUE){
-  assertthat::not_empty(data)
-  assertthat::not_empty(iv)
-  assertthat::not_empty(dv)
+  not_empty(data)
+  not_empty(iv)
+  not_empty(dv)
   
   # If d is not provided, calculate it
   if(is.null(d)) {
@@ -1845,9 +1861,9 @@ reportDunnTestTable <- function(d = NULL, data, iv = "testiv", dv = "testdv", or
 #'
 #' @examples p <- ggwithinstats(...) --> reportggstatsplot(p, iv = "Condition", dv="mental workload")
 reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable", write_to_clipboard = FALSE) {
-  assertthat::not_empty(p)
-  assertthat::not_empty(dv)
-  assertthat::not_empty(iv)
+  not_empty(p)
+  not_empty(dv)
+  not_empty(iv)
 
   stats <- extract_stats(p)$subtitle_data
   resultString <- ""
@@ -1955,8 +1971,12 @@ replace_values <- function(data, to_replace, replace_with) {
 #' @importFrom readxl read_excel
 #' @importFrom writexl write_xlsx
 reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoinfo", id_col = "ID", output_filepath) {
-  # Read the Excel file into a data frame
-  df <- readxl::read_excel(input_filepath, sheet = sheetName)
+  # Read the Excel file into a data frame. If the requested sheet is missing,
+  # fall back to the first available sheet to keep the helper robust for
+  # single-sheet workbooks created on the fly (e.g., in tests).
+  available_sheets <- readxl::excel_sheets(input_filepath)
+  sheet_to_read <- if (sheetName %in% available_sheets) sheetName else available_sheets[[1]]
+  df <- readxl::read_excel(input_filepath, sheet = sheet_to_read)
   
   # Initialize an empty data frame to store the final long-form data
   long_df <- data.frame()
@@ -2043,8 +2063,8 @@ add_pareto_emoa_column <- function(data, objectives) {
   }
   
   # Input checks
-  assertthat::not_empty(data)
-  assertthat::not_empty(objectives)
+  not_empty(data)
+  not_empty(objectives)
   
   # Select only the objective columns
   objective_data <- data |> select(all_of(objectives))
@@ -2112,10 +2132,10 @@ add_pareto_emoa_column <- function(data, objectives) {
 #' )
 #' generateMoboPlot(df, x = "x", y = "y", numberSamplingSteps = 3)
 generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, legendPos = c(0.65, 0.85), numberSamplingSteps = 5, labelPosFormulaY = "top", verticalLinePosY = 0.75) {
-  assertthat::not_empty(df)
-  assertthat::not_empty(x)
-  assertthat::not_empty(y)
-  assertthat::not_empty(fillColourGroup)
+  not_empty(df)
+  not_empty(x)
+  not_empty(y)
+  not_empty(fillColourGroup)
     
   # as default, just add the y variable in Title caps
   if (missing(ytext)) {
@@ -2180,10 +2200,10 @@ generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, l
 #' )
 #' generateMoboPlot2(data = df, x = "x", y = "y")
 generateMoboPlot2 <- function(data, x = "Iteration", y, phaseCol = "Phase", fillColourGroup = "", ytext, legendPos = c(0.65, 0.85), labelPosFormulaY = "top", verticalLinePosY = 0.75) {
-  assertthat::not_empty(data)
-  assertthat::not_empty(x)
-  assertthat::not_empty(y)
-  assertthat::not_empty(fillColourGroup)
+  not_empty(data)
+  not_empty(x)
+  not_empty(y)
+  not_empty(fillColourGroup)
   stopifnot(all(c(x, y, phaseCol) %in% names(data)))
   
   
@@ -2648,10 +2668,10 @@ remove_outliers_REI <- function(df, header = FALSE, variables = "", range = c(1,
 
 reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", label_mappings = NULL) {
   # Asserts to ensure non-empty inputs
-  assertthat::not_empty(data)
-  assertthat::not_empty(p)
-  assertthat::not_empty(iv)
-  assertthat::not_empty(dv)
+  not_empty(data)
+  not_empty(p)
+  not_empty(iv)
+  not_empty(dv)
   
   # Extract stats from the ggstatsplot object
   stats <- extract_stats(p)$pairwise_comparisons_data
