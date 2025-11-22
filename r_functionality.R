@@ -709,10 +709,9 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
 
   df <- df %>% dplyr::filter(!is.na(asterisk_label))
   
-  #y_positions_asterisks <- recode(df$asterisk_label, "NA=0.0; else=7.50") # 
-  # adjust to maximum value in the dataset
+  # adjust to the maximum value in the dataset
   lowestNumberText <- paste0("NA=0.0; else=", toString(round((max(data[[y]]) + 0.5), digits = 2)))
-  y_positions_asterisks <- recode(df$asterisk_label, recodes = lowestNumberText)
+  y_positions_asterisks <- as.numeric(car::recode(df$asterisk_label, recodes = lowestNumberText))
   
   
   count <- 0
@@ -747,7 +746,7 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
 
 
 
-#' Calculation based on Rosenthals formula (1994). N stands for the *number of measurements*.
+#' Calculation based on Rosenthal's formula (1994). N stands for the *number of measurements*.
 #'
 #' @param wilcoxModel
 #' @param N
@@ -2768,5 +2767,6 @@ pairwise_comparisons_wrapper <- function(...) ggstatsplot::pairwise_comparisons(
 geom_signif_wrapper <- function(...) ggsignif::geom_signif(...)
 shapiro_test_wrapper <- function(...) stats::shapiro.test(...)
 extract_stats_wrapper <- function(...) ggstatsplot::extract_stats(...)
+
 
 
