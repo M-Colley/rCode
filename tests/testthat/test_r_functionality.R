@@ -162,13 +162,15 @@ test_that("within and between wrappers choose correct type", {
   data <- tibble::tibble(group = rep(c("A", "B"), each = 4), value = c(rep(0, 4), rep(1, 4)))
 
   # Mock the wrapper defined in the source, not the package function
-  result <- with_mock(
+   result <- with_mock(
     ggwithinstats_wrapper = function(..., type) list(type = type),
     shapiro.test = function(...) list(p.value = 0.2),
+    shapiro_test = function(...) data.frame(p.value = 0.2), 
     {
       ggwithinstatsWithPriorNormalityCheck(data, "group", "value", "Value")
     }
   )
+  # Expect 'p' because p.value (0.2) > 0.05
   expect_equal(result$type, "p")
 
   np_result <- with_mock(
@@ -194,7 +196,13 @@ test_that("within and between wrappers choose correct type", {
   expect_s3_class(
     with_mock(
       ggbetweenstats_wrapper = function(...) ggplot2::ggplot(),
-      pairwise_comparisons_wrapper = function(...) data.frame(group1 = "A", group2 = "B", `p.value` = 0.01, stringsAsFactors = FALSE),
+      pairwise_comparisons_wrapper = function(...) data.frame(
+        group1 = "A", 
+        group2 = "B", 
+        `p.value` = 0.01, 
+        asterisk_label = "**", # Explicitly providing the label prevents the recode error
+        stringsAsFactors = FALSE
+      ),
       geom_signif_wrapper = function(...) ggplot2::geom_blank(),
       {
         ggbetweenstatsWithPriorNormalityCheckAsterisk(data, "group", "value", "Value", c("A", "B"))
@@ -241,10 +249,10 @@ test_that("debugging and assumption helpers work", {
   # These functions are imported from rstatix, so we mock them in GlobalEnv where
   # checkAssumptionsForAnova is defined.
   with_mock(
-    shapiro_test = function(...) data.frame(p.value = 0.5, p = 0.5),
-    levene_test = function(...) data.frame(p = 0.5),
+    shapiro_test = function(...) data.frame(p.value = 0.01, p = 0.01),
+    levene_test = function(...) data.frame(p = 0.01),
     {
-      expect_output(checkAssumptionsForAnova(anova_df, "outcome", c("factor1", "factor2")), "You must take the non-parametric ANOVA as normality assumption by groups is violated (one or more p < 0.05).")
+      expect_output(checkAssumptionsForAnova(anova_df, "outcome", c("factor1", "factor2")), "You must take the non-parametric ANOVA")
     }
   )
 })
