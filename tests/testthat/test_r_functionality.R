@@ -77,10 +77,10 @@ basic_plot <- ggplot2::ggplot(sample_df, ggplot2::aes(x = ConditionID, y = value
 
 # --- Mocking Helper ---
 # A custom mock function that works in the Global Environment (sourced scripts)
+# --- Mocking Helper ---
 with_mock <- function(..., .env = globalenv()) {
   dots <- match.call(expand.dots = FALSE)$...
   if (length(dots) == 0) return()
-  
   code_expr <- dots[[length(dots)]]
   mock_exprs <- dots[-length(dots)]
   mocks <- lapply(mock_exprs, eval, envir = parent.frame())
@@ -91,9 +91,7 @@ with_mock <- function(..., .env = globalenv()) {
   
   for (nm in mocked_names) {
     if (exists(nm, envir = .env, inherits = FALSE)) {
-      if (bindingIsLocked(nm, .env)) {
-        try(unlockBinding(nm, .env), silent = TRUE)
-      }
+      if (bindingIsLocked(nm, .env)) try(unlockBinding(nm, .env), silent = TRUE)
       original_values[[nm]] <- get(nm, envir = .env)
     } else {
       created_names <- c(created_names, nm)
@@ -107,10 +105,7 @@ with_mock <- function(..., .env = globalenv()) {
       assign(nm, original_values[[nm]], envir = .env)
     }
     for (nm in created_names) {
-      if (exists(nm, envir = .env, inherits = FALSE)) {
-        if (bindingIsLocked(nm, .env)) try(unlockBinding(nm, .env), silent = TRUE)
-        rm(list = nm, envir = .env)
-      }
+      if (exists(nm, envir = .env, inherits = FALSE)) rm(list = nm, envir = .env)
     }
   }, add = TRUE)
   
@@ -183,10 +178,12 @@ test_that("within and between wrappers choose correct type", {
   expect_equal(np_result$type, "np")
 
   between <- with_mock(
-    ggbetweenstats_wrapper = function(..., type) list(type = type),
+    ggbetweenstats_wrapper = function(..., type) structure(list(type = type), class = "mockplot"),
     shapiro_test_wrapper = function(...) list(p.value = 0.001),
     pairwise_comparisons_wrapper = function(...) data.frame(group1 = "A", group2 = "B", `p.value` = 0.01, stringsAsFactors = FALSE),
     geom_signif_wrapper = function(...) ggplot2::geom_blank(),
+    scale_x_discrete = function(...) NULL,
+    `+.mockplot` = function(e1, e2) e1, # Allow addition on mock object
     {
       ggbetweenstatsWithPriorNormalityCheck(data, "group", "value", "Value", c("A", "B"))
     }
@@ -199,7 +196,7 @@ test_that("within and between wrappers choose correct type", {
       pairwise_comparisons_wrapper = function(...) data.frame(
         group1 = "A", 
         group2 = "B", 
-        `p.value` = 0.01, 
+        `p.value` = 0.005, 
         asterisk_label = "**", # Explicitly providing the label prevents the recode error
         stringsAsFactors = FALSE
       ),
@@ -252,7 +249,7 @@ test_that("debugging and assumption helpers work", {
     shapiro_test = function(...) data.frame(p.value = 0.01, p = 0.01),
     levene_test = function(...) data.frame(p = 0.01),
     {
-      expect_output(checkAssumptionsForAnova(anova_df, "outcome", c("factor1", "factor2")), "You must take the non-parametric ANOVA")
+      expect_match(checkAssumptionsForAnova(anova_df, "outcome", c("factor1", "factor2")), "You must take the non-parametric ANOVA")
     }
   )
 })
