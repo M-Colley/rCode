@@ -222,7 +222,7 @@ n_fun <- function(x){
 #' @examples
 havingIP <- function() {
   if (requireNamespace("curl", quietly = TRUE)) {
-    return(isTRUE(tryCatch(curl::has_internet(), error = function(...) FALSE)))
+    return(isTRUE(tryCatch(curl_has_internet(), error = function(...) FALSE)))
   }
 
   warning("Package 'curl' is not available; assuming no internet connection.")
@@ -411,7 +411,7 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels = NUL
     sufficient_sample <- length(subset_data) >= 3
 
     if (sufficient_sample && has_variation) {
-      normality_test[[group]] <- shapiro.test(subset_data)
+      normality_test[[group]] <- shapiro_test_wrapper(subset_data)
     } else {
       normality_test[[group]] <- NULL
       if (!sufficient_sample) {
@@ -441,7 +441,7 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels = NUL
 
 
 
-  plot <- ggstatsplot::ggwithinstats(
+  plot <- ggwithinstats_wrapper(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp, var.equal = group_all_data_equal,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey",
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
@@ -499,7 +499,7 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
     sufficient_sample <- length(subset_data) >= 3
 
     if (sufficient_sample && has_variation) {
-      normality_test[[group]] <- shapiro.test(subset_data)
+      normality_test[[group]] <- shapiro_test_wrapper(subset_data)
     } else {
       normality_test[[group]] <- NULL
       if (!sufficient_sample) {
@@ -528,7 +528,7 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
   type <- ifelse(normallyDistributed, "p", "np")
   
   # if one group_all_data_equal then we use the var.equal = TRUE, see here: https://github.com/IndrajeetPatil/ggstatsplot/issues/880
-  ggstatsplot::ggbetweenstats(
+  ggbetweenstats_wrapper(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp, var.equal = group_all_data_equal,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
@@ -580,7 +580,7 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
     sufficient_sample <- length(subset_data) >= 3
 
     if (sufficient_sample && has_variation) {
-      normality_test[[group]] <- shapiro.test(subset_data)
+      normality_test[[group]] <- shapiro_test_wrapper(subset_data)
     } else {
       normality_test[[group]] <- NULL
       if (!sufficient_sample) {
@@ -609,7 +609,7 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   
   
   (df <-
-      pairwise_comparisons(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") %>%
+      pairwise_comparisons_wrapper(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") %>%
       dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) %>%
       dplyr::arrange(group1) %>%
       dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
@@ -632,13 +632,13 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   }
   
   
-  p <- ggstatsplot::ggbetweenstats(
+  p <- ggbetweenstats_wrapper(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.display = "none", var.equal = group_all_data_equal,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
   
-  p + ggsignif::geom_signif(
+  p + geom_signif_wrapper(
       comparisons = df$groups,
       map_signif_level = TRUE,
       annotations = df$asterisk_label,
@@ -677,7 +677,7 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
     sufficient_sample <- length(subset_data) >= 3
 
     if (sufficient_sample && has_variation) {
-      normality_test[[group]] <- shapiro.test(subset_data)
+      normality_test[[group]] <- shapiro_test_wrapper(subset_data)
     } else {
       normality_test[[group]] <- NULL
       normality_assessable <- FALSE
@@ -700,7 +700,7 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
   
   
   (df <-
-      pairwise_comparisons(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") %>%
+      pairwise_comparisons_wrapper(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") %>%
       dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) %>%
       dplyr::arrange(group1) %>%
       dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
@@ -723,13 +723,13 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
   }
   
   
-  p <- ggstatsplot::ggwithinstats(
+  p <- ggwithinstats_wrapper(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.display = "none",
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
   
-  p + ggsignif::geom_signif(
+  p + geom_signif_wrapper(
     comparisons = df$groups,
     map_signif_level = TRUE,
     annotations = df$asterisk_label,
@@ -1878,7 +1878,7 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
   not_empty(dv)
   not_empty(iv)
 
-  stats <- extract_stats(p)$subtitle_data
+  stats <- extract_stats_wrapper(p)$subtitle_data
   resultString <- ""
 
   effectSize <- round(stats$estimate, digits = 2)
@@ -2687,7 +2687,7 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
   not_empty(dv)
   
   # Extract stats from the ggstatsplot object
-  stats <- extract_stats(p)$pairwise_comparisons_data
+  stats <- extract_stats_wrapper(p)$pairwise_comparisons_data
   
   if (!any(stats$p.value < 0.05, na.rm = TRUE)) {
     cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
@@ -2756,4 +2756,13 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
 
 
 
+
+# Helper wrappers around external functions so they can be mocked in tests
+curl_has_internet <- function(...) curl::has_internet(...)
+ggwithinstats_wrapper <- function(...) ggstatsplot::ggwithinstats(...)
+ggbetweenstats_wrapper <- function(...) ggstatsplot::ggbetweenstats(...)
+pairwise_comparisons_wrapper <- function(...) ggstatsplot::pairwise_comparisons(...)
+geom_signif_wrapper <- function(...) ggsignif::geom_signif(...)
+shapiro_test_wrapper <- function(...) stats::shapiro.test(...)
+extract_stats_wrapper <- function(...) ggstatsplot::extract_stats(...)
 

@@ -74,8 +74,8 @@ posthoc_stats <- list(
 basic_plot <- ggplot2::ggplot(sample_df, ggplot2::aes(x = ConditionID, y = value)) + ggplot2::geom_point()
 
 # Helper wrapper to avoid relying on pkgload/devtools metadata when mocking
-with_mock <- function(..., .env = parent.frame()) {
-  testthat::with_mocked_bindings(..., .package = "base", .env = .env)
+with_mock <- function(..., .env = globalenv()) {
+  testthat::with_mocked_bindings(..., .env = .env)
 }
 
 
@@ -97,7 +97,7 @@ test_that("basic utility helpers behave", {
   expect_s3_class(n_result, "data.frame")
   expect_equal(n_result$label, paste0("n = ", length(sample_df$value)))
 
-  with_mock(`curl::has_internet` = function(...) TRUE, {
+  with_mock(curl_has_internet = function(...) TRUE, {
     expect_true(havingIP())
   })
 
@@ -136,8 +136,8 @@ test_that("within and between wrappers choose correct type", {
   expect_equal(result$type, "p")
 
   np_result <- with_mock(
-    `ggstatsplot::ggwithinstats` = function(..., type) list(type = type),
-    shapiro.test = function(...) list(p.value = 0.001),
+    ggwithinstats_wrapper = function(..., type) list(type = type),
+    shapiro_test_wrapper = function(...) list(p.value = 0.001),
     {
       ggwithinstatsWithPriorNormalityCheck(data, "group", "value", "Value")
     }
@@ -145,10 +145,10 @@ test_that("within and between wrappers choose correct type", {
   expect_equal(np_result$type, "np")
 
   between <- with_mock(
-    `ggstatsplot::ggbetweenstats` = function(..., type) list(type = type),
-    shapiro.test = function(...) list(p.value = 0.001),
-    pairwise_comparisons = function(...) data.frame(group1 = "A", group2 = "B", `p.value` = 0.01, stringsAsFactors = FALSE),
-    `ggsignif::geom_signif` = function(...) ggplot2::geom_blank(),
+    ggbetweenstats_wrapper = function(..., type) list(type = type),
+    shapiro_test_wrapper = function(...) list(p.value = 0.001),
+    pairwise_comparisons_wrapper = function(...) data.frame(group1 = "A", group2 = "B", `p.value` = 0.01, stringsAsFactors = FALSE),
+    geom_signif_wrapper = function(...) ggplot2::geom_blank(),
     {
       ggbetweenstatsWithPriorNormalityCheck(data, "group", "value", "Value", c("A", "B"))
     }
@@ -157,9 +157,9 @@ test_that("within and between wrappers choose correct type", {
 
   expect_s3_class(
     with_mock(
-      `ggstatsplot::ggbetweenstats` = function(...) ggplot2::ggplot(),
-      pairwise_comparisons = function(...) data.frame(group1 = "A", group2 = "B", `p.value` = 0.01, stringsAsFactors = FALSE),
-      `ggsignif::geom_signif` = function(...) ggplot2::geom_blank(),
+      ggbetweenstats_wrapper = function(...) ggplot2::ggplot(),
+      pairwise_comparisons_wrapper = function(...) data.frame(group1 = "A", group2 = "B", `p.value` = 0.01, stringsAsFactors = FALSE),
+      geom_signif_wrapper = function(...) ggplot2::geom_blank(),
       {
         ggbetweenstatsWithPriorNormalityCheckAsterisk(data, "group", "value", "Value", c("A", "B"))
       }
@@ -169,10 +169,10 @@ test_that("within and between wrappers choose correct type", {
 
   expect_s3_class(
     with_mock(
-      `ggstatsplot::ggwithinstats` = function(...) ggplot2::ggplot(),
-      pairwise_comparisons = function(...) data.frame(group1 = "A", group2 = "B", `p.value` = 0.01, stringsAsFactors = FALSE),
-      `ggsignif::geom_signif` = function(...) ggplot2::geom_blank(),
-      shapiro.test = function(...) list(p.value = 0.2),
+      ggwithinstats_wrapper = function(...) ggplot2::ggplot(),
+      pairwise_comparisons_wrapper = function(...) data.frame(group1 = "A", group2 = "B", `p.value` = 0.01, stringsAsFactors = FALSE),
+      geom_signif_wrapper = function(...) ggplot2::geom_blank(),
+      shapiro_test_wrapper = function(...) list(p.value = 0.2),
       {
         ggwithinstatsWithPriorNormalityCheckAsterisk(data, "group", "value", "Value", c("A", "B"))
       }
@@ -222,7 +222,7 @@ test_that("reporting helpers include effect sizes", {
   expect_match(
     capture.output(
       with_mock(
-        extract_stats = function(...) posthoc_stats,
+        extract_stats_wrapper = function(...) posthoc_stats,
         {
           reportggstatsplot(basic_plot, iv = "group", dv = "score")
         }
@@ -233,7 +233,7 @@ test_that("reporting helpers include effect sizes", {
 
   expect_output(
     with_mock(
-      extract_stats = function(...) posthoc_stats,
+      extract_stats_wrapper = function(...) posthoc_stats,
       {
         reportggstatsplotPostHoc(report_data, basic_plot, iv = "group", dv = "score")
       }
