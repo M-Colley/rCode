@@ -911,7 +911,9 @@ checkAssumptionsForAnova <- function(data, y, factors) {
     return("You must take the non-parametric ANOVA as Levene’s test is significant (p < 0.05).")
   }
   
-  print("You may take parametric ANOVA (function anova_test). See https://www.datanovia.com/en/lessons/anova-in-r/#check-assumptions-1 for more information.")
+  message("You may take parametric ANOVA (function anova_test). See https://www.datanovia.com/en/lessons/anova-in-r/#check-assumptions-1 for more information.")
+
+  invisible(NULL)
 }
 
 
@@ -1124,26 +1126,32 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
           error = function(e) NULL
         )
 
+        w_value <- sqrt(Chivalue / sample_size)
+        ci_low <- NULL
+        ci_high <- NULL
+
         if (!is.null(effect_size)) {
           effect_size <- as.data.frame(effect_size)
-          w_value <- effect_size$Cohens_w
+          w_value <- effect_size$Cohens_w %||% w_value
           ci_low <- effect_size$CI_low
           ci_high <- effect_size$CI_high
-          if (!is.null(w_value) && !is.na(w_value)) {
+        }
+
+        if (!is.null(w_value) && !is.na(w_value)) {
+          effect_size_text <- paste0(
+            ", $w=",
+            sprintf("%.2f", w_value)
+          )
+
+          if (!is.null(ci_low) && !is.null(ci_high) && !any(is.na(c(ci_low, ci_high)))) {
             effect_size_text <- paste0(
-              ", $w=",
-              sprintf("%.2f", w_value)
+              effect_size_text,
+              " [",
+              sprintf("%.2f", ci_low),
+              ", ",
+              sprintf("%.2f", ci_high),
+              "]"
             )
-            if (!is.null(ci_low) && !is.null(ci_high) && !any(is.na(c(ci_low, ci_high)))) {
-              effect_size_text <- paste0(
-                effect_size_text,
-                " [",
-                sprintf("%.2f", ci_low),
-                ", ",
-                sprintf("%.2f", ci_high),
-                "]"
-              )
-            }
           }
         }
       }
@@ -1839,14 +1847,23 @@ reportDunnTestTable <- function(d = NULL, data, iv = "testiv", dv = "testdv", or
   table$r <- formatC(table$r, digits = 2, format = "f")
   
   # Adjust the xtable call to handle the modified columns
-  xtable_obj <- xtable(table, 
-                       digits = c(0, 0, 4, 0, 0),
-                       caption = paste0("Post-hoc comparisons for independent variable \\", iv, 
-                                        " and dependent variable \\", dv, 
-                                        ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true. Effect size reported as rank-biserial correlation (r)."), 
-                       label = paste0("tab:posthoc-", iv, "-", dv))
-  
-  print(xtable_obj, type = "latex", size = latexSize, caption.placement = "top", include.rownames = FALSE)
+  if (requireNamespace("xtable", quietly = TRUE)) {
+    xtable_obj <- xtable::xtable(table,
+                         digits = c(0, 0, 4, 0, 0),
+                         caption = paste0("Post-hoc comparisons for independent variable \\", iv,
+                                          " and dependent variable \\", dv,
+                                          ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true. Effect size reported as rank-biserial correlation (r)."),
+                         label = paste0("tab:posthoc-", iv, "-", dv))
+
+    print(xtable_obj, type = "latex", size = latexSize, caption.placement = "top", include.rownames = FALSE)
+  } else {
+    cat(paste0(
+      "Post-hoc comparisons for independent variable \", iv,
+      " and dependent variable \", dv,
+      ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true. Effect size reported as rank-biserial correlation (r).\n"
+    ))
+    print(table)
+  }
 }
     
 #' Report statistical details for ggstatsplot.

@@ -73,7 +73,10 @@ posthoc_stats <- list(
 
 basic_plot <- ggplot2::ggplot(sample_df, ggplot2::aes(x = ConditionID, y = value)) + ggplot2::geom_point()
 
-with_mock <- testthat::with_mocked_bindings
+# Helper wrapper to avoid relying on pkgload/devtools metadata when mocking
+with_mock <- function(..., .env = parent.frame()) {
+  testthat::with_mocked_bindings(..., .package = "base", .env = .env)
+}
 
 
 #### basic utilities ---------------------------------------------------------
