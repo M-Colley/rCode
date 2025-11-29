@@ -1,0 +1,78 @@
+Package: rCode
+Title: Enhanced R Functions for Statistical Analysis and Reporting
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Mark",
+           family = "Colley",
+           role = c("aut", "cre"),
+           email = "mark.colley@yahoo.de",
+           comment = c(ORCID = "0000-0001-5207-5029"))
+Description: A collection of custom R functions for streamlining statistical 
+    analysis, visualizations, and APA-compliant reporting in psychology 
+    and HCI research. Includes wrappers for 'ggstatsplot', 'ARTool', and 
+    automated reporting for non-parametric tests.
+License: MIT + file LICENSE
+URL: https://github.com/M-Colley/rCode
+BugReports: https://github.com/M-Colley/rCode/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Depends: 
+    R (>= 4.5.2)
+Imports: 
+    afex,
+    ARTool,
+    assertthat,
+    BayesFactor,
+    bayestestR,
+    Cairo,
+    car,
+    cli,
+    clipr,
+    conflicted,
+    curl,
+    dplyr,
+    DT,
+    dunn.test,
+    easystats,
+    effectsize (>= 1.0.1),
+    emmeans,
+    foreign,
+    FSA,
+    ggplot2 (>= 4.0.1),
+    ggpmisc,
+    ggsignif,
+    ggstatsplot,
+    ggtext,
+    Hmisc,
+    httr,
+    insight,
+    marginaleffects,
+    pals,
+    pastecs,
+    PMCMRplus,
+    psych,
+    purrr,
+    RColorBrewer,
+    readxl,
+    report,
+    reporttools,
+    rstantools,
+    rstatix,
+    scales,
+    see,
+    sjPlot,
+    stargazer,
+    stringr,
+    styler,
+    tibble,
+    tidyr,
+    wesanderson,
+    writexl,
+    xtable
+Suggests: 
+    emoa,
+    flexdashboard,
+    moocore (>= 0.1.10),
+    testthat (>= 3.3.1)
+Config/testthat/edition: 3
