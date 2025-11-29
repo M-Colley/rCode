@@ -1,27 +1,172 @@
 ## --- rCode bootstrap ------------------------------------------------------
 
 ## Keep RStudio projects clean
-try(if (rstudioapi::isAvailable()) usethis::use_blank_slate(), silent = TRUE)
+try(if (rstudioapi::isAvailable()) usethis::use_blank_slate())
 
 
-    
-message("
-If you use these functions, please cite:
+#' Configure Global R Environment for rCode
+#'
+#' Sets global options, ggplot2 themes, and conflict preferences to match the
+#' standards used in the rCode workflow.
+#'
+#' @param set_options Logical. If \code{TRUE}, sets \code{scipen}, \code{digits},
+#'   and \code{digits.secs}. Default is \code{TRUE}.
+#' @param set_theme Logical. If \code{TRUE}, sets the default \code{ggplot2} theme
+#'   to \code{see::theme_lucid} with custom modifications. Default is \code{TRUE}.
+#' @param set_conflicts Logical. If \code{TRUE}, sets \code{conflicted} preferences
+#'   to favor \code{dplyr} and other tidyverse packages. Default is \code{TRUE}.
+#' @param print_citation Logical. If \code{TRUE}, prints the citation information
+#'   for this package. Default is \code{TRUE}.
+#'
+#' @details
+#' \strong{Options set:}
+#' \itemize{
+#'   \item \code{scipen = 999} (Avoid scientific notation)
+#'   \item \code{digits = 10}
+#'   \item \code{digits.secs = 3} (Millisecond precision)
+#' }
+#'
+#' \strong{Conflicts resolved:}
+#' Prioritizes \code{dplyr} for common verbs (filter, select, mutate, etc.) and
+#' resolves specific clashes for \code{ggplot2}, \code{scales}, and \code{psych}.
+#'
+#' @return Invisible NULL.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Run this at the start of your script
+#' rCode::rcode_setup()
+#'
+#' # Or only set the theme
+#' rCode::rcode_setup(set_options = FALSE, set_conflicts = FALSE)
+#' }
+rcode_setup <- function(set_options = TRUE,
+                        set_theme = TRUE,
+                        set_conflicts = TRUE,
+                        print_citation = TRUE) {
 
-Colley, M. (2024). rCode: Enhanced R Functions for Statistical Analysis and Reporting. 
-Retrieved from https://github.com/M-Colley/rCode
+  # 1. Set Global Options
+  if (set_options) {
+    options(
+      scipen = 999,
+      digits = 10,
+      digits.secs = 3
+    )
+    cli::cli_alert_success("Global options set (scipen=999, digits=10).")
+  }
 
-BibTeX:
-@misc{colley2024rcode,
-  author       = {Mark Colley},
-  title        = {rCode: Enhanced R Functions for Statistical Analysis and Reporting},
-  year         = {2024},
-  howpublished = {\\url{https://github.com/M-Colley/rCode}},
-  note         = {A collection of custom R functions for streamlining statistical analysis, visualizations, and APA-compliant reporting.},
-  doi          = {10.5281/zenodo.16875755},
+  # 2. Set Conflict Preferences
+  if (set_conflicts) {
+    if (!requireNamespace("conflicted", quietly = TRUE)) {
+      cli::cli_alert_warning("Package 'conflicted' is not installed. Skipping conflict resolution.")
+    } else {
+      # List of (Function, Package) pairs to prefer
+      # This list has been cleaned of duplicates from the original script
+      preferences <- list(
+        c("mutate", "dplyr"),
+        c("filter", "dplyr"),
+        c("select", "dplyr"),
+        c("summarise", "dplyr"),
+        c("summarize", "dplyr"),
+        c("rename", "dplyr"),
+        c("arrange", "dplyr"),
+        c("first", "dplyr"),
+        c("last", "dplyr"),
+        c("lag", "dplyr"),
+        c("recode", "dplyr"),
+        c("src", "dplyr"),
+        c("alpha", "scales"),
+        c("col_factor", "scales"),
+        c("annotate", "ggplot2"),
+        c("%+%", "ggplot2"),
+        c("ar", "brms"),
+        c("cs", "brms"),
+        c("bootCase", "car"),
+        c("cache_info", "httr"),
+        c("cohens_d", "effectsize"),
+        c("eta_squared", "effectsize"),
+        c("phi", "effectsize"),
+        c("cor_test", "correlation"),
+        c("describe", "psych"),
+        c("headtail", "psych"),
+        c("logit", "psych"),
+        c("discard", "purrr"),
+        c("some", "purrr"),
+        c("display", "report"),
+        c("expand", "tidyr"),
+        c("extract", "tidyr"),
+        c("pack", "tidyr"),
+        c("unpack", "tidyr"),
+        c("format_error", "insight"),
+        c("format_message", "insight"),
+        c("format_warning", "insight"),
+        c("get_emmeans", "modelbased"),
+        c("has_name", "tibble"),
+        c("label", "xtable"),
+        c("label<-", "Hmisc"),
+        c("lmer", "lme4"),
+        c("ngrps", "lme4"),
+        c("rescale", "datawizard"),
+        c("test", "devtools")
+      )
+
+      # Apply preferences safely
+      suppressMessages({
+        for (p in preferences) {
+          # Only set preference if the package is actually loaded/installed
+          # logic handled by conflicted, we just wrap in try to be safe
+          try(conflicted::conflict_prefer(p[1], p[2], quiet = TRUE), silent = TRUE)
+        }
+      })
+      cli::cli_alert_success("Conflict preferences set (favoring dplyr, ggplot2, etc.).")
+    }
+  }
+
+  # 3. Set ggplot2 Theme
+  if (set_theme) {
+    if (!requireNamespace("ggplot2", quietly = TRUE) || !requireNamespace("see", quietly = TRUE)) {
+      cli::cli_alert_warning("Packages 'ggplot2' and/or 'see' not installed. Skipping theme setup.")
+    } else {
+      # Define theme
+      # Note: We must use :: to access functions to avoid 'global variable' notes in CRAN checks
+      custom_theme <- see::theme_lucid() +
+        ggplot2::theme(
+          legend.title = ggplot2::element_blank(),
+          axis.title = ggplot2::element_text(size = 20),
+          axis.text = ggplot2::element_text(size = 17),
+          plot.title = ggplot2::element_text(size = 28),
+          plot.subtitle = ggplot2::element_text(size = 17),
+          legend.background = ggplot2::element_blank(),
+          legend.position = "inside",
+          legend.position.inside = c(0.85, 0.45),
+          legend.text = ggplot2::element_text(size = 15),
+          strip.text = ggplot2::element_text(size = 22)
+        )
+
+      ggplot2::theme_set(custom_theme)
+      cli::cli_alert_success("ggplot2 theme set to 'theme_lucid' with custom sizing.")
+    }
+  }
+
+  # 4. Print Citation
+  if (print_citation) {
+    msg <- paste0(
+      "\nIf you use these functions, please cite:\n\n",
+      "Colley, M. (2024). rCode: Enhanced R Functions for Statistical Analysis and Reporting.\n",
+      "Retrieved from https://github.com/M-Colley/rCode\n\n",
+      "BibTeX:\n",
+      "@misc{colley2024rcode,\n",
+      "  author       = {Mark Colley},\n",
+      "  title        = {rCode: Enhanced R Functions for Statistical Analysis and Reporting},\n",
+      "  year         = {2024},\n",
+      "  howpublished = {\\url{https://github.com/M-Colley/rCode}},\n",
+      "  doi          = {10.5281/zenodo.16875755}\n",
+      "}\n"
+    )
+    packageStartupMessage(msg)
+  }
 }
-")
-
 
 auto_install_packages <- isTRUE(getOption("rcode.auto_install", TRUE))
 
@@ -52,20 +197,16 @@ rcode_packages <- c(
   "RColorBrewer"
 )
 
+    
 invisible(lapply(unique(rcode_packages), load_or_install_package))
 
+
+rcode_setup()
+    
 library(easystats)
 
 ## Keep easystats current
 try(easystats::easystats_update(ask = FALSE), silent = TRUE)
-
-# For documentation: To insert a documentation skeleton in RStudio, use Ctrl + Alt + Shift + R
-
-#read_xslx delivers a tibble
-#read.xslx a data.frame, therefore, this is needed: main_df <- as.data.frame(main_df) after using read_xslx
-
-# afex: necessary for ggstatsplot
-# Hmisc: necessary for mean_cl_normal --> 95% confidence intervals
 library(tidyverse)
 
 
@@ -87,70 +228,6 @@ not_empty <- local({
 
 # JANUARY 2025: no longer available
 # source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
-
-# Do not use scientific notation for readability
-options(scipen = 999)
-options(digits = 10)
-options(digits.secs = 3) # Set to 3 for millisecond precision
-
-## Prefer dplyr over plyr or Hmisc in name clashes
-try(conflicted::conflict_prefer("mutate",   "dplyr"), silent = TRUE)
-try(conflicted::conflict_prefer("filter",   "dplyr"), silent = TRUE)
-try(conflicted::conflict_prefer("select",   "dplyr"), silent = TRUE)
-try(conflicted::conflict_prefer("summarise","dplyr"), silent = TRUE)
-try(conflicted::conflict_prefer("summarize","dplyr"), silent = TRUE)
-try(conflicted::conflict_prefer("rename",   "dplyr"), silent = TRUE)
-try(conflicted::conflict_prefer("arrange",  "dplyr"), silent = TRUE)
-
-try(conflicts_prefer(scales::alpha), silent = TRUE)
-try(conflicts_prefer(ggplot2::annotate), silent = TRUE)
-try(conflicts_prefer(brms::ar), silent = TRUE)
-try(conflicts_prefer(car::bootCase), silent = TRUE)
-try(conflicts_prefer(httr::cache_info), silent = TRUE)
-try(conflicts_prefer(effectsize::cohens_d), silent = TRUE)
-try(conflicts_prefer(scales::col_factor), silent = TRUE)
-try(conflicts_prefer(correlation::cor_test), silent = TRUE)
-try(conflicts_prefer(brms::cs), silent = TRUE)
-try(conflicts_prefer(ggplot2::`%+%`), silent = TRUE)
-try(conflicts_prefer(scales::alpha), silent = TRUE)
-try(conflicts_prefer(ggplot2::annotate), silent = TRUE)
-try(conflicts_prefer(brms::ar), silent = TRUE)
-try(conflicts_prefer(car::bootCase), silent = TRUE)
-try(conflicts_prefer(httr::cache_info), silent = TRUE)
-try(conflicts_prefer(effectsize::cohens_d), silent = TRUE)
-try(conflicts_prefer(scales::col_factor), silent = TRUE)
-try(conflicts_prefer(correlation::cor_test), silent = TRUE)
-try(conflicts_prefer(brms::cs), silent = TRUE)
-try(conflicts_prefer(psych::describe), silent = TRUE)
-try(conflicts_prefer(purrr::discard), silent = TRUE)
-try(conflicts_prefer(report::display), silent = TRUE)
-try(conflicts_prefer(effectsize::eta_squared), silent = TRUE)
-try(conflicts_prefer(tidyr::expand), silent = TRUE)
-try(conflicts_prefer(tidyr::extract), silent = TRUE)
-try(conflicts_prefer(dplyr::filter), silent = TRUE)
-try(conflicts_prefer(dplyr::first), silent = TRUE)
-try(conflicts_prefer(insight::format_error), silent = TRUE)
-try(conflicts_prefer(insight::format_message), silent = TRUE)
-try(conflicts_prefer(insight::format_warning), silent = TRUE)
-try(conflicts_prefer(modelbased::get_emmeans), silent = TRUE)
-try(conflicts_prefer(tibble::has_name), silent = TRUE)
-try(conflicts_prefer(psych::headtail), silent = TRUE)
-try(conflicts_prefer(xtable::label), silent = TRUE)
-try(conflicts_prefer(Hmisc::`label<-`), silent = TRUE)
-try(conflicts_prefer(dplyr::lag), silent = TRUE)
-try(conflicts_prefer(dplyr::last), silent = TRUE)
-try(conflicts_prefer(lme4::lmer), silent = TRUE)
-try(conflicts_prefer(psych::logit), silent = TRUE)
-try(conflicts_prefer(lme4::ngrps), silent = TRUE)
-try(conflicts_prefer(tidyr::pack), silent = TRUE)
-try(conflicts_prefer(effectsize::phi), silent = TRUE)
-try(conflicts_prefer(dplyr::recode), silent = TRUE)
-try(conflicts_prefer(datawizard::rescale), silent = TRUE)
-try(conflicts_prefer(purrr::some), silent = TRUE)
-try(conflicts_prefer(dplyr::src), silent = TRUE)
-try(conflicts_prefer(dplyr::summarize), silent = TRUE)
-try(conflicts_prefer(devtools::test), silent = TRUE)
-try(conflicts_prefer(tidyr::unpack), silent = TRUE)
 
 
 # not in 
@@ -230,9 +307,6 @@ havingIP <- function() {
 }
 
 
-
-
-
 # update all available packages
 if (havingIP()) {
 
@@ -251,18 +325,7 @@ if (havingIP()) {
   #update.packages(ask = TRUE)
 }
 
-mywidth <- 0.4
-pdfwidth <- 9
-pdfheight <- 4.5
-pdfsquare <- 6
-myfontsize <- 30
 
-ggplot2::theme_set(see::theme_lucid() + theme(legend.title = element_blank(), 
-                                axis.title = element_text(size = 20), axis.text = element_text(size = 17), 
-                                plot.title = element_text(size = 28), plot.subtitle = element_text(size = 17), 
-                                legend.background = element_blank(), legend.position = "inside", 
-                                legend.position.inside = c(0.85, 0.45), legend.text = element_text(size = 15), 
-                                              strip.text = element_text(size = 22)))
 
 
 #' Generating the sum and adding a crossbar.
@@ -367,6 +430,37 @@ checkPackageVersions <- function() {
 }
 
 
+#' Check normality for groups
+#' @return TRUE if all groups are normal, FALSE otherwise
+check_normality_by_group <- function(data, x, y) {
+  # Input validation
+  if(missing(data) || missing(x) || missing(y)) stop("Missing arguments")
+  
+  # Ensure numeric
+  if (!is.numeric(data[[y]])) {
+    val <- as.numeric(data[[y]])
+    if(all(is.na(val))) return(FALSE) # Non-numeric data
+    data[[y]] <- val
+  }
+
+  results <- data %>%
+    dplyr::group_by(!!dplyr::sym(x)) %>%
+    dplyr::summarise(
+      p_value = if(dplyr::n() >= 3 && stats::var(!!dplyr::sym(y), na.rm = TRUE) > 0) {
+        stats::shapiro.test(!!dplyr::sym(y))$p.value
+      } else {
+        NA_real_ # Cannot test
+      },
+      .groups = "drop"
+    )
+  
+  # If any group is significant (p < 0.05), data is NOT normal
+  all_normal <- !any(results$p_value < 0.05, na.rm = TRUE)
+  
+  return(all_normal)
+}
+
+                           
 
 #' Check the data's distribution. If non-normal, take the non-parametric variant of *ggwithinstats*.
 #' x and y have to be in parentheses, e.g., "ConditionID".
@@ -389,57 +483,8 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels = NUL
   not_empty(y)
   not_empty(ylab)
 
-
-  normality_test <- list()  # Initialize empty list to store test results
-  normallyDistributed <- TRUE
-  group_all_data_equal <- FALSE
-  normality_assessable <- TRUE
-
-  # Iterate over each group in data[[x]]
-  for (group in unique(data[[x]])) {
-    subset_data <- data[data[[x]] == group, y, drop = TRUE]
-
-    # Check if subset_data is a data frame or list, and convert to numeric vector if needed
-    if (is.data.frame(subset_data) || is.list(subset_data)) {
-      subset_data <- as.numeric(subset_data[[1]])
-    }
-
-    # Remove NA values if any conversion failed
-    subset_data <- subset_data[!is.na(subset_data)]
-
-    has_variation <- length(unique(subset_data)) > 1
-    sufficient_sample <- length(subset_data) >= 3
-
-    if (sufficient_sample && has_variation) {
-      normality_test[[group]] <- shapiro_test_wrapper(subset_data)
-    } else {
-      normality_test[[group]] <- NULL
-      if (!sufficient_sample) {
-        normality_assessable <- FALSE
-      }
-      if (!has_variation) {
-        group_all_data_equal <- TRUE
-        normality_assessable <- FALSE
-      }
-    }
-  }
-
-  if (!normality_assessable) {
-    normallyDistributed <- FALSE
-  }
-
-  for (i in normality_test) {
-    if (!is.null(i) && i$p.value < 0.05) {
-      # print("You have to take the non-parametric test.")
-      normallyDistributed <- FALSE
-      break
-    }
-  }
-  
-  type <- ifelse(normallyDistributed, "p", "np")
-
-
-
+  is_normal <- check_normality_by_group(data, x, y)
+  type <- ifelse(is_normal, "p", "np")
 
   plot <- ggwithinstats_wrapper(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp, var.equal = group_all_data_equal,
@@ -478,54 +523,8 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
   not_empty(ylab)
   not_empty(xlabels)
   
-  normality_test <- list()  # Initialize empty list to store test results
-  normallyDistributed <- TRUE
-  group_all_data_equal <- FALSE
-  normality_assessable <- TRUE
-
-  # Iterate over each group in data[[x]]
-  for (group in unique(data[[x]])) {
-    subset_data <- data[data[[x]] == group, y, drop = TRUE]
-
-    # Check if subset_data is a data frame or list, and convert to numeric vector if needed
-    if (is.data.frame(subset_data) || is.list(subset_data)) {
-      subset_data <- as.numeric(subset_data[[1]])
-    }
-
-    # Remove NA values if any conversion failed
-    subset_data <- subset_data[!is.na(subset_data)]
-
-    has_variation <- length(unique(subset_data)) > 1
-    sufficient_sample <- length(subset_data) >= 3
-
-    if (sufficient_sample && has_variation) {
-      normality_test[[group]] <- shapiro_test_wrapper(subset_data)
-    } else {
-      normality_test[[group]] <- NULL
-      if (!sufficient_sample) {
-        normality_assessable <- FALSE
-      }
-      if (!has_variation) {
-        group_all_data_equal <- TRUE
-        normality_assessable <- FALSE
-      }
-    }
-  }
-
-  # Check the p-value for each test result
-  if (!normality_assessable) {
-    normallyDistributed <- FALSE
-  }
-
-  for (i in normality_test) {
-    if (!is.null(i) && i$p.value < 0.05) {
-      normallyDistributed <- FALSE
-      break
-    }
-  }
-  
-  
-  type <- ifelse(normallyDistributed, "p", "np")
+  is_normal <- check_normality_by_group(data, x, y)
+  type <- ifelse(is_normal, "p", "np")
   
   # if one group_all_data_equal then we use the var.equal = TRUE, see here: https://github.com/IndrajeetPatil/ggstatsplot/issues/880
   ggbetweenstats_wrapper(
@@ -559,54 +558,8 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   not_empty(ylab)
   not_empty(xlabels)
   
-  normality_test <- list()  # Initialize empty list to store test results
-  normallyDistributed <- TRUE
-  group_all_data_equal <- FALSE
-  normality_assessable <- TRUE
-
-  # Iterate over each group in data[[x]]
-  for (group in unique(data[[x]])) {
-    subset_data <- data[data[[x]] == group, y, drop = TRUE]
-
-    # Check if subset_data is a data frame or list, and convert to numeric vector if needed
-    if (is.data.frame(subset_data) || is.list(subset_data)) {
-      subset_data <- as.numeric(subset_data[[1]])
-    }
-
-    # Remove NA values if any conversion failed
-    subset_data <- subset_data[!is.na(subset_data)]
-
-    has_variation <- length(unique(subset_data)) > 1
-    sufficient_sample <- length(subset_data) >= 3
-
-    if (sufficient_sample && has_variation) {
-      normality_test[[group]] <- shapiro_test_wrapper(subset_data)
-    } else {
-      normality_test[[group]] <- NULL
-      if (!sufficient_sample) {
-        normality_assessable <- FALSE
-      }
-      if (!has_variation) {
-        group_all_data_equal <- TRUE
-        normality_assessable <- FALSE
-      }
-    }
-  }
-
-  for (i in normality_test) {
-    if (!is.null(i) && i$p.value < 0.05) {
-      # print("You have to take the non-parametric test.")
-      normallyDistributed <- FALSE
-      break
-    }
-  }
-
-  if (!normality_assessable) {
-    normallyDistributed <- FALSE
-  }
-  
-  type <- ifelse(normallyDistributed, "p", "np")
-  
+  is_normal <- check_normality_by_group(data, x, y)
+  type <- ifelse(is_normal, "p", "np")
   
   (df <-
       pairwise_comparisons_wrapper(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") %>%
@@ -662,43 +615,8 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
   not_empty(ylab)
   not_empty(xlabels)
   
-  normality_test <- list()
-  normallyDistributed <- TRUE
-  normality_assessable <- TRUE
-
-  for (group in unique(data[[x]])) {
-    subset_data <- data[data[[x]] == group, y, drop = TRUE]
-
-    if (is.data.frame(subset_data) || is.list(subset_data)) {
-      subset_data <- as.numeric(subset_data[[1]])
-    }
-
-    subset_data <- subset_data[!is.na(subset_data)]
-
-    has_variation <- length(unique(subset_data)) > 1
-    sufficient_sample <- length(subset_data) >= 3
-
-    if (sufficient_sample && has_variation) {
-      normality_test[[group]] <- shapiro_test_wrapper(subset_data)
-    } else {
-      normality_test[[group]] <- NULL
-      normality_assessable <- FALSE
-    }
-  }
-
-  if (!normality_assessable) {
-    normallyDistributed <- FALSE
-  }
-
-  for (i in normality_test) {
-    if (!is.null(i) && i$p.value < 0.05) {
-      # print("You have to take the non-parametric test.")
-      normallyDistributed <- FALSE
-      break
-    }
-  }
-
-  type <- ifelse(normallyDistributed, "p", "np")
+  is_normal <- check_normality_by_group(data, x, y)
+  type <- ifelse(is_normal, "p", "np")
   
   
   (df <-
@@ -785,7 +703,7 @@ rFromWilcoxAdjusted <- function(wilcoxModel, N, adjustFactor) {
 }
 
 
-#' Calculation based on Rosenthals formula (1994). N stands for the *number of measurements*.
+#' Calculation based on Rosenthal's formula (1994). N stands for the *number of measurements*.
 #' Necessary command:
 # \newcommand{\effectsize}{\textit{r=}}
 #' @param pvalue
@@ -2073,7 +1991,7 @@ reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoi
 #' head(main_df)
 add_pareto_emoa_column <- function(data, objectives) {
   if (!requireNamespace("emoa", quietly = TRUE)) {
-    stop("Package 'emoa' is required for add_pareto_emoa_column().")
+    stop("Package 'emoa' is required for add_pareto_emoa_column(). Please install it.")
   }
   
   # Input checks
@@ -2767,6 +2685,7 @@ pairwise_comparisons_wrapper <- function(...) ggstatsplot::pairwise_comparisons(
 geom_signif_wrapper <- function(...) ggsignif::geom_signif(...)
 shapiro_test_wrapper <- function(...) stats::shapiro.test(...)
 extract_stats_wrapper <- function(...) ggstatsplot::extract_stats(...)
+
 
 
 
