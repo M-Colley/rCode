@@ -443,8 +443,8 @@ check_normality_by_group <- function(data, x, y) {
     data[[y]] <- val
   }
 
-  results <- data %>%
-    dplyr::group_by(!!dplyr::sym(x)) %>%
+  results <- data |>
+    dplyr::group_by(!!dplyr::sym(x)) |>
     dplyr::summarise(
       p_value = if(dplyr::n() >= 3 && stats::var(!!dplyr::sym(y), na.rm = TRUE) > 0) {
         stats::shapiro.test(!!dplyr::sym(y))$p.value
@@ -562,12 +562,12 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   type <- ifelse(is_normal, "p", "np")
   
   (df <-
-      pairwise_comparisons_wrapper(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") %>%
-      dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) %>%
-      dplyr::arrange(group1) %>%
+      pairwise_comparisons_wrapper(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") |>
+      dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) |>
+      dplyr::arrange(group1) |>
       dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
 
-   df <- df %>% dplyr::filter(!is.na(asterisk_label))
+   df <- df |> dplyr::filter(!is.na(asterisk_label))
 
     
   # adjust to the maximum value in the dataset
@@ -620,12 +620,12 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
   
   
   (df <-
-      pairwise_comparisons_wrapper(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") %>%
-      dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) %>%
-      dplyr::arrange(group1) %>%
+      pairwise_comparisons_wrapper(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") |>
+      dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) |>
+      dplyr::arrange(group1) |>
       dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
 
-  df <- df %>% dplyr::filter(!is.na(asterisk_label))
+  df <- df |> dplyr::filter(!is.na(asterisk_label))
   
   # adjust to the maximum value in the dataset
   lowestNumberText <- paste0("NA=0.0; else=", toString(round((max(data[[y]]) + 0.5), digits = 2)))
@@ -809,8 +809,8 @@ checkAssumptionsForAnova <- function(data, y, factors) {
   }
   
   # Check normality for each group
-  test <- data %>%
-    group_by(across(all_of(factors))) %>%
+  test <- data |>
+    group_by(across(all_of(factors))) |>
     shapiro_test(!!sym(y))
   
   # Check if the normality assumption holds (p > 0.05 for all groups)
@@ -823,7 +823,7 @@ checkAssumptionsForAnova <- function(data, y, factors) {
   levene_test_result <- levene_test(data, levene_formula)
   
   if (levene_test_result$p < 0.05) {
-    return("You must take the non-parametric ANOVA as Levene’s test is significant (p < 0.05).")
+    return("You must take the non-parametric ANOVA as Levene's test is significant (p < 0.05).")
   }
   
   message("You may take parametric ANOVA (function anova_test). See https://www.datanovia.com/en/lessons/anova-in-r/#check-assumptions-1 for more information.")
@@ -1335,7 +1335,7 @@ reportMeanAndSD <- function(data, iv = "testiv", dv = "testdv") {
   not_empty(iv)
   not_empty(dv)
   
-  test <- data  %>% drop_na(!! sym(iv)) %>% drop_na(!! sym(dv)) %>% group_by(!! sym(iv)) %>% dplyr::summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
+  test <- data  |> drop_na(!! sym(iv)) |> drop_na(!! sym(dv)) |> group_by(!! sym(iv)) |> dplyr::summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
   
   for(i in 1:nrow(test)) {
     row <- test[i,]
@@ -1389,7 +1389,7 @@ generateEffectPlot <- function(data,
   not_empty(fillColourGroup)
   not_empty(shownEffect)
   
-  p <- data %>%
+  p <- data |>
     ggplot() +
     aes(
       x = !!sym(x),
@@ -1597,7 +1597,7 @@ reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
       condB <- parts[2]
       
       # --- Calculate Effect Size ---
-      data_subset <- data %>%
+      data_subset <- data |>
         filter(!!sym(iv) %in% c(condA, condB))
       
       esStr <- ""
@@ -1607,12 +1607,12 @@ reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
       }, error = function(e) { })
       
       # --- Calculate Means/SDs ---
-      statsA <- data %>%
-        filter(!!sym(iv) == condA) %>%
+      statsA <- data |>
+        filter(!!sym(iv) == condA) |>
         summarise(m = mean(!!sym(dv), na.rm = TRUE), sd = sd(!!sym(dv), na.rm = TRUE))
       
-      statsB <- data %>%
-        filter(!!sym(iv) == condB) %>%
+      statsB <- data |>
+        filter(!!sym(iv) == condB) |>
         summarise(m = mean(!!sym(dv), na.rm = TRUE), sd = sd(!!sym(dv), na.rm = TRUE))
       
       strStatsA <- paste0("(\\m{", sprintf("%.2f", statsA$m), "}, \\sd{", sprintf("%.2f", statsA$sd), "})")
@@ -1731,7 +1731,7 @@ reportDunnTestTable <- function(d = NULL, data, iv = "testiv", dv = "testdv", or
     firstCondition <- trimws(strsplit(comparison, " - ", fixed = TRUE)[[1]][1])
     secondCondition <- trimws(strsplit(comparison, " - ", fixed = TRUE)[[1]][2])
     
-    data_subset <- data %>%
+    data_subset <- data |>
       filter(!!sym(iv) %in% c(firstCondition, secondCondition))
     
     tryCatch({
@@ -1917,14 +1917,14 @@ reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoi
   current_columns <- c()
   
   # Extract the custom "ID" column
-  id_column <- df %>% select(all_of(id_col))
+  id_column <- df |> select(all_of(id_col))
   
   # Loop through each column to identify given markers and reshape data accordingly
   for (col in names(df)) {
     if (startsWith(col, marker)) {
       if (length(current_columns) > 0) {
         print(length(current_columns))
-        sliced_df <- df %>% select(all_of(current_columns))
+        sliced_df <- df |> select(all_of(current_columns))
         
         if (nrow(long_df) > 0) {
           # Add the ID column to the front of sliced_df
@@ -1943,7 +1943,7 @@ reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoi
   }
   
   if (length(current_columns) > 0) {
-    sliced_df <- df %>% select(all_of(current_columns))
+    sliced_df <- df |> select(all_of(current_columns))
     sliced_df <- bind_cols(id_column, sliced_df)
     colnames(sliced_df) <- colnames(long_df)
     long_df <- bind_rows(long_df, sliced_df)
@@ -2627,12 +2627,12 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
       firstLabel <- ifelse(is.null(label_mappings), firstCondition, label_mappings[[firstCondition]])
       secondLabel <- ifelse(is.null(label_mappings), secondCondition, label_mappings[[secondCondition]])
       
-      valueOne <- data %>%
-        filter(!!sym(iv) == firstCondition) %>%
+      valueOne <- data |>
+        filter(!!sym(iv) == firstCondition) |>
         dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       
-      valueTwo <- data %>%
-        filter(!!sym(iv) == secondCondition) %>%
+      valueTwo <- data |>
+        filter(!!sym(iv) == secondCondition) |>
         dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
       
       # Format statistics
@@ -2685,6 +2685,7 @@ pairwise_comparisons_wrapper <- function(...) ggstatsplot::pairwise_comparisons(
 geom_signif_wrapper <- function(...) ggsignif::geom_signif(...)
 shapiro_test_wrapper <- function(...) stats::shapiro.test(...)
 extract_stats_wrapper <- function(...) ggstatsplot::extract_stats(...)
+
 
 
 
