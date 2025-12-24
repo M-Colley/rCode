@@ -197,12 +197,12 @@ rcode_packages <- c(
   "RColorBrewer"
 )
 
-    
+
 invisible(lapply(unique(rcode_packages), load_or_install_package))
 
 
 rcode_setup()
-    
+
 library(easystats)
 
 ## Keep easystats current
@@ -230,7 +230,7 @@ not_empty <- local({
 # source_url("http://www.uni-koeln.de/~luepsen/R/np.anova.R")
 
 
-# not in 
+# not in
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
 # replace NA with zero
@@ -342,7 +342,7 @@ stat_sum_df <- function(fun, geom = "crossbar", ...) {
   stat_summary(fun.data = fun, colour = "red", geom = geom, width = 0.2, ...)
 }
 
-#' This function normalizes the values in a vector to the range [new_min, new_max] 
+#' This function normalizes the values in a vector to the range [new_min, new_max]
 #' based on their original range [old_min, old_max].
 #'
 #' @param x_vector A numeric vector that you want to normalize.
@@ -435,7 +435,7 @@ checkPackageVersions <- function() {
 check_normality_by_group <- function(data, x, y) {
   # Input validation
   if(missing(data) || missing(x) || missing(y)) stop("Missing arguments")
-  
+
   # Ensure numeric
   if (!is.numeric(data[[y]])) {
     val <- as.numeric(data[[y]])
@@ -443,8 +443,8 @@ check_normality_by_group <- function(data, x, y) {
     data[[y]] <- val
   }
 
-  results <- data %>%
-    dplyr::group_by(!!dplyr::sym(x)) %>%
+  results <- data |>
+    dplyr::group_by(!!dplyr::sym(x)) |>
     dplyr::summarise(
       p_value = if(dplyr::n() >= 3 && stats::var(!!dplyr::sym(y), na.rm = TRUE) > 0) {
         stats::shapiro.test(!!dplyr::sym(y))$p.value
@@ -453,14 +453,14 @@ check_normality_by_group <- function(data, x, y) {
       },
       .groups = "drop"
     )
-  
+
   # If any group is significant (p < 0.05), data is NOT normal
   all_normal <- !any(results$p_value < 0.05, na.rm = TRUE)
-  
+
   return(all_normal)
 }
 
-                           
+
 
 #' Check the data's distribution. If non-normal, take the non-parametric variant of *ggwithinstats*.
 #' x and y have to be in parentheses, e.g., "ConditionID".
@@ -491,12 +491,12 @@ ggwithinstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels = NUL
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey",
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   )
-  
+
   # Only apply custom xlabels if they are provided
   if (!is.null(xlabels) && length(xlabels) > 0) {
     plot <- plot + scale_x_discrete(labels = xlabels)
   }
-  
+
   return(plot)
 }
 
@@ -522,10 +522,10 @@ ggbetweenstatsWithPriorNormalityCheck <- function(data, x, y, ylab, xlabels, sho
   not_empty(y)
   not_empty(ylab)
   not_empty(xlabels)
-  
+
   is_normal <- check_normality_by_group(data, x, y)
   type <- ifelse(is_normal, "p", "np")
-  
+
   # if one group_all_data_equal then we use the var.equal = TRUE, see here: https://github.com/IndrajeetPatil/ggstatsplot/issues/880
   ggbetweenstats_wrapper(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.comparisons = showPairwiseComp, var.equal = group_all_data_equal,
@@ -557,26 +557,26 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
   not_empty(y)
   not_empty(ylab)
   not_empty(xlabels)
-  
+
   is_normal <- check_normality_by_group(data, x, y)
   type <- ifelse(is_normal, "p", "np")
-  
+
   (df <-
-      pairwise_comparisons_wrapper(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") %>%
-      dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) %>%
-      dplyr::arrange(group1) %>%
+      pairwise_comparisons_wrapper(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") |>
+      dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) |>
+      dplyr::arrange(group1) |>
       dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
 
-   df <- df %>% dplyr::filter(!is.na(asterisk_label))
+  df <- df |> dplyr::filter(!is.na(asterisk_label))
 
-    
+
   # adjust to the maximum value in the dataset
   lowestNumberText <- paste0("NA=0.0; else=", toString(round((max(data[[y]]) + 0.5), digits = 2)))
   # Explicitly call car::recode to avoid conflicts with dplyr::recode
   # WRAP result in as.numeric() to fix the binary operator error
   y_positions_asterisks <- as.numeric(car::recode(df$asterisk_label, recodes = lowestNumberText))
-  
-  
+
+
   count <- 0
   for (i in 1:length(y_positions_asterisks)) {
     if(y_positions_asterisks[i] != 0.0){
@@ -585,69 +585,14 @@ ggbetweenstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlab
       count = count+1
     }
   }
-  
-  
+
+
   p <- ggbetweenstats_wrapper(
     data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.display = "none", var.equal = group_all_data_equal,
     centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
     p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
   ) + scale_x_discrete(labels = xlabels)
-  
-  p + geom_signif_wrapper(
-      comparisons = df$groups,
-      map_signif_level = TRUE,
-      annotations = df$asterisk_label,
-      y_position = y_positions_asterisks,
-      size = 0.45, # 0.5 is default
-      textsize = 3.90, # 3.88 is default
-      fontface = "bold",
-      test = NULL,
-      na.rm = TRUE
-    )
-  
-}
 
-
-ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabels, plotType = "boxviolin") {
-  not_empty(data)
-  not_empty(x)
-  not_empty(y)
-  not_empty(ylab)
-  not_empty(xlabels)
-  
-  is_normal <- check_normality_by_group(data, x, y)
-  type <- ifelse(is_normal, "p", "np")
-  
-  
-  (df <-
-      pairwise_comparisons_wrapper(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") %>%
-      dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) %>%
-      dplyr::arrange(group1) %>%
-      dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
-
-  df <- df %>% dplyr::filter(!is.na(asterisk_label))
-  
-  # adjust to the maximum value in the dataset
-  lowestNumberText <- paste0("NA=0.0; else=", toString(round((max(data[[y]]) + 0.5), digits = 2)))
-  y_positions_asterisks <- as.numeric(car::recode(df$asterisk_label, recodes = lowestNumberText))
-  
-  
-  count <- 0
-  for (i in 1:length(y_positions_asterisks)) {
-    if(y_positions_asterisks[i] != 0.0){
-      y_positions_asterisks[i] <- y_positions_asterisks[i] + count * 0.25
-      #print(y_positions_asterisks[i])
-      count = count+1
-    }
-  }
-  
-  
-  p <- ggwithinstats_wrapper(
-    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.display = "none",
-    centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
-    p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
-  ) + scale_x_discrete(labels = xlabels)
-  
   p + geom_signif_wrapper(
     comparisons = df$groups,
     map_signif_level = TRUE,
@@ -659,7 +604,62 @@ ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabe
     test = NULL,
     na.rm = TRUE
   )
-  
+
+}
+
+
+ggwithinstatsWithPriorNormalityCheckAsterisk <- function(data, x, y, ylab, xlabels, plotType = "boxviolin") {
+  not_empty(data)
+  not_empty(x)
+  not_empty(y)
+  not_empty(ylab)
+  not_empty(xlabels)
+
+  is_normal <- check_normality_by_group(data, x, y)
+  type <- ifelse(is_normal, "p", "np")
+
+
+  (df <-
+      pairwise_comparisons_wrapper(data = data, x = !!x, y = !!y, type = type, p.adjust.method = "holm") |>
+      dplyr::mutate(groups = purrr::pmap(.l = list(group1, group2), .f = c)) |>
+      dplyr::arrange(group1) |>
+      dplyr::mutate(asterisk_label = ifelse(`p.value` < 0.05 & `p.value` > 0.01, "*", ifelse(`p.value` < 0.01 & `p.value` > 0.001, "**", ifelse(`p.value` < 0.001, "***", NA)))))
+
+  df <- df |> dplyr::filter(!is.na(asterisk_label))
+
+  # adjust to the maximum value in the dataset
+  lowestNumberText <- paste0("NA=0.0; else=", toString(round((max(data[[y]]) + 0.5), digits = 2)))
+  y_positions_asterisks <- as.numeric(car::recode(df$asterisk_label, recodes = lowestNumberText))
+
+
+  count <- 0
+  for (i in 1:length(y_positions_asterisks)) {
+    if(y_positions_asterisks[i] != 0.0){
+      y_positions_asterisks[i] <- y_positions_asterisks[i] + count * 0.25
+      #print(y_positions_asterisks[i])
+      count = count+1
+    }
+  }
+
+
+  p <- ggwithinstats_wrapper(
+    data = data, x = !!x, y = !!y, type = type, centrality.type = "p", ylab = ylab, xlab = "", pairwise.display = "none",
+    centrality.point.args = list(size = 5, alpha = 0.5, color = "darkblue"), package = "pals", palette = "glasbey", plot.type = plotType,
+    p.adjust.method = "holm", ggplot.component = list(theme(text = element_text(size = 16), plot.subtitle = element_text(size = 17, face = "bold"))), ggsignif.args = list(textsize = 4, tip_length = 0.01)
+  ) + scale_x_discrete(labels = xlabels)
+
+  p + geom_signif_wrapper(
+    comparisons = df$groups,
+    map_signif_level = TRUE,
+    annotations = df$asterisk_label,
+    y_position = y_positions_asterisks,
+    size = 0.45, # 0.5 is default
+    textsize = 3.90, # 3.88 is default
+    fontface = "bold",
+    test = NULL,
+    na.rm = TRUE
+  )
+
 }
 
 
@@ -719,7 +719,7 @@ rFromNPAV <- function(pvalue, N) {
 
   z <- qnorm(pvalue / 2)
   r <- z / sqrt(N)
-  
+
   stringtowrite <- sprintf("\\effectsize{%s}, Z=%s", format(round(r, 3), trim = TRUE, nsmall = 3), format(round(z, 2), trim = TRUE, nsmall = 2))
   cat(stringtowrite)
 }
@@ -797,35 +797,35 @@ checkAssumptionsForAnova <- function(data, y, factors) {
   not_empty(data)
   not_empty(y)
   not_empty(factors)
-  
+
   # Dynamically construct the formula based on the number of factors
   formula_string <- paste(y, "~", paste(factors, collapse = " * "))
   model <- lm(as.formula(formula_string), data = data)
-  
+
   # Shapiro-Wilk test of normality on model residuals
   model_results <- shapiro_test(residuals(model))
   if (model_results$p.value < 0.05) {
     return("You must take the non-parametric ANOVA as model is non-normal.")
   }
-  
+
   # Check normality for each group
-  test <- data %>%
-    group_by(across(all_of(factors))) %>%
+  test <- data |>
+    group_by(across(all_of(factors))) |>
     shapiro_test(!!sym(y))
-  
+
   # Check if the normality assumption holds (p > 0.05 for all groups)
   if (!(min(test$p) > 0.05)) {
     return("You must take the non-parametric ANOVA as normality assumption by groups is violated (one or more p < 0.05).")
   }
-  
+
   # Homogeneity of variance assumption using Levene's Test
   levene_formula <- as.formula(paste(y, "~", paste(factors, collapse = " * ")))
   levene_test_result <- levene_test(data, levene_formula)
-  
+
   if (levene_test_result$p < 0.05) {
-    return("You must take the non-parametric ANOVA as Levene’s test is significant (p < 0.05).")
+    return("You must take the non-parametric ANOVA as Levene's test is significant (p < 0.05).")
   }
-  
+
   message("You may take parametric ANOVA (function anova_test). See https://www.datanovia.com/en/lessons/anova-in-r/#check-assumptions-1 for more information.")
 
   invisible(NULL)
@@ -984,11 +984,11 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
   .Deprecated("ARTool")
   not_empty(model)
   not_empty(dv)
-  
+
   # problem: when no value under 0.05 is found but a NA is present, throws error
   # here, it is okay as we don't use the residuals
   model <- na.omit(model)
-  
+
   if (!any(model$` Pr(>Chi)` < 0.05, na.rm = TRUE)) {
     if(write_to_clipboard){
       cat(paste0("The NPAV found no significant effects on ", dv, ". "))
@@ -998,35 +998,35 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
     }
 
   }
-  
+
   # there is a significant effect if any value is under 0.05
   # make the names accessible in a novel column
   model$descriptions <- rownames(model)
-  
+
   # no empty space to allow backslash later
   model$descriptions <- gsub(":", " X", model$descriptions)
-  
-  
+
+
   for (i in 1:length(model$` Pr(>Chi)`)) {
     # Residuals have NA therefore we need this double check
     if (!is.na(model$` Pr(>Chi)`[i]) && model$` Pr(>Chi)`[i] < 0.05) {
       Chivalue <- round(model$` Chi Sq`[i], digits = 2)
       numeratordf <- model$Df[i]
-      
-      
+
+
       pValueNumeric <- model$` Pr(>Chi)`[i]
       if (pValueNumeric < 0.001) {
         pValue <- paste0("\\pminor{0.001}")
       } else {
         pValue <- paste0("\\p{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
       }
-      
-      
+
+
       if (str_detect(model$descriptions[i], "X")) {
 
         stringtowrite <- paste0("The NPAV found a significant interaction effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\chisq~(1)=", Chivalue, ", ", pValue, ")")
 
-        } else {
+      } else {
         stringtowrite <- paste0("The NPAV found a significant main effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\chisq~(1)=", Chivalue, ", ",  pValue, ")")
       }
 
@@ -1072,19 +1072,19 @@ reportNPAVChi <- function(model, dv = "Testdependentvariable", write_to_clipboar
       }
 
       stringtowrite <- paste0(stringtowrite, effect_size_text, ". ")
-      
+
       # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
       # nice format of X in Latex via \times
       # Replace "X" with LaTeX code if preceded by a space
       stringtowrite <- gsub("(?<=\\s)X", "$\\\\times$ \\\\", stringtowrite, perl = TRUE)
-      
+
       if(write_to_clipboard){
         cat(stringtowrite)
         write_clip(stringtowrite)
       }else{
         cat(stringtowrite)
       }
-      
+
     }
   }
 }
@@ -1113,7 +1113,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
   # Check that the model and dependent variable are not empty
   not_empty(model)
   not_empty(dv)
-  
+
   # Check if the model has a "Pr(>F)" column
   if ("Pr(>F)" %!in% colnames(model)) {
     cat(paste0("No column ``Pr(>F)'' was found."))
@@ -1132,7 +1132,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
       # Process significant effects
       model$descriptions <- model[,1] # Make the names accessible
       model$descriptions <- gsub(":", " X", model$descriptions) # Replace colon with "X"
-      
+
       for (i in 1:length(model$`Pr(>F)`)) {
         if (!is.na(model$`Pr(>F)`[i]) && model$`Pr(>F)`[i] < 0.05) {
           # Extract and round values
@@ -1141,7 +1141,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
           denominatordf <- model$Df.res[i]
           pValueNumeric <- model$`Pr(>F)`[i]
           pValue <- if (pValueNumeric < 0.001) paste0("\\pminor{0.001}") else paste0("\\p{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
-          
+
           # Write interaction or main effect depending on the presence of "X"
           effect_type <- if (str_detect(model$descriptions[i], "X")) "interaction" else "main"
           stringtowrite <- paste0("The ART found a significant ", effect_type, " effect of \\", trimws(model$descriptions[i]), " on ", dv, " (\\F{", numeratordf, "}{", denominatordf, "}{", sprintf("%.2f", Fvalue), "}, ", pValue, "). ")
@@ -1155,20 +1155,20 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
             ),
             error = function(e) NULL
           )
-          
+
           effect_size_text <- ""
           if (!is.null(effect_size)) {
             effect_size <- as.data.frame(effect_size)
             eta_value <- effect_size$Eta2_partial
             ci_low <- effect_size$CI_low
             ci_high <- effect_size$CI_high
-            
+
             if (!is.null(eta_value) && !is.na(eta_value)) {
               effect_size_text <- paste0(
                 ", $\\eta_{p}^{2}$ = ",
                 sprintf("%.2f", eta_value)
               )
-              
+
               if (!is.null(ci_low) && !is.null(ci_high) && !any(is.na(c(ci_low, ci_high)))) {
                 effect_size_text <- paste0(
                   effect_size_text,
@@ -1181,7 +1181,7 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
               }
             }
           }
-          
+
           # Write interaction or main effect depending on the presence of "X"
           effect_type <- if (str_detect(model$descriptions[i], "X")) "interaction" else "main"
           stringtowrite <- paste0(
@@ -1200,16 +1200,16 @@ reportART <- function(model, dv = "Testdependentvariable", write_to_clipboard = 
             "}, ",
             pValue
           )
-          
+
           if (nzchar(effect_size_text)) {
             stringtowrite <- paste0(stringtowrite, effect_size_text, ")")
           }
-          
+
           stringtowrite <- paste0(stringtowrite, ". ")
-          
+
           # Replace "X" with LaTeX code if preceded by a space
           stringtowrite <- gsub("(?<=\\s)X", "$\\\\times$ \\\\", stringtowrite, perl = TRUE)
-          
+
           # Output the string depending on the write_to_clipboard option
           if (write_to_clipboard) {
             cat(stringtowrite)
@@ -1298,12 +1298,12 @@ reportNparLD <- function(model, dv = "Testdependentvariable", write_to_clipboard
       }
 
       stringtowrite <- paste0(stringtowrite, effect_size_text, ". ")
-      
+
       # gsub backslash needs four \: https://stackoverflow.com/questions/27491986/r-gsub-replacing-backslashes
       # nice format of X in Latex via \times
       # Replace "X" with LaTeX code if preceded by a space
       stringtowrite <- gsub("(?<=\\s)X", "$\\\\times$ \\\\", stringtowrite, perl = TRUE)
-      
+
       if(write_to_clipboard){
         cat(stringtowrite)
         write_clip(stringtowrite)
@@ -1334,15 +1334,15 @@ reportMeanAndSD <- function(data, iv = "testiv", dv = "testdv") {
   not_empty(data)
   not_empty(iv)
   not_empty(dv)
-  
-  test <- data  %>% drop_na(!! sym(iv)) %>% drop_na(!! sym(dv)) %>% group_by(!! sym(iv)) %>% dplyr::summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
-  
+
+  test <- data  |> drop_na(!! sym(iv)) |> drop_na(!! sym(dv)) |> group_by(!! sym(iv)) |> dplyr::summarise(across(!! sym(dv), list(mean = mean, sd = sd)))
+
   for(i in 1:nrow(test)) {
     row <- test[i,]
     # do stuff with row
-    cat(paste0("%", row[[1]], ": \\m{",  sprintf("%.2f", round(row[[2]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(row[[3]], digits = 2)), "}\n")) 
+    cat(paste0("%", row[[1]], ": \\m{",  sprintf("%.2f", round(row[[2]], digits = 2)), "}, \\sd{", sprintf("%.2f", round(row[[3]], digits = 2)), "}\n"))
   }
-  
+
 }
 
 
@@ -1350,46 +1350,46 @@ reportMeanAndSD <- function(data, iv = "testiv", dv = "testdv") {
 
 #' Function to define a plot, either showing the main or interaction effect in bold.
 #'
-#' @param df 
+#' @param df
 #' @param x factor shown on the x-axis
 #' @param y dependent variable
-#' @param fillColourGroup 
+#' @param fillColourGroup
 #' @param ytext label for y-axis
 #' @param xtext label for x-axis
-#' @param legendPos position for legend 
-#' @param legendHeading custom heading for legend 
+#' @param legendPos position for legend
+#' @param legendHeading custom heading for legend
 #' @param shownEffect either "main" or "interaction"
 #' @param effectLegend TRUE: show legend for effect (Default: FALSE)
-#' @param effectDescription custom label for effect 
-#' @param xLabelsOverwrite custom labels for x-axis 
-#' @param useLatexMarkup use latex font and markup 
-#' @param numberColors  
+#' @param effectDescription custom label for effect
+#' @param xLabelsOverwrite custom labels for x-axis
+#' @param useLatexMarkup use latex font and markup
+#' @param numberColors
 #'
 #' @return a plot
 #' @export
 #'
 #' @examples generateEffectPlot(data = main_df, x = "strategy", y = "trust_mean", fillColourGroup = "Emotion", ytext = "Trust", xtext = "Strategy", legendPos = c(0.1,0.23), shownEffect = "interaction")
 generateEffectPlot <- function(data,
-                                  x,
-                                  y,
-                                  fillColourGroup,
-                                  ytext = "testylab",
-                                  xtext = "testxlab",
-                                  legendPos = c(0.1, 0.23),
-                                  legendHeading = NULL,
-                                  shownEffect = "main",
-                                  effectLegend = FALSE,
-                                  effectDescription = NULL,
-                                  xLabelsOverwrite = NULL,
-                                  useLatexMarkup = FALSE,
-                                  numberColors = 6) {
+                               x,
+                               y,
+                               fillColourGroup,
+                               ytext = "testylab",
+                               xtext = "testxlab",
+                               legendPos = c(0.1, 0.23),
+                               legendHeading = NULL,
+                               shownEffect = "main",
+                               effectLegend = FALSE,
+                               effectDescription = NULL,
+                               xLabelsOverwrite = NULL,
+                               useLatexMarkup = FALSE,
+                               numberColors = 6) {
   not_empty(data)
   not_empty(x)
   not_empty(y)
   not_empty(fillColourGroup)
   not_empty(shownEffect)
-  
-  p <- data %>%
+
+  p <- data |>
     ggplot() +
     aes(
       x = !!sym(x),
@@ -1403,15 +1403,15 @@ generateEffectPlot <- function(data,
     xlab(xtext) +
     theme(legend.position.inside = legendPos,
           legend.title = element_text(face = "bold",color = "black", size = 14)
-          ) +
-    
+    ) +
+
     # Points for each group
     stat_summary(
       fun = mean,
       geom = "point",
       size = 5
     ) +
-    
+
     # Error bars
     stat_summary(
       fun.data = "mean_cl_boot",
@@ -1419,15 +1419,15 @@ generateEffectPlot <- function(data,
       width = .5,
       position = position_dodge(width = 0.05),
       alpha = 0.5
-    )+ 
-    
+    )+
+
     # Ensure consistent order of legends
     guides(
       colour = guide_legend(order = 1),
       fill   = guide_legend(order = 1),
       shape  = guide_legend(order = 2)
     )
-  
+
   # Legend heading
   if (!is.null(legendHeading) && nzchar(legendHeading)) {
     p <- p + labs(
@@ -1435,16 +1435,16 @@ generateEffectPlot <- function(data,
       fill  = legendHeading
     )
   }
-  
+
   # Overwrite x-axis labels
   if (!is.null(xLabelsOverwrite)) {
     p <- p  +
       scale_x_discrete(
         name = xtext,
         labels = xLabelsOverwrite
-        )
+      )
   }
-  
+
   # Latex extension
   if(useLatexMarkup) {
     p <- p + theme(
@@ -1476,14 +1476,14 @@ generateEffectPlot <- function(data,
       )
     )
   }
-  
-  
-  
+
+
+
   # Main / Interaction Effect visualization
   if(is.null(effectDescription) || !nzchar(effectDescription)) {
     effectDescription <- paste("Mean of", xtext)
   }
-  
+
   if (shownEffect == "main") {
     p <- p +
       stat_summary(
@@ -1541,7 +1541,7 @@ generateEffectPlot <- function(data,
   } else {
     stop("ERROR: wrong effect defined for visualization.")
   }
-  
+
   return(p)
 }
 
@@ -1553,10 +1553,10 @@ generateEffectPlot <- function(data,
 # \newcommand{\padj}{\textit{p$_{adj}$=}}
 # \newcommand{\rankbiserial}[1]{$r_{rb} = #1$}
 #'
-#' @param data 
-#' @param d 
-#' @param iv 
-#' @param dv 
+#' @param data
+#' @param d
+#' @param iv
+#' @param dv
 #'
 #' @return
 #' @export
@@ -1568,20 +1568,20 @@ reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
   not_empty(d)
   not_empty(iv)
   not_empty(dv)
-  
+
   # Check for significance globally first
   # Note: d$res$P.adj can contain NAs, so we remove them for the check
   if (!any(d$res$P.adj < 0.05, na.rm = TRUE)) {
     cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
     return(invisible(NULL))
   }
-  
+
   # 1. Collect all significant findings into a data frame/list
   findings <- list()
-  
+
   for (i in 1:length(d$res$P.adj)) {
     if (!is.na(d$res$P.adj[i]) && d$res$P.adj[i] < 0.05) {
-      
+
       # --- P-Value Formatting ---
       pValueNumeric <- d$res$P.adj[i]
       if (pValueNumeric < 0.001) {
@@ -1589,51 +1589,51 @@ reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
       } else {
         pValueStr <- paste0("\\padj{", sprintf("%.3f", round(pValueNumeric, digits = 3)), "}")
       }
-      
+
       # --- Split Conditions ---
       # Assuming standard Dunn output "A - B"
       parts <- strsplit(d$res$Comparison[i], " - ", fixed = TRUE)[[1]]
       condA <- parts[1]
       condB <- parts[2]
-      
+
       # --- Calculate Effect Size ---
-      data_subset <- data %>%
+      data_subset <- data |>
         filter(!!sym(iv) %in% c(condA, condB))
-      
+
       esStr <- ""
       tryCatch({
         es <- effectsize::rank_biserial(as.formula(paste(dv, "~", iv)), data = data_subset)
         esStr <- paste0(", \\rankbiserial{", sprintf("%.2f", abs(es$r_rank_biserial)), "}")
       }, error = function(e) { })
-      
+
       # --- Calculate Means/SDs ---
-      statsA <- data %>%
-        filter(!!sym(iv) == condA) %>%
+      statsA <- data |>
+        filter(!!sym(iv) == condA) |>
         summarise(m = mean(!!sym(dv), na.rm = TRUE), sd = sd(!!sym(dv), na.rm = TRUE))
-      
-      statsB <- data %>%
-        filter(!!sym(iv) == condB) %>%
+
+      statsB <- data |>
+        filter(!!sym(iv) == condB) |>
         summarise(m = mean(!!sym(dv), na.rm = TRUE), sd = sd(!!sym(dv), na.rm = TRUE))
-      
+
       strStatsA <- paste0("(\\m{", sprintf("%.2f", statsA$m), "}, \\sd{", sprintf("%.2f", statsA$sd), "})")
       strStatsB <- paste0("(\\m{", sprintf("%.2f", statsB$m), "}, \\sd{", sprintf("%.2f", statsB$sd), "})")
-      
+
       # --- Determine Direction (Winner vs Loser) ---
       if (statsA$m >= statsB$m) {
         winner <- trimws(condA)
         winnerStats <- strStatsA
         loser <- trimws(condB)
         # The stats/p/es string for the "loser" part of the sentence
-        loserString <- paste0(trimws(condB), " (\\m{", sprintf("%.2f", statsB$m), 
+        loserString <- paste0(trimws(condB), " (\\m{", sprintf("%.2f", statsB$m),
                               "}, \\sd{", sprintf("%.2f", statsB$sd), "}; ", pValueStr, esStr, ")")
       } else {
         winner <- trimws(condB)
         winnerStats <- strStatsB
         loser <- trimws(condA)
-        loserString <- paste0(trimws(condA), " (\\m{", sprintf("%.2f", statsA$m), 
+        loserString <- paste0(trimws(condA), " (\\m{", sprintf("%.2f", statsA$m),
                               "}, \\sd{", sprintf("%.2f", statsA$sd), "}; ", pValueStr, esStr, ")")
       }
-      
+
       # Store finding
       findings[[length(findings) + 1]] <- list(
         winner = winner,
@@ -1642,22 +1642,22 @@ reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
       )
     }
   }
-  
+
   # 2. Group findings by Winner and construct sentences
   if (length(findings) > 0) {
     # Convert list to dataframe for easier grouping
     df_res <- do.call(rbind, lapply(findings, as.data.frame, stringsAsFactors = FALSE))
-    
+
     unique_winners <- unique(df_res$winner)
-    
+
     for (w in unique_winners) {
       # Get all entries where this condition was the winner
       subset_res <- df_res[df_res$winner == w, ]
-      
+
       # Helper for Oxford comma logic (A, B, and C)
       losers <- subset_res$loserString
       n <- length(losers)
-      
+
       if (n == 1) {
         joined_losers <- losers[1]
       } else if (n == 2) {
@@ -1666,15 +1666,15 @@ reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
         # Oxford comma: "A, B, and C"
         joined_losers <- paste0(paste(losers[1:(n-1)], collapse = ", "), ", and ", losers[n])
       }
-      
+
       # --- Construct the final sentence ---
       # Replace "scenario" with the LaTeX formatted IV name (e.g., \miou)
       iv_cmd <- paste0("\\", iv)
-      
-      final_str <- paste0("A post-hoc test found that ", dv, " for the ", iv_cmd, " ", w, 
-                          " was significantly higher ", subset_res$winnerStats[1], 
+
+      final_str <- paste0("A post-hoc test found that ", dv, " for the ", iv_cmd, " ", w,
+                          " was significantly higher ", subset_res$winnerStats[1],
                           " than for ", joined_losers, ". ")
-      
+
       cat(final_str)
     }
   }
@@ -1684,12 +1684,12 @@ reportDunnTest <- function(d, data, iv = "testiv", dv = "testdv") {
 
 #' report Dunn test as a table. Customizable with sensible defaults.
 #'
-#' @param data 
-#' @param iv 
-#' @param dv 
-#' @param order 
-#' @param numberDigitsForPValue 
-#' @param latexSize 
+#' @param data
+#' @param iv
+#' @param dv
+#' @param order
+#' @param numberDigitsForPValue
+#' @param latexSize
 #'
 #' @return
 #' @export
@@ -1699,13 +1699,13 @@ reportDunnTestTable <- function(d = NULL, data, iv = "testiv", dv = "testdv", or
   not_empty(data)
   not_empty(iv)
   not_empty(dv)
-  
+
   # If d is not provided, calculate it
   if(is.null(d)) {
     d <- FSA::dunnTest(as.formula(paste(dv, "~", iv)), data = data, method = "holm")
   }
-  
-  
+
+
   # Use the dunn test result that was passed in
   # dunnTest returns a list with $res component
   table <- data.frame(
@@ -1714,61 +1714,61 @@ reportDunnTestTable <- function(d = NULL, data, iv = "testiv", dv = "testdv", or
     `p-adjusted` = d$res$P.adj,
     check.names = FALSE
   )
-  
+
   # only show significant ones
   table <- subset(table, `p-adjusted` < 0.05)
-  
+
   # Check if there are any significant results
   if (nrow(table) == 0) {
     cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
     return(invisible(NULL))
   }
-  
+
   # Calculate effect sizes for all comparisons (only for significant ones)
   effectSizes <- numeric(nrow(table))
   for (i in 1:nrow(table)) {
     comparison <- as.character(table[i, 'Comparison'])
     firstCondition <- trimws(strsplit(comparison, " - ", fixed = TRUE)[[1]][1])
     secondCondition <- trimws(strsplit(comparison, " - ", fixed = TRUE)[[1]][2])
-    
-    data_subset <- data %>%
+
+    data_subset <- data |>
       filter(!!sym(iv) %in% c(firstCondition, secondCondition))
-    
+
     tryCatch({
-      es <- effectsize::rank_biserial(as.formula(paste(dv, "~", iv)), 
+      es <- effectsize::rank_biserial(as.formula(paste(dv, "~", iv)),
                                       data = data_subset)
       effectSizes[i] <- abs(es$r_rank_biserial)
     }, error = function(e) {
       effectSizes[i] <- NA
     })
   }
-  
+
   # Add effect size column
   table$r <- effectSizes
-  
+
   if(orderByP){
     table <- table[order(table$`p-adjusted`),]
   }
-  
+
   if(orderText){
     table <- table[order(table$Comparison),]
   }
-  
+
   # Replace 0.000 with <0.001 automatically
-  table$`p-adjusted` <- ifelse(table$`p-adjusted` < 0.001, "<0.001", 
+  table$`p-adjusted` <- ifelse(table$`p-adjusted` < 0.001, "<0.001",
                                formatC(table$`p-adjusted`, digits = numberDigitsForPValue, format = "f"))
-  
+
   # Format effect size
   table$r <- formatC(table$r, digits = 2, format = "f")
-  
+
   # Adjust the xtable call to handle the modified columns
   if (requireNamespace("xtable", quietly = TRUE)) {
     xtable_obj <- xtable::xtable(table,
-                         digits = c(0, 0, 4, 0, 0),
-                         caption = paste0("Post-hoc comparisons for independent variable \\", iv,
-                                          " and dependent variable \\", dv,
-                                          ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true. Effect size reported as rank-biserial correlation (r)."),
-                         label = paste0("tab:posthoc-", iv, "-", dv))
+                                 digits = c(0, 0, 4, 0, 0),
+                                 caption = paste0("Post-hoc comparisons for independent variable \\", iv,
+                                                  " and dependent variable \\", dv,
+                                                  ". Positive Z-values mean that the first-named level is sig. higher than the second-named. For negative Z-values, the opposite is true. Effect size reported as rank-biserial correlation (r)."),
+                                 label = paste0("tab:posthoc-", iv, "-", dv))
 
     print(xtable_obj, type = "latex", size = latexSize, caption.placement = "top", include.rownames = FALSE)
   } else {
@@ -1780,13 +1780,13 @@ reportDunnTestTable <- function(d = NULL, data, iv = "testiv", dv = "testdv", or
     print(table)
   }
 }
-    
+
 #' Report statistical details for ggstatsplot.
 #'
 #' @param p: the object returned by ggwithinstats or ggbetweenstats
-#' @param iv 
-#' @param dv 
-#' @param write_to_clipboard 
+#' @param iv
+#' @param dv
+#' @param write_to_clipboard
 #'
 #' @return
 #' @export
@@ -1803,11 +1803,11 @@ reportggstatsplot <- function(p, iv = "independent", dv = "Testdependentvariable
   effectSize <- round(stats$estimate, digits = 2)
   pValueNumeric <- round(stats$p.value, digits = 3)
   if (pValueNumeric < 0.001) {
-     pValue <- paste0("\\pminor{0.001}")
+    pValue <- paste0("\\pminor{0.001}")
   } else {
-     pValue <- paste0("\\p{", sprintf("%.3f", pValueNumeric), "}")
+    pValue <- paste0("\\p{", sprintf("%.3f", pValueNumeric), "}")
   }
-  
+
   statistic <- round(stats$statistic, digits = 2)
 
   # Create String
@@ -1856,22 +1856,22 @@ replace_values <- function(data, to_replace, replace_with) {
   if (length(to_replace) != length(replace_with)) {
     stop("Length of 'to_replace' and 'replace_with' must be the same.")
   }
-  
+
   # Create a named vector for replacements
   replace_map <- setNames(replace_with, to_replace)
-  
+
   # Apply replacements column-wise
   data[] <- lapply(data, function(column) {
     # Convert factors to characters
     if (is.factor(column)) column <- as.character(column)
-    
+
     # Replace values using replace_map
     column <- ifelse(!is.na(column) & column %in% names(replace_map),
                      replace_map[column],
                      column)
     return(column)
   })
-  
+
   return(data)
 }
 
@@ -1884,9 +1884,9 @@ replace_values <- function(data, to_replace, replace_with) {
 #' It includes a customizable "ID" column in the first position and repeats it for each slice.
 #' The function identifies sections of columns between markers that start with a user-defined string (default is "videoinfo")
 #' and appends those sections under the first section, aligning by column index.
-#' 
+#'
 #' Relevant if you receive data in wide-format but cannot use built-in functionality due to naming (e.g., in LimeSurvey)
-#' 
+#'
 #' Attention, known bug: the ID column will first have only the IDs, this has to be fixed manually.
 #'
 #' @param input_filepath String, the file path of the input Excel file.
@@ -1909,31 +1909,31 @@ reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoi
   available_sheets <- readxl::excel_sheets(input_filepath)
   sheet_to_read <- if (sheetName %in% available_sheets) sheetName else available_sheets[[1]]
   df <- readxl::read_excel(input_filepath, sheet = sheet_to_read)
-  
+
   # Initialize an empty data frame to store the final long-form data
   long_df <- data.frame()
-  
+
   # Initialize an empty vector to store the current columns for each marker section
   current_columns <- c()
-  
+
   # Extract the custom "ID" column
-  id_column <- df %>% select(all_of(id_col))
-  
+  id_column <- df |> select(all_of(id_col))
+
   # Loop through each column to identify given markers and reshape data accordingly
   for (col in names(df)) {
     if (startsWith(col, marker)) {
       if (length(current_columns) > 0) {
         print(length(current_columns))
-        sliced_df <- df %>% select(all_of(current_columns))
-        
+        sliced_df <- df |> select(all_of(current_columns))
+
         if (nrow(long_df) > 0) {
           # Add the ID column to the front of sliced_df
           sliced_df <- bind_cols(id_column, sliced_df)
           # Remove column names for alignment by index
           colnames(sliced_df) <- colnames(long_df)
-          
+
         }
-        
+
         long_df <- bind_rows(long_df, sliced_df, .id = NULL)  # Added .id = NULL to handle data types
       }
       current_columns <- c()
@@ -1941,14 +1941,14 @@ reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoi
       current_columns <- c(current_columns, col)
     }
   }
-  
+
   if (length(current_columns) > 0) {
-    sliced_df <- df %>% select(all_of(current_columns))
+    sliced_df <- df |> select(all_of(current_columns))
     sliced_df <- bind_cols(id_column, sliced_df)
     colnames(sliced_df) <- colnames(long_df)
     long_df <- bind_rows(long_df, sliced_df)
   }
-  
+
   # Check if file exists and modify output_filepath to avoid overwriting
   counter <- 1
   new_output_filepath <- output_filepath
@@ -1956,7 +1956,7 @@ reshape_data <- function(input_filepath, sheetName = "Results", marker = "videoi
     new_output_filepath <- paste0(gsub("\\.xlsx$", "", output_filepath), "_", counter, ".xlsx")
     counter <- counter + 1
   }
-  
+
   # Write the long-form data frame to a new Excel file
   writexl::write_xlsx(long_df, new_output_filepath)
 }
@@ -1993,29 +1993,29 @@ add_pareto_emoa_column <- function(data, objectives) {
   if (!requireNamespace("emoa", quietly = TRUE)) {
     stop("Package 'emoa' is required for add_pareto_emoa_column(). Please install it.")
   }
-  
+
   # Input checks
   not_empty(data)
   not_empty(objectives)
-  
+
   # Select only the objective columns
   objective_data <- data |> select(all_of(objectives))
-  
+
   # If there's only one row, mark it as PARETO_EMOA directly
   if (nrow(objective_data) == 1) {
     data$PARETO_EMOA <- TRUE
     return(data)
   }
-  
+
   # Transpose and convert to matrix as required by the nondominated_points function
   pareto_points <- emoa::nondominated_points(t(as.matrix(objective_data)))
-  
+
   # Convert the Pareto points matrix back to a data frame for comparison
   pareto_df <- as.data.frame(t(pareto_points))
-  
+
   # Initialize the PARETO_EMOA column as FALSE
   data$PARETO_EMOA <- FALSE
-  
+
   # Mark TRUE for rows in the original data that match any row in the Pareto front
   for (i in 1:nrow(pareto_df)) {
     matching_row <- which(
@@ -2025,7 +2025,7 @@ add_pareto_emoa_column <- function(data, objectives) {
       data$PARETO_EMOA[matching_row] <- TRUE
     }
   }
-  
+
   # Return the updated data frame
   return(data)
 }
@@ -2068,15 +2068,15 @@ generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, l
   not_empty(x)
   not_empty(y)
   not_empty(fillColourGroup)
-    
+
   # as default, just add the y variable in Title caps
   if (missing(ytext)) {
     ytext <- stringr::str_to_title(y)
   }
-  
+
   maxIteration <- max(as.numeric(df[[x]]), na.rm = TRUE)
   numberOptimizations <- maxIteration - numberSamplingSteps
-  
+
   p <- df |> ggplot() +
     aes(x = !!sym(x), y = !!sym(y), fill = !!sym(fillColourGroup), colour = !!sym(fillColourGroup), group = !!sym(fillColourGroup)) +
     scale_fill_see() +
@@ -2094,7 +2094,7 @@ generateMoboPlot <- function(df, x, y, fillColourGroup = "ConditionID", ytext, l
     stat_poly_eq(use_label(c("eq", "R2")), label.y = labelPosFormulaY) +
     stat_poly_line(fullrange = FALSE, alpha = 0.1, linetype = "dashed", linewidth = 0.5) +
     geom_vline(aes(xintercept = numberSamplingSteps + 0.5), linetype = "dashed", color = "black", alpha = 0.5)
-  
+
   return(p)
 }
 
@@ -2137,22 +2137,22 @@ generateMoboPlot2 <- function(data, x = "Iteration", y, phaseCol = "Phase", fill
   not_empty(y)
   not_empty(fillColourGroup)
   stopifnot(all(c(x, y, phaseCol) %in% names(data)))
-  
-  
+
+
   # as default, just add the y variable in Title caps
   if (missing(ytext)) {
     ytext <- stringr::str_to_title(y)
   }
-  
+
   numberSamplingSteps <- max(as.numeric(data[[x]][data[[phaseCol]] == "sampling"]), na.rm = TRUE)
   numberOptimizations <- max(as.numeric(data[[x]][data[[phaseCol]] == "optimization"]), na.rm = TRUE) - numberSamplingSteps
-  
+
   maxIteration <- numberSamplingSteps + numberOptimizations
-  
-  
+
+
   y_sym <- rlang::sym(y)
   x_sym <- rlang::sym(x)
-  
+
   p <- data |>
     ggplot2::ggplot(ggplot2::aes(x = !!x_sym, y = !!y_sym)) +
     ggplot2::ylab(ytext) +
@@ -2175,7 +2175,7 @@ generateMoboPlot2 <- function(data, x = "Iteration", y, phaseCol = "Phase", fill
     ggpmisc::stat_poly_line(fullrange = FALSE, alpha = 0.1, linetype = "dashed", linewidth = 0.5) +
     ggplot2::geom_vline(ggplot2::aes(xintercept = numberSamplingSteps + 0.5),
                         linetype = "dashed", color = "black", alpha = 0.5)
-  
+
   if (is.character(fillColourGroup) && length(fillColourGroup) >1) {
     f_sym <- rlang::sym(fillColourGroup)
     p <- p +
@@ -2217,7 +2217,7 @@ generateMoboPlot2 <- function(data, x = "Iteration", y, phaseCol = "Phase", fill
 #'   # and wrapping bullet items in an itemize environment.
 #'   latexify_report(report::report(model), only_sig = TRUE, remove_std = TRUE, itemize = TRUE)
 #' }
-latexify_report <- function(x, 
+latexify_report <- function(x,
                             print_result = TRUE,
                             only_sig = FALSE,
                             remove_std = FALSE,
@@ -2226,7 +2226,7 @@ latexify_report <- function(x,
   if (length(x) > 1) {
     x <- paste(x, collapse = "\n")
   }
-  
+
   # Perform substitutions:
   #   1. Replace "R2" with "$R^2$"
   #   2. Replace "%" with "\%"
@@ -2236,31 +2236,31 @@ latexify_report <- function(x,
     gsub("%", "\\%", x = _, fixed = TRUE) |>
     gsub("~", "$\\sim$", x = _, fixed = TRUE) |>
     gsub("Rhat", "$\\hat{R}$", x = _, fixed = TRUE)
-  
+
   # Split into individual lines for processing
   lines <- strsplit(out, "\n")[[1]]
-  
+
   # Prepare to reconstruct the report line-by-line.
   new_lines <- c()
   bullet_block <- c()        # temporary holder for bullet items
   in_bullet_block <- FALSE   # flag to denote if we are collecting bullet items
-  
+
   # Define a pattern to identify the standard note line
   std_pattern <- "Standardized parameters were obtained by fitting the model"
-  
+
   for (line in lines) {
     # Optionally remove the final standard note line
     if (remove_std && grepl(std_pattern, line, fixed = TRUE)) {
       next  # Skip this line entirely
     }
-    
+
     # Check if the line is a bullet candidate (i.e., starts with a dash)
     if (grepl("^\\s*-\\s+", line)) {
       # If only_sig==TRUE, skip bullet items that contain "non-significant"
       if (only_sig && grepl("non-significant", line, fixed = TRUE)) {
         next
       }
-      
+
       if (itemize) {
         # Replace initial dash with LaTeX \item and add to bullet_block
         bullet_item <- sub("^\\s*-\\s+", "\\\\item ", line)
@@ -2287,170 +2287,170 @@ latexify_report <- function(x,
   if (in_bullet_block && itemize) {
     new_lines <- c(new_lines, "\\begin{itemize}", bullet_block, "\\end{itemize}")
   }
-  
+
   # Re-combine the resulting lines into a single string.
   out <- paste(new_lines, collapse = "\n")
-  
+
   # Optionally print to the console
   if (print_result) {
     cat(out, "\n")
   }
-  
+
   invisible(out)
 }
 
 
 # saved from https://www.uni-koeln.de/~luepsen/R/np.anova.R
 np.anova <- function(formel,data,method=0,compact=T,pseudo=F)
-{                        # data  :  dataframe 
-                         # formel:  anova-Modell
-                         # method:  0: generalized Kruskal-Wallis-Friedman tests
-                         #             including Iman & Davenport F-tests
-                         #          1: generalized van der Waerden tests
-                         #          2: Puri & Sen tests
-                         #          3: Puri & Sen tests with INT
-                         # compact: T: all tests in one table
-                         #          F: seperate tables for each error term (repeated measures only)
-                         # pseudo   T: use pseudoranks instead of ordinary ranks (for unequal ni)
+{                        # data  :  dataframe
+  # formel:  anova-Modell
+  # method:  0: generalized Kruskal-Wallis-Friedman tests
+  #             including Iman & Davenport F-tests
+  #          1: generalized van der Waerden tests
+  #          2: Puri & Sen tests
+  #          3: Puri & Sen tests with INT
+  # compact: T: all tests in one table
+  #          F: seperate tables for each error term (repeated measures only)
+  # pseudo   T: use pseudoranks instead of ordinary ranks (for unequal ni)
 
-if (pseudo) library(pseudorank)
-                                               # check formula
-if (mode(formel)!="call") stop("invalid formula")
-if (class(data[,as.character(formel)[2]])=="factor") stop("invalid type of dependent variable")
-                                               # perform standard aov and check model
-aov.1 <- aov(formel,data)
-if (class(aov.1)[1]=="aov")     repm<-0
-if (class(aov.1)[1]=="aovlist") repm<-1
-                                               # extract varnames
-vars  <- all.vars(formel)
-vdep  <- vars[1]                               # dependent var
-nfact <- length(vars)-1
-if (repm==1) nfact <- length(vars)-2
-nfgrp <- nfact
-if (repm==1)                                   # params for repeated
- { nam.aov  <- names(aov.1)
-   l.aov    <- length(nam.aov)
-   if (nam.aov[l.aov]=="Within") nam.aov <- nam.aov[-l.aov]
-   nerrterm <- length(nam.aov)-2               # n of error terms for repeated
-   nfrep    <- log2(length(nam.aov)-1)         # n of repeated measures factors
-   nfgrp    <- nfact-nfrep }                   # n of grouping factors
+  if (pseudo) library(pseudorank)
+  # check formula
+  if (mode(formel)!="call") stop("invalid formula")
+  if (class(data[,as.character(formel)[2]])=="factor") stop("invalid type of dependent variable")
+  # perform standard aov and check model
+  aov.1 <- aov(formel,data)
+  if (class(aov.1)[1]=="aov")     repm<-0
+  if (class(aov.1)[1]=="aovlist") repm<-1
+  # extract varnames
+  vars  <- all.vars(formel)
+  vdep  <- vars[1]                               # dependent var
+  nfact <- length(vars)-1
+  if (repm==1) nfact <- length(vars)-2
+  nfgrp <- nfact
+  if (repm==1)                                   # params for repeated
+  { nam.aov  <- names(aov.1)
+  l.aov    <- length(nam.aov)
+  if (nam.aov[l.aov]=="Within") nam.aov <- nam.aov[-l.aov]
+  nerrterm <- length(nam.aov)-2               # n of error terms for repeated
+  nfrep    <- log2(length(nam.aov)-1)         # n of repeated measures factors
+  nfgrp    <- nfact-nfrep }                   # n of grouping factors
 
-if (repm==1) 
+  if (repm==1)
   {vpn      <- vars[length(vars)]                               # case id
-   nvar     <- length(data[,vpn])/length(levels(data[,vpn])) }  # n dependent vars
+  nvar     <- length(data[,vpn])/length(levels(data[,vpn])) }  # n dependent vars
   else
-   nvar <- 1
+    nvar <- 1
 
-if (pseudo)                                    # make cell factor for pseudoranks
+  if (pseudo)                                    # make cell factor for pseudoranks
   {nilist <- list(data[,vars[2]])
-   ncell  <- length(table(data[,vars[2]]))
-   if (nfgrp>1) 
-     for (i in 2:nfgrp) 
-       {nilist[[i]]<-data[,vars[i+1]]
-        ncell <- ncell*length(table(data[,vars[i+1]])) }
-   ni <- factor(rep(1:ncell,as.vector(table(nilist))/nvar))
+  ncell  <- length(table(data[,vars[2]]))
+  if (nfgrp>1)
+    for (i in 2:nfgrp)
+    {nilist[[i]]<-data[,vars[i+1]]
+    ncell <- ncell*length(table(data[,vars[i+1]])) }
+  ni <- factor(rep(1:ncell,as.vector(table(nilist))/nvar))
   }
-                                               # ranking procedure
-                                               #   repeated measures
-if (repm==1) {
-  cfrep    <- unlist(strsplit(names(aov.1),":")[3:(nfrep+2)])[seq(2,2*nfrep,2)] # names
-  nrep     <-1
-  for (i in 1:nfrep) nrep <- nrep*length(levels(data[,cfrep[i]])) # n repeated measures
-  nvar     <- length(data[,vpn])/length(levels(data[,vpn]))       # n dependent vars
-                                               
-  if (method<=1)                               # combined case and Friedman ranking
-    {                                          # rank Vpn
-     ysum <- ave(data[,vdep],data[,vpn],FUN=sum)
-     if (pseudo) rsum     <-(pseudorank(ysum,ni)+(nvar-1)/2)/nvar
-       else      rsum     <-(      rank(ysum)   +(nvar-1)/2)/nvar
-                         
-     if (method==1)                            #   normal scores for van der Waerden tests
-       {  ncases <- sum(summary(aov.1[[2]])[[1]]$"Df")+1
-          if (pseudo) ncases<-ncases*nvar
-          rsum   <- qnorm(rsum/(ncases+1)) }
-                                               #   rank repeated
-     zzz_ry <- ave(data[,vdep], data[,vpn], FUN=rank) 
-     if (method==1) zzz_ry <- qnorm(zzz_ry/(nvar+1))
-     zzz_rx <- zzz_ry
-     if (nfgrp>0)                              #   combine ranks
-       {if (method==0)      zzz_rx <- (rsum-1)*nrep + zzz_ry
-        else if (method==1) zzz_rx <- rsum+zzz_ry }
-    }
-  else                                         # Puri & Sen: simple ranking over cases and rep measures
-    {if (pseudo) zzz_rx <- pseudorank(data[,vdep],ni)
-       else      zzz_rx <-       rank(data[,vdep])
-     if (method==3)                            #   normal scores
-       {len<-length(data[,vdep])
-        if (pseudo) len<-len*nvar
-        zzz_rx <- qnorm(zzz_rx/(len+1)) } }
-                                               
-  if (nfgrp>1)                                 #   get grouping factors
-     {ig <- 0 ; ifgrp <- 0
-      for (i in 1:nfact)
-         {if (length(grep(vars[i+1],names(aov.1)))==0)
-             { ig <- ig+1 ; ifgrp[ig] <- vars[i+1] }
-     } } }
-else                                           # ranking procedure: only grouping factors
-   { ncases <- sum(anova(aov.1)[,1])+1
-     if (pseudo) zzz_rx     <- pseudorank(data[,vdep],ni)
-       else      zzz_rx     <-       rank(data[,vdep])
-                                               # normal scores for van der Waerden tests
-     if (method==1) zzz_rx <- qnorm(zzz_rx/(ncases+1))
-     }
-                                               # perform anova on ranks
-cformel <- as.character(formel)
-formel1 <- as.formula(paste("zzz_rx ~",cformel[3]))
-aov.2   <- aov(formel1,data)
-                                               # perform puri & sen-tests
-                                               # repeated measures
-if (repm==1) {
-   aov.21 <- summary(aov.2[[2]])[[1]]          # vpn error part (including grouping effects)
-   df     <- aov.21$"Df"
-   ncases <- sum(df)+1
-   nerg   <- 0                                   # n of items in erglist
-   ngeffects <- 0                                # n of grouping effects
-   if (nfgrp>0)                                                                                          
-     {ngeffects <- dim(aov.21)[1]-1
-      mstotal   <- sum(aov.21$"Sum Sq")/sum(df)
-                                                 # more grouping effects
-      if (nfgrp>1)
-        {                                        # type III ssq necessary
-                                                 # separate anova for grouping effects
-         formel2 <- paste(c("zzz_rx",paste(ifgrp,collapse="*")),collapse="~")
-         formel3 <- paste(c("zzz_rx",paste(c(vpn,ifgrp),collapse="*")),collapse="~")
-         data1   <- aggregate(as.formula(formel3),data=data,FUN=mean)
-         aov.31  <- drop1(aov(as.formula(formel2),data1), ~. , test="F")
-         aov.21$"Sum Sq"[1:(ngeffects-1)] <- nrep*aov.31$"Sum of Sq"[2:ngeffects]
-        }
-                                                 # prepare cols for Iman & Davenport
-      if (method==0)
-         {aov.21[[6]] <- aov.21[[5]]
-          aov.21[[5]] <- aov.21[[4]]
-          names(aov.21)[5:6] <- names(aov.21)[4:5] }
-                                                 # chisquare tests
-      names(aov.21)[5]   <- " "
-      names(aov.21)[3:4] <-c(" Chi Sq"," Pr(>Chi)")
-      chisq       <- aov.21$"Sum Sq"/mstotal
-      aov.21[[3]] <- chisq
-      aov.21[[4]] <- 1-pchisq(chisq,df)
-      aov.21[ngeffects+1,3:4] <- NA
+  # ranking procedure
+  #   repeated measures
+  if (repm==1) {
+    cfrep    <- unlist(strsplit(names(aov.1),":")[3:(nfrep+2)])[seq(2,2*nfrep,2)] # names
+    nrep     <-1
+    for (i in 1:nfrep) nrep <- nrep*length(levels(data[,cfrep[i]])) # n repeated measures
+    nvar     <- length(data[,vpn])/length(levels(data[,vpn]))       # n dependent vars
 
-      erglist     <- list(aov.21)
-      names(erglist)[1] <- names(aov.1)[2]
-      nerg        <- 1
-     }
-   for (errterm in 3:(2+nerrterm))
-      {                                          # for each trial error term...
+    if (method<=1)                               # combined case and Friedman ranking
+    {                                          # rank Vpn
+      ysum <- ave(data[,vdep],data[,vpn],FUN=sum)
+      if (pseudo) rsum     <-(pseudorank(ysum,ni)+(nvar-1)/2)/nvar
+      else      rsum     <-(      rank(ysum)   +(nvar-1)/2)/nvar
+
+      if (method==1)                            #   normal scores for van der Waerden tests
+      {  ncases <- sum(summary(aov.1[[2]])[[1]]$"Df")+1
+      if (pseudo) ncases<-ncases*nvar
+      rsum   <- qnorm(rsum/(ncases+1)) }
+      #   rank repeated
+      zzz_ry <- ave(data[,vdep], data[,vpn], FUN=rank)
+      if (method==1) zzz_ry <- qnorm(zzz_ry/(nvar+1))
+      zzz_rx <- zzz_ry
+      if (nfgrp>0)                              #   combine ranks
+      {if (method==0)      zzz_rx <- (rsum-1)*nrep + zzz_ry
+      else if (method==1) zzz_rx <- rsum+zzz_ry }
+    }
+    else                                         # Puri & Sen: simple ranking over cases and rep measures
+    {if (pseudo) zzz_rx <- pseudorank(data[,vdep],ni)
+    else      zzz_rx <-       rank(data[,vdep])
+    if (method==3)                            #   normal scores
+    {len<-length(data[,vdep])
+    if (pseudo) len<-len*nvar
+    zzz_rx <- qnorm(zzz_rx/(len+1)) } }
+
+    if (nfgrp>1)                                 #   get grouping factors
+    {ig <- 0 ; ifgrp <- 0
+    for (i in 1:nfact)
+    {if (length(grep(vars[i+1],names(aov.1)))==0)
+    { ig <- ig+1 ; ifgrp[ig] <- vars[i+1] }
+    } } }
+  else                                           # ranking procedure: only grouping factors
+  { ncases <- sum(anova(aov.1)[,1])+1
+  if (pseudo) zzz_rx     <- pseudorank(data[,vdep],ni)
+  else      zzz_rx     <-       rank(data[,vdep])
+  # normal scores for van der Waerden tests
+  if (method==1) zzz_rx <- qnorm(zzz_rx/(ncases+1))
+  }
+  # perform anova on ranks
+  cformel <- as.character(formel)
+  formel1 <- as.formula(paste("zzz_rx ~",cformel[3]))
+  aov.2   <- aov(formel1,data)
+  # perform puri & sen-tests
+  # repeated measures
+  if (repm==1) {
+    aov.21 <- summary(aov.2[[2]])[[1]]          # vpn error part (including grouping effects)
+    df     <- aov.21$"Df"
+    ncases <- sum(df)+1
+    nerg   <- 0                                   # n of items in erglist
+    ngeffects <- 0                                # n of grouping effects
+    if (nfgrp>0)
+    {ngeffects <- dim(aov.21)[1]-1
+    mstotal   <- sum(aov.21$"Sum Sq")/sum(df)
+    # more grouping effects
+    if (nfgrp>1)
+    {                                        # type III ssq necessary
+      # separate anova for grouping effects
+      formel2 <- paste(c("zzz_rx",paste(ifgrp,collapse="*")),collapse="~")
+      formel3 <- paste(c("zzz_rx",paste(c(vpn,ifgrp),collapse="*")),collapse="~")
+      data1   <- aggregate(as.formula(formel3),data=data,FUN=mean)
+      aov.31  <- drop1(aov(as.formula(formel2),data1), ~. , test="F")
+      aov.21$"Sum Sq"[1:(ngeffects-1)] <- nrep*aov.31$"Sum of Sq"[2:ngeffects]
+    }
+    # prepare cols for Iman & Davenport
+    if (method==0)
+    {aov.21[[6]] <- aov.21[[5]]
+    aov.21[[5]] <- aov.21[[4]]
+    names(aov.21)[5:6] <- names(aov.21)[4:5] }
+    # chisquare tests
+    names(aov.21)[5]   <- " "
+    names(aov.21)[3:4] <-c(" Chi Sq"," Pr(>Chi)")
+    chisq       <- aov.21$"Sum Sq"/mstotal
+    aov.21[[3]] <- chisq
+    aov.21[[4]] <- 1-pchisq(chisq,df)
+    aov.21[ngeffects+1,3:4] <- NA
+
+    erglist     <- list(aov.21)
+    names(erglist)[1] <- names(aov.1)[2]
+    nerg        <- 1
+    }
+    for (errterm in 3:(2+nerrterm))
+    {                                          # for each trial error term...
       aov.22   <- summary(aov.2[[errterm]])[[1]] #   trial part of anova on ranks
       neffects <- dim(aov.22)[1]-1
       if (method==1) names(aov.22)[5] <- c(" ")
-                                                 # prepare cols for Iman-Davenport F
+      # prepare cols for Iman-Davenport F
       if (method==0)
-         {aov.22[[6]] <- aov.22[[5]]
-          aov.22[[5]] <- aov.22[[4]]
-          names(aov.22)[5:6] <- names(aov.22)[4:5] }
+      {aov.22[[6]] <- aov.22[[5]]
+      aov.22[[5]] <- aov.22[[4]]
+      names(aov.22)[5:6] <- names(aov.22)[4:5] }
       names(aov.22)[3:4] <- c("Chisq","Pr(>Chi)")
-                                                 # chisquare tests
+      # chisquare tests
       df      <- aov.22$"Df"
       sumdf   <- sum(df)
       mstotal <- sum(aov.22$"Sum Sq")/sumdf
@@ -2458,67 +2458,67 @@ if (repm==1) {
       aov.22[[3]] <- chisq
       aov.22[[4]] <- 1-pchisq(chisq,df)
       aov.22[neffects+1,3:4] <- NA
-                                                 # Iman-Davenport F main trial effect
+      # Iman-Davenport F main trial effect
       if (method==0)
-         {aov.22[[5]][1] <- (ncases-1)*chisq[1]/(sumdf-chisq[1])
-          aov.22[[6]][1] <- 1-pf(aov.22[[5]][1],df[1],df[neffects+1]) 
-          aov.22[neffects+1,5:6] <- NA }
-                                                 # type of tables
+      {aov.22[[5]][1] <- (ncases-1)*chisq[1]/(sumdf-chisq[1])
+      aov.22[[6]][1] <- 1-pf(aov.22[[5]][1],df[1],df[neffects+1])
+      aov.22[neffects+1,5:6] <- NA }
+      # type of tables
       if (compact)
-         {if (errterm==3) 
-             {aov.3     <- aov.22
-              nteffects <- neffects+1
-              row.names(aov.3)[nteffects] <- paste("Residuals",row.names(aov.3)[nteffects-ngeffects-1])
-              if (nfgrp>0)
-                 {nteffects <- nteffects+ngeffects+1
-                  aov.3[(ngeffects+2):nteffects,] <- aov.22[1:(neffects+1),]
-                  aov.3[1:(ngeffects+1),]         <- aov.21[1:(ngeffects+1),]
-                  nd<- dim(aov.21)[1]
-                  row.names(aov.21)[nd]<-"Residuals Btw.Subj"        
-                  row.names(aov.3)[1:(ngeffects+1)]         <- row.names(aov.21)
-                  row.names(aov.3)[(ngeffects+2):nteffects] <- row.names(aov.22) 
-                  row.names(aov.3)[nteffects] <- paste("Residuals",row.names(aov.3)[nteffects-ngeffects-1]) }
-              }
-              
-          else
-             {aov.3[(nteffects+1):(nteffects+neffects+1),] <- aov.22[1:(neffects+1),]
-              nteffects <- nteffects+neffects+1
-              row.names(aov.3)[nteffects] <- paste("Residuals",row.names(aov.3)[nteffects-1]) }
-         }
-      else
-         {nerg <- nerg+1
-          if (nerg==1) erglist         <- list(aov.22)
-          if (nerg >1) erglist[[nerg]] <- aov.22 }
+      {if (errterm==3)
+      {aov.3     <- aov.22
+      nteffects <- neffects+1
+      row.names(aov.3)[nteffects] <- paste("Residuals",row.names(aov.3)[nteffects-ngeffects-1])
+      if (nfgrp>0)
+      {nteffects <- nteffects+ngeffects+1
+      aov.3[(ngeffects+2):nteffects,] <- aov.22[1:(neffects+1),]
+      aov.3[1:(ngeffects+1),]         <- aov.21[1:(ngeffects+1),]
+      nd<- dim(aov.21)[1]
+      row.names(aov.21)[nd]<-"Residuals Btw.Subj"
+      row.names(aov.3)[1:(ngeffects+1)]         <- row.names(aov.21)
+      row.names(aov.3)[(ngeffects+2):nteffects] <- row.names(aov.22)
+      row.names(aov.3)[nteffects] <- paste("Residuals",row.names(aov.3)[nteffects-ngeffects-1]) }
       }
-   if (compact) 
-       erglist <- aov.3
 
-   else
-      {if (nfgrp==0) names(erglist) <- names(aov.1)[3:(nerrterm+2)]
-       if (nfgrp >0) names(erglist) <- names(aov.1)[2:(nerrterm+2)] }
-   if (method>0) erglist <- erglist[,-5]
-   }
-else                                             # only grouping effects
+        else
+        {aov.3[(nteffects+1):(nteffects+neffects+1),] <- aov.22[1:(neffects+1),]
+        nteffects <- nteffects+neffects+1
+        row.names(aov.3)[nteffects] <- paste("Residuals",row.names(aov.3)[nteffects-1]) }
+      }
+      else
+      {nerg <- nerg+1
+      if (nerg==1) erglist         <- list(aov.22)
+      if (nerg >1) erglist[[nerg]] <- aov.22 }
+    }
+    if (compact)
+      erglist <- aov.3
+
+    else
+    {if (nfgrp==0) names(erglist) <- names(aov.1)[3:(nerrterm+2)]
+    if (nfgrp >0) names(erglist) <- names(aov.1)[2:(nerrterm+2)] }
+    if (method>0) erglist <- erglist[,-5]
+  }
+  else                                             # only grouping effects
   { aov.3 <- drop1(aov.2, ~. , test="F")         # SS Type III
-    aov.2 <- anova(aov.2)                        # as dataframe
-    names(aov.2)[3:5] <- c(" Chi Sq"," Pr(>Chi)"," ")
-                                                 # Chisquare tests
-    neffects <- dim(aov.2)[1]-1
-    mstotal  <- sum(aov.2[,2])/sum(aov.2[,1])
-    aov.2[1:(neffects),2] <- aov.3[2:(neffects+1),2]
-    aov.2[1:neffects,3]     <- aov.3[2:(neffects+1),2]/mstotal
-    aov.2[,4]               <- 1-pchisq(aov.2[,3],aov.2[,1])
-    aov.2[neffects+1,3:4]   <- NA
-    aov.2                   <- aov.2[,-5]
-    erglist  <- aov.2
+  aov.2 <- anova(aov.2)                        # as dataframe
+  names(aov.2)[3:5] <- c(" Chi Sq"," Pr(>Chi)"," ")
+  # Chisquare tests
+  neffects <- dim(aov.2)[1]-1
+  mstotal  <- sum(aov.2[,2])/sum(aov.2[,1])
+  aov.2[1:(neffects),2] <- aov.3[2:(neffects+1),2]
+  aov.2[1:neffects,3]     <- aov.3[2:(neffects+1),2]/mstotal
+  aov.2[,4]               <- 1-pchisq(aov.2[,3],aov.2[,1])
+  aov.2[neffects+1,3:4]   <- NA
+  aov.2                   <- aov.2[,-5]
+  erglist  <- aov.2
   }
 
-if (method==0) attr(erglist,"heading") <- "generalized Kruskal-Wallis/Friedman tests including Iman & Davenport F-tests"
-if (method==1) attr(erglist,"heading") <- "generalized van der Waerden tests"
-if (method==2) attr(erglist,"heading") <- "Puri & Sen tests"
-if (method==3) attr(erglist,"heading") <- "Puri & Sen with inverse normal transformation"
-if (pseudo) attr(erglist,"heading") <- paste(attr(erglist,"heading"),"on pseudo ranks")
-erglist
+  if (method==0) attr(erglist,"heading") <- "generalized Kruskal-Wallis/Friedman tests including Iman & Davenport F-tests"
+  if (method==1) attr(erglist,"heading") <- "generalized van der Waerden tests"
+  if (method==2) attr(erglist,"heading") <- "Puri & Sen tests"
+  if (method==3) attr(erglist,"heading") <- "Puri & Sen with inverse normal transformation"
+  if (pseudo) attr(erglist,"heading") <- paste(attr(erglist,"heading"),"on pseudo ranks")
+  erglist
 }
 
 
@@ -2545,21 +2545,21 @@ erglist
 #' result <- remove_outliers_REI(df, TRUE, "var1,var2", c(1, 5))
 #' }
 remove_outliers_REI <- function(df, header = FALSE, variables = "", range = c(1, 5)) {
-  
+
   # Validate and parse variables
   if (variables == "" && header == TRUE) {
     stop("Please input variables to consider!")
   }
   iniVariables <- str_split(variables, ",")
   variableNames <- unique(trimws(iniVariables[[1]]))
-  
+
   # Initialize data frame for REI calculation
   testDF <- data.frame(REI = numeric(nrow(df)))
-  
+
   # Extract specified columns
   if (header == FALSE) {
     testDF <- cbind(testDF, df)
-  } else { 
+  } else {
     for (i in variableNames) {
       columnMatches <- grep(paste("^", i, "$", sep=""), colnames(df))
       if (length(columnMatches) > 0) {
@@ -2567,12 +2567,12 @@ remove_outliers_REI <- function(df, header = FALSE, variables = "", range = c(1,
       }
     }
   }
-  
+
   # Check column count for validity
   if (NCOL(testDF) <= 2) {
     stop("Not enough columns found with the given phrase.")
   }
-  
+
   # Calculate REI and related metrics
   numLevels <- range[2] - range[1] + 1
   numQuestions <- ncol(testDF) - 1
@@ -2581,19 +2581,19 @@ remove_outliers_REI <- function(df, header = FALSE, variables = "", range = c(1,
     tallies <- sapply(recordedResponses, function(x) rowSums(df == x))
     return(tallies)
   }
-  
+
   tallies <- getResponses(testDF[,-1])
   proportions <- tallies / numQuestions
   logs <- proportions * log10(proportions)
   logs[is.na(logs)] <- 0
   testDF[, "REI"] <- rowSums(logs, na.rm = TRUE) * -1
-  
+
   # Calculate percentile and flag suspicious entries
   testDF$Percentile <- round(pnorm(testDF$REI, mean = mean(testDF$REI, na.rm = TRUE), sd = sd(testDF$REI, na.rm = TRUE)), digits = 2) * 100
   testDF$Suspicious <- "No"
   testDF$Suspicious[testDF$Percentile <= 10 | testDF$Percentile >= 90] <- "Maybe"
   testDF$Suspicious[testDF$Percentile <= 5 | testDF$Percentile >= 95] <- "Yes"
-  
+
   return(testDF)
 }
 
@@ -2604,41 +2604,41 @@ reportggstatsplotPostHoc <- function(data, p, iv = "testiv", dv = "testdv", labe
   not_empty(p)
   not_empty(iv)
   not_empty(dv)
-  
+
   # Extract stats from the ggstatsplot object
   stats <- extract_stats_wrapper(p)$pairwise_comparisons_data
-  
+
   if (!any(stats$p.value < 0.05, na.rm = TRUE)) {
     cat(paste0("A post-hoc test found no significant differences for ", dv, ". "))
     return()
   }
-  
+
   for (i in 1:length(stats$p.value)) {
     if (!is.na(stats$p.value[i]) && stats$p.value[i] < 0.05) {
       # Format p-value
       pValue <- if (stats$p.value[i] < 0.001) "\\padjminor{0.001}" else paste0("\\padj{", sprintf("%.3f", round(stats$p.value[i], 3)), "}")
-      
+
       # Get conditions
       firstCondition <- stats$group1[i]
       secondCondition <- stats$group2[i]
 
-      
+
       # Apply label mappings if available
       firstLabel <- ifelse(is.null(label_mappings), firstCondition, label_mappings[[firstCondition]])
       secondLabel <- ifelse(is.null(label_mappings), secondCondition, label_mappings[[secondCondition]])
-      
-      valueOne <- data %>%
-        filter(!!sym(iv) == firstCondition) %>%
+
+      valueOne <- data |>
+        filter(!!sym(iv) == firstCondition) |>
         dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
-      
-      valueTwo <- data %>%
-        filter(!!sym(iv) == secondCondition) %>%
+
+      valueTwo <- data |>
+        filter(!!sym(iv) == secondCondition) |>
         dplyr::summarise(across(!!sym(dv), list(mean = mean, sd = sd)))
-      
+
       # Format statistics
       firstStatsStr <- paste0(" (\\m{", sprintf("%.2f", as.numeric(round(valueOne[1,1], 2))), "}, \\sd{", sprintf("%.2f", as.numeric(round(valueOne[1,2], 2))), "})")
       secondStatsStr <- paste0(" (\\m{", sprintf("%.2f", as.numeric(round(valueTwo[1,1], 2))), "}, \\sd{", sprintf("%.2f", as.numeric(round(valueTwo[1,2], 2))), "})")
-      
+
       # Construct and print output string
       if (as.numeric(round(valueOne[1,1], 2)) > as.numeric(round(valueTwo[1,1], 2))) {
         cat(paste0("A post-hoc test found that ", firstLabel, " was significantly higher", firstStatsStr, " in terms of \\", dv, " compared to ", secondLabel, secondStatsStr, "; ", pValue, "). "))
