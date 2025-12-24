@@ -1,12 +1,12 @@
-# colleyRstats: Functions to Streamline Statistical Analysis and Reporting
+# rCode: Enhanced R Functions for Statistical Analysis and Reporting
 
 > Created by [Mark Colley](https://m-colley.github.io/)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16875755.svg)](https://doi.org/10.5281/zenodo.16875755)
 
-`colleyRstats` is a collection of custom R functions that streamline statistical analysis and result reporting. Built upon popular R packages such as [ggstatsplot](https://github.com/IndrajeetPatil/ggstatsplot) and [ARTool](https://github.com/mjskay/ARTool), this collection offers a wide array of tools for simplifying reproducible analyses, generating high-quality visualizations, and producing APA-compliant outputs.
+`rCode` is a collection of custom R functions that streamline statistical analysis and result reporting. Built upon popular R packages such as [ggstatsplot](https://github.com/IndrajeetPatil/ggstatsplot) and [ARTool](https://github.com/mjskay/ARTool), this collection offers a wide array of tools for simplifying reproducible analyses, generating high-quality visualizations, and producing APA-compliant outputs.
 
-The primary goal of this package is to significantly reduce repetitive coding efforts, allowing you to focus on interpreting results. Whether you're dealing with ANOVA assumptions, reporting effect sizes, or creating publication-ready visualizations, `colleyRstats` makes these tasks easier.
+The primary goal of this package is to significantly reduce repetitive coding efforts, allowing you to focus on interpreting results. Whether you're dealing with ANOVA assumptions, reporting effect sizes, or creating publication-ready visualizations, `rCode` makes these tasks easier.
 
 ## Key Features
 - **Automated Assumption Checking**: For ANOVA models, automatically verify normality and homogeneity of variance.
@@ -17,9 +17,9 @@ The primary goal of this package is to significantly reduce repetitive coding ef
 
 ## Installation
 
-| Type        | Command                                  |
-|:------------|:-----------------------------------------|
-| Release     | `install.packages("colleyRstats")`       |
+| Type        | Command                                                 |
+|-------------|---------------------------------------------------------|                  
+| Development | `devtools::source_url("https://raw.githubusercontent.com/M-Colley/rCode/main/r_functionality.R")` |
 
 ## Summary of Benefits 
 - **Code Reduction**: Automates common tasks in data analysis, such as assumption checks and reporting.
@@ -64,6 +64,7 @@ generateEffectPlot(df = main_df, x = "factor1", y = "dependent_var", fillColourG
 ```
 
 ![Effect Plot Example](figures/effect_plot.png)
+
 
 
 ### `reportNPAV`
@@ -194,47 +195,6 @@ Replaces specified values in a data frame with custom replacements. This can be 
 new_df <- replace_values(main_df, to_replace = c("bad_val1", "bad_val2"), replace_with = c("good_val1", "good_val2"))
 ```
 
-## Using NPAV (Lüpsen) with this package
-
-`reportNPAV()` formats results from Lüpsen’s nonparametric ANOVA (`np.anova`) output. NPAV is not shipped with this package, and it is loaded manually by the user from Lüpsen’s site: `https://www.uni-koeln.de/~luepsen/R/`.
-
-This step requires internet access, so it is documented here (not in `@examples`, which should run offline during package checks).
-
-```r
-# Download Lüpsen's NPAV bundle (anova.lib) and load it into a dedicated environment
-npav_file <- tempfile(fileext = ".lib")
-utils::download.file(
-  url      = "https://www.uni-koeln.de/~luepsen/R/anova.lib",
-  destfile = npav_file,
-  mode     = "wb",
-  quiet    = TRUE
-)
-
-npav_env <- new.env(parent = base::emptyenv())
-base::load(npav_file, envir = npav_env)
-
-# Example
-set.seed(1)
-main_df <- data.frame(
-  UserID     = factor(rep(1:12, each = 8)),
-  Video      = factor(rep(c("V1", "V2"), times = 48)),
-  gesture    = factor(rep(c("g1", "g2"), each = 4, times = 12)),
-  eHMI       = factor(rep(c("off", "on"), each = 2, times = 24)),
-  tlx_mental = rnorm(96)
-)
-
-model <- npav_env$np.anova(
-  tlx_mental ~ Video * gesture * eHMI + Error(UserID / (gesture * eHMI)),
-  data = main_df
-)
-
-reportNPAV(model, dv = "mental workload")
-
-If download.file() is blocked in your environment, download anova.lib manually from the NPAV page and point npav_file to the local path
-
-
-
-
 
 ## Contact
 For questions or remarks, please contact [Mark Colley](https://m-colley.github.io/).
@@ -246,9 +206,9 @@ For questions or remarks, please contact [Mark Colley](https://m-colley.github.i
 ```bibtex
 @misc{colley2024rcode,
   author       = {Mark Colley},
-  title        = {colleyRstats: Functions to Streamline Statistical Analysis and Reporting},
+  title        = {rCode: Enhanced R Functions for Statistical Analysis and Reporting},
   year         = {2024},
-  howpublished = {\url{https://github.com/M-Colley/colleyRstats}},
+  howpublished = {\url{https://github.com/M-Colley/rCode}},
   note         = {A collection of custom R functions for streamlining statistical analysis, visualizations, and APA-compliant reporting.},
   doi          = {10.5281/zenodo.16875755},
   url          = {https://doi.org/10.5281/zenodo.16875755},
@@ -256,20 +216,7 @@ For questions or remarks, please contact [Mark Colley](https://m-colley.github.i
 ```
 
 
-## Contributing
 
-I am happy to receive any bug reports, suggestions, questions, and contributions to fix problems and add features. 
-Please use the `GitHub` issues system. Pull Requests for contributions
-are encouraged.
-
-The following presents some simple ways in which you can contribute (in increasing
-order of commitment):
-
-- Read and correct any inconsistencies in the
-  [documentation](https://indrajeetpatil.github.io/ggstatsplot/)
-- Raise issues about bugs or wanted features
-- Review code
-- Add new functionality (in the form of new reporting or plotting functions)
 
 
 
