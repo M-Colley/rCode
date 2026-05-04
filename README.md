@@ -1,3 +1,21 @@
+## ⚠️ Project Status: Archived
+
+Development of **rCode** has been discontinued, and this repository will be archived.
+
+All functionality is continued and actively maintained in the successor package:
+
+- GitHub: https://github.com/M-Colley/colleyRstats  
+- CRAN: https://cran.r-project.org/web/packages/colleyRstats/index.html  
+
+The new package provides a cleaner structure, active maintenance, and future extensions.
+
+Please update your workflows to use **colleyRstats** going forward.
+
+
+
+
+
+
 # rCode: Enhanced R Functions for Statistical Analysis and Reporting
 
 > Created by [Mark Colley](https://m-colley.github.io/)
